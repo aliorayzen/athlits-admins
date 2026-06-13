@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "skills": {
+    "clean-architecture": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "df8076799cc198bfab130f1069cea4755c85fadcdc3c03463ee1c24e4ebbf399"
+    },
+    "clean-code": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "dc73cc8aa37a237bd23822b5e58be6e8a83c1ee73688572dfac7580154fb6c1a"
+    },
+    "cro-methodology": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "46434ba32c271d17eadbfed6d6314b23887ce7abea62013814af64eda22ba3b7"
+    },
+    "design-sprint": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "454ad8c94bae3577a654540a1899bb630da57434656097d9ec9e64cc8e896c8a"
+    },
+    "hooked-ux": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "2b9f0fa285d110280fe35e1bf97606478fb97273177793bc416a9d709585b78e"
+    },
+    "hundred-million-offers": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "f286df14c232be876101776d691c125cbb49f4c0b3beb2a0c95479ed732671c7"
+    },
+    "jobs-to-be-done": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "34cfa1de6e2e61654b837068da551b19dac5475923d9290b2c49ebcbf8cf5de0"
+    },
+    "microinteractions": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "9706b350cd01e15b5fa7946ea9424fd9202ea3bfac7d12a7580d073a742666de"
+    },
+    "obviously-awesome": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "7536951d66f2d02e05e0ba9cf6add964f42083012604e4a635e007f0b6fdbc03"
+    },
+    "refactoring-ui": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "a4d8ead4a0c44f3ed6c4228db417ae8c72d29d0b29b4435853239a973fafb6f7"
+    },
+    "storybrand-messaging": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "7d19d7b09a59dcdb9c8bd163ef12f726acc90639082ce54d83ff757e5aec1275"
+    },
+    "top-design": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "ab2840f92dc511e9eb40969be979bbe83fa78aa518158454a9df4620aa78c9df"
+    },
+    "ux-heuristics": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "ad7fe92cf0e0758e5274b6b17affbb56d17ce1c9c550b8b0b93c09e37da70960"
+    },
+    "web-typography": {
+      "source": "wondelai/skills",
+      "sourceType": "github",
+      "computedHash": "be06b421155bd61ddf02e0cc7b0067cec6165672ec29b39fb83d2c19a746126f"
+    }
+  }
+}

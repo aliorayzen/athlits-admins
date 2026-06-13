@@ -1,0 +1,2160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Settings v2 — Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --bg-0: #0a0d14;
+        --bg-1: #0f131b;
+        --bg-2: #14181f;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-strong: rgba(255, 255, 255, 0.1);
+        --border-teal: rgba(0, 212, 170, 0.18);
+        --text-1: #f2f3f5;
+        --text-2: #a8aebb;
+        --text-3: #737986;
+        --text-4: #545967;
+        --teal: #00d4aa;
+        --teal-text: #39e0bb;
+        --teal-subtle: rgba(0, 212, 170, 0.1);
+        --teal-glow: rgba(0, 212, 170, 0.2);
+        --green: #10b981;
+        --green-text: #34d399;
+        --amber: #f59e0b;
+        --amber-text: #fbbf24;
+        --red: #f43f5e;
+        --red-text: #fb7185;
+        --blue: #6366f1;
+        --blue-text: #818cf8;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% -10%,
+            rgba(0, 212, 170, 0.04),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 90% 90%,
+            rgba(99, 102, 241, 0.025),
+            transparent 60%
+          ),
+          #0a0d14;
+        color: var(--text-1);
+        font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+        font-feature-settings: "ss01", "cv11";
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      .value-mono,
+      .kbd,
+      .tabnum {
+        font-feature-settings: "tnum" 1;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 36px 32px 80px;
+      }
+
+      /* ════════════════ Header ════════════════ */
+      .header {
+        margin-bottom: 28px;
+      }
+
+      .h1 {
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--text-1);
+        margin: 0 0 6px;
+      }
+
+      .subtitle {
+        font-size: 13.5px;
+        color: var(--text-3);
+        letter-spacing: -0.003em;
+      }
+
+      /* ════════════════ Layout — left rail + content ════════════════ */
+      .layout {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 36px;
+      }
+
+      /* ═══════════════ Left rail (Dust/Sidebird DNA) ═══════════════ */
+      .rail {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .rail-group-label {
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .rail-group-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      .rail-group-dot.account {
+        background: var(--teal);
+        box-shadow: 0 0 5px var(--teal-glow);
+      }
+      .rail-group-dot.prefs {
+        background: var(--blue);
+        box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
+      }
+      .rail-group-dot.plat {
+        background: var(--amber);
+        box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+      }
+      .rail-group-dot.danger {
+        background: var(--red);
+        box-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
+      }
+
+      .rail-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .rail-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 10px;
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--text-2);
+        text-decoration: none;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.15s var(--ease-out);
+      }
+
+      .rail-item:hover {
+        background: rgba(255, 255, 255, 0.035);
+        color: var(--text-1);
+        transform: translateX(1px);
+      }
+
+      .rail-item.active {
+        color: white;
+        font-weight: 500;
+        background: linear-gradient(
+          90deg,
+          rgba(0, 212, 170, 0.13),
+          rgba(0, 212, 170, 0.04) 70%,
+          transparent
+        );
+        border: 1px solid var(--border-teal);
+        padding: 6px 10px;
+      }
+
+      .rail-item.active::before {
+        content: "";
+        position: absolute;
+        left: -10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 20px;
+        background: var(--teal);
+        border-radius: 0 2px 2px 0;
+        box-shadow: 0 0 10px var(--teal-glow);
+      }
+
+      .rail-item svg {
+        width: 15px;
+        height: 15px;
+        color: var(--text-4);
+        flex-shrink: 0;
+      }
+
+      .rail-item.active svg {
+        color: var(--teal-text);
+      }
+
+      .rail-item-badge {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 5px;
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--amber-text);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 9px;
+        font-weight: 600;
+        border-radius: 3px;
+        letter-spacing: 0.04em;
+      }
+
+      /* ═══════════════ Content column ═══════════════ */
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      /* Section card */
+      .card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-1);
+        overflow: hidden;
+        animation: cardEnter 0.5s var(--ease-out) both;
+      }
+
+      .card:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .card:nth-child(2) {
+        animation-delay: 0.05s;
+      }
+      .card:nth-child(3) {
+        animation-delay: 0.1s;
+      }
+      .card:nth-child(4) {
+        animation-delay: 0.15s;
+      }
+      .card:nth-child(5) {
+        animation-delay: 0.2s;
+      }
+      .card:nth-child(6) {
+        animation-delay: 0.25s;
+      }
+      .card:nth-child(7) {
+        animation-delay: 0.3s;
+      }
+
+      @keyframes cardEnter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .card-head {
+        padding: 18px 22px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .card-head-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .card-head-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .card-head-icon.teal {
+        background: var(--teal-subtle);
+        border: 1px solid rgba(0, 212, 170, 0.16);
+        color: var(--teal-text);
+      }
+      .card-head-icon.blue {
+        background: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.18);
+        color: var(--blue-text);
+      }
+      .card-head-icon.amber {
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.18);
+        color: var(--amber-text);
+      }
+      .card-head-icon.red {
+        background: rgba(244, 63, 94, 0.08);
+        border: 1px solid rgba(244, 63, 94, 0.2);
+        color: var(--red-text);
+      }
+      .card-head-icon.neutral {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        color: var(--text-3);
+      }
+
+      .card-head-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .card-desc {
+        font-size: 12.5px;
+        color: var(--text-3);
+        margin-top: 2px;
+        line-height: 1.4;
+      }
+
+      .card-head-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .card-body {
+        padding: 4px 22px 18px;
+      }
+
+      /* Section anchor (for left rail jumps) */
+      .anchor {
+        scroll-margin-top: 24px;
+      }
+
+      /* ═══════════════ Profile section (Wiza DNA) ═══════════════ */
+      .profile-row {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 14px 0;
+      }
+
+      .profile-avatar {
+        position: relative;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+        background: linear-gradient(
+          135deg,
+          rgba(0, 212, 170, 0.28),
+          rgba(0, 212, 170, 0.08)
+        );
+        color: var(--teal-text);
+        border: 2px solid rgba(0, 212, 170, 0.22);
+        flex-shrink: 0;
+      }
+
+      .profile-avatar-ring {
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(0, 212, 170, 0.14);
+        pointer-events: none;
+      }
+
+      .profile-presence {
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--green);
+        border: 2.5px solid var(--bg-1);
+        box-shadow: 0 0 6px var(--green);
+      }
+
+      .profile-meta {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .profile-name {
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        color: var(--text-1);
+        line-height: 1.2;
+      }
+
+      .profile-email {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12.5px;
+        color: var(--text-3);
+      }
+
+      .profile-tags {
+        display: flex;
+        gap: 6px;
+        margin-top: 4px;
+      }
+
+      .profile-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px 3px 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+      .profile-tag.role {
+        background: rgba(0, 212, 170, 0.1);
+        color: var(--teal-text);
+        border: 1px solid rgba(0, 212, 170, 0.14);
+      }
+      .profile-tag.status {
+        background: rgba(16, 185, 129, 0.08);
+        color: var(--green-text);
+      }
+      .profile-tag svg {
+        width: 11px;
+        height: 11px;
+      }
+      .profile-tag .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+        animation: pulseDot 2.4s var(--ease-out) infinite;
+      }
+
+      @keyframes pulseDot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      .profile-managed-hint {
+        margin-top: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        padding: 10px 12px;
+        border: 1px solid rgba(99, 102, 241, 0.14);
+        background: rgba(99, 102, 241, 0.06);
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--text-2);
+      }
+      .profile-managed-hint svg {
+        flex-shrink: 0;
+        width: 13px;
+        height: 13px;
+        margin-top: 1px;
+        color: var(--blue-text);
+      }
+
+      /* Identity rows (read-only) */
+      .id-rows {
+        margin-top: 12px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .id-row {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+      }
+
+      .id-row-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .id-row-label svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .id-row-value {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--text-2);
+        word-break: break-all;
+      }
+
+      .id-row-value .copy-trail {
+        margin-left: 6px;
+        font-size: 10px;
+        color: var(--text-4);
+        opacity: 0;
+        transition: opacity 0.15s var(--ease-out);
+      }
+      .id-row:hover .copy-trail {
+        opacity: 1;
+      }
+
+      /* ═══════════════ Toggle rows (Claude DNA) ═══════════════ */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      }
+      .toggle-row:last-child {
+        border-bottom: none;
+      }
+
+      .toggle-meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .toggle-label {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-1);
+        letter-spacing: -0.005em;
+        line-height: 1.3;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .toggle-label .chip-new {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 5px;
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 1px solid rgba(0, 212, 170, 0.14);
+        border-radius: 3px;
+        line-height: 1.4;
+      }
+
+      .toggle-desc {
+        font-size: 12px;
+        color: var(--text-3);
+        line-height: 1.5;
+        margin-top: 2px;
+      }
+
+      /* Actual switch */
+      .switch {
+        position: relative;
+        width: 36px;
+        height: 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--border-strong);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition:
+          background 0.18s var(--ease-out),
+          border-color 0.18s var(--ease-out);
+      }
+
+      .switch::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 2px;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--text-3);
+        transition: all 0.2s var(--ease-out);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      }
+
+      .switch:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .switch.on {
+        background: var(--teal);
+        border-color: var(--teal);
+      }
+
+      .switch.on::after {
+        left: calc(100% - 16px);
+        background: white;
+      }
+
+      /* Tab strip within a card (Claude 02/06 DNA) */
+      .tabs {
+        display: inline-flex;
+        gap: 2px;
+        padding: 2px;
+        margin-bottom: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+      }
+
+      .tab {
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-3);
+        cursor: pointer;
+        border-radius: 4px;
+        background: transparent;
+        border: none;
+        transition: color 0.15s var(--ease-out);
+      }
+      .tab:hover {
+        color: var(--text-1);
+      }
+      .tab.active {
+        color: var(--text-1);
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.04) inset,
+          0 1px 2px rgba(0, 0, 0, 0.25);
+      }
+
+      /* Divider within card */
+      .card-divider {
+        height: 1px;
+        margin: 8px 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border),
+          transparent
+        );
+      }
+
+      .card-section-label {
+        margin-top: 8px;
+        margin-bottom: 8px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+      }
+
+      /* ═══════════════ Sessions list ═══════════════ */
+      .session-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .session {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+      }
+
+      .session.current {
+        border-color: rgba(0, 212, 170, 0.18);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(0, 212, 170, 0.04),
+            rgba(0, 212, 170, 0.01)
+          ),
+          var(--bg-2);
+      }
+
+      .session-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        color: var(--text-3);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .session.current .session-icon {
+        background: var(--teal-subtle);
+        border-color: rgba(0, 212, 170, 0.16);
+        color: var(--teal-text);
+      }
+      .session-icon svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .session-meta {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .session-primary {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-1);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .session-primary .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        font-size: 9.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-radius: 3px;
+      }
+
+      .session-secondary {
+        font-size: 11px;
+        color: var(--text-4);
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .session-action {
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-3);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.15s var(--ease-out);
+      }
+      .session-action:hover {
+        border-color: rgba(244, 63, 94, 0.3);
+        background: rgba(244, 63, 94, 0.08);
+        color: var(--red-text);
+      }
+
+      /* ═══════════════ Appearance (theme picker) ═══════════════ */
+      .theme-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      .theme-card {
+        position: relative;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.18s var(--ease-out);
+      }
+      .theme-card:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-2px);
+      }
+      .theme-card.selected {
+        border-color: rgba(0, 212, 170, 0.3);
+        box-shadow:
+          0 0 0 3px rgba(0, 212, 170, 0.08),
+          0 6px 18px -8px rgba(0, 212, 170, 0.25);
+      }
+
+      .theme-preview {
+        height: 72px;
+        padding: 10px 10px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .theme-preview.dark {
+        background: #0a0d14;
+      }
+      .theme-preview.light {
+        background: #f5f4f2;
+      }
+      .theme-preview.system {
+        background: linear-gradient(135deg, #0a0d14 50%, #f5f4f2 50%);
+      }
+
+      .theme-preview-bar {
+        height: 5px;
+        border-radius: 3px;
+      }
+      .theme-preview.dark .theme-preview-bar {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      .theme-preview.dark .theme-preview-bar.accent {
+        background: var(--teal);
+        width: 40%;
+      }
+      .theme-preview.light .theme-preview-bar {
+        background: rgba(0, 0, 0, 0.08);
+      }
+      .theme-preview.light .theme-preview-bar.accent {
+        background: var(--teal);
+        width: 40%;
+      }
+      .theme-preview.system .theme-preview-bar {
+        background: rgba(128, 128, 128, 0.2);
+      }
+      .theme-preview.system .theme-preview-bar.accent {
+        background: var(--teal);
+        width: 40%;
+      }
+
+      .theme-meta {
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--border);
+        background: var(--bg-1);
+      }
+
+      .theme-name {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--text-1);
+      }
+
+      .theme-radio {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1.4px solid var(--border-strong);
+      }
+      .theme-card.selected .theme-radio {
+        border-color: var(--teal);
+        background: var(--teal);
+        position: relative;
+      }
+      .theme-card.selected .theme-radio::after {
+        content: "";
+        position: absolute;
+        inset: 3px;
+        border-radius: 50%;
+        background: #032921;
+      }
+
+      .density-row {
+        margin-top: 14px;
+      }
+
+      .density-buttons {
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+      }
+
+      .density-btn {
+        padding: 5px 11px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-3);
+        background: transparent;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: color 0.15s var(--ease-out);
+      }
+      .density-btn:hover {
+        color: var(--text-1);
+      }
+      .density-btn.active {
+        color: var(--text-1);
+        background: rgba(255, 255, 255, 0.05);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.04) inset,
+          0 1px 2px rgba(0, 0, 0, 0.25);
+      }
+
+      /* ═══════════════ API keys (Unkey DNA) ═══════════════ */
+      .keys-table {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        background: var(--bg-2);
+      }
+
+      .keys-header {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 0.7fr 0.9fr auto;
+        gap: 12px;
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.012);
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+      }
+
+      .keys-row {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 0.7fr 0.9fr auto;
+        gap: 12px;
+        padding: 10px 14px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--text-2);
+      }
+      .keys-row + .keys-row {
+        border-top: 1px solid rgba(255, 255, 255, 0.035);
+      }
+
+      .key-name {
+        font-weight: 500;
+        color: var(--text-1);
+      }
+
+      .key-value {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--text-3);
+        letter-spacing: 0.02em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .key-value-chip {
+        padding: 2px 7px;
+        background: var(--bg-0);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+      }
+
+      .key-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .key-status.active {
+        background: rgba(16, 185, 129, 0.08);
+        color: var(--green-text);
+      }
+      .key-status.active::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+      }
+
+      .key-created {
+        font-size: 11px;
+        color: var(--text-3);
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .key-actions {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .icon-btn {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-3);
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+      }
+      .icon-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+      .icon-btn.danger:hover {
+        border-color: rgba(244, 63, 94, 0.3);
+        color: var(--red-text);
+        background: rgba(244, 63, 94, 0.08);
+      }
+      .icon-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .keys-empty {
+        padding: 28px;
+        text-align: center;
+      }
+      .keys-empty-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-2);
+        margin-bottom: 3px;
+      }
+      .keys-empty-desc {
+        font-size: 12px;
+        color: var(--text-4);
+        max-width: 360px;
+        margin: 0 auto;
+      }
+
+      .soon-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 7px;
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--amber-text);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border: 1px solid rgba(245, 158, 11, 0.18);
+        border-radius: 3px;
+      }
+
+      /* ═══════════════ Platform info ═══════════════ */
+      .platform-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      /* ═══════════════ Danger zone ═══════════════ */
+      .danger-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+      }
+      .danger-row:last-child {
+        border-bottom: none;
+      }
+
+      .danger-meta {
+        flex: 1;
+      }
+
+      .danger-label {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-1);
+        letter-spacing: -0.005em;
+      }
+      .danger-desc {
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 2px;
+        line-height: 1.5;
+      }
+
+      .danger-btn {
+        padding: 7px 13px;
+        font-size: 12.5px;
+        font-weight: 500;
+        border: 1px solid rgba(244, 63, 94, 0.24);
+        background: rgba(244, 63, 94, 0.06);
+        color: var(--red-text);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s var(--ease-out);
+      }
+      .danger-btn:hover {
+        background: rgba(244, 63, 94, 0.12);
+        border-color: rgba(244, 63, 94, 0.35);
+        box-shadow: 0 4px 14px -6px rgba(244, 63, 94, 0.3);
+        transform: translateY(-1px);
+      }
+      .danger-btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* Header btn (shared) */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-2);
+        transition: all 0.15s var(--ease-out);
+      }
+      .btn:hover {
+        border-color: var(--border-strong);
+        color: var(--text-1);
+        background: var(--bg-2);
+      }
+      .btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .btn-primary-sm {
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+        color: #032921;
+        font-weight: 600;
+      }
+      .btn-primary-sm:hover {
+        background: linear-gradient(135deg, #1be2ba 0%, #0cc89f 100%);
+        color: #032921;
+        transform: translateY(-1px);
+      }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0s !important;
+        }
+      }
+
+      @media (max-width: 920px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .rail {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <h1 class="h1">Settings</h1>
+        <p class="subtitle">
+          Your account, preferences, and platform configuration
+        </p>
+      </div>
+
+      <div class="layout">
+        <!-- ═══════════════ Left rail (Dust/Sidebird DNA) ═══════════════ -->
+        <nav class="rail" aria-label="Settings sections">
+          <div>
+            <div class="rail-group-label">
+              <span class="rail-group-dot account"></span>Account
+            </div>
+            <div class="rail-list">
+              <a class="rail-item active" href="#profile">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                Profile
+              </a>
+              <a class="rail-item" href="#security">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Security
+                <span class="rail-item-badge">2 SESSIONS</span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="rail-group-label">
+              <span class="rail-group-dot prefs"></span>Preferences
+            </div>
+            <div class="rail-list">
+              <a class="rail-item" href="#notifications">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+                  />
+                </svg>
+                Notifications
+              </a>
+              <a class="rail-item" href="#appearance">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path
+                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                  />
+                </svg>
+                Appearance
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="rail-group-label">
+              <span class="rail-group-dot plat"></span>Platform
+            </div>
+            <div class="rail-list">
+              <a class="rail-item" href="#api-keys">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
+                  />
+                </svg>
+                API Keys
+                <span class="rail-item-badge">SOON</span>
+              </a>
+              <a class="rail-item" href="#platform-info">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="8" rx="2" />
+                  <rect x="2" y="14" width="20" height="8" rx="2" />
+                  <path d="M6 6h.01M6 18h.01" />
+                </svg>
+                Platform info
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="rail-group-label">
+              <span class="rail-group-dot danger"></span>Danger zone
+            </div>
+            <div class="rail-list">
+              <a class="rail-item" href="#danger">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"
+                  />
+                </svg>
+                Advanced
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <!-- ═══════════════ Content ═══════════════ -->
+        <div class="content">
+          <!-- ── PROFILE (Wiza DNA) ── -->
+          <section class="card anchor" id="profile">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon teal">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Profile</h2>
+                  <p class="card-desc">Your identity on the Arena platform</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="profile-row">
+                <div class="profile-avatar">
+                  AA
+                  <span class="profile-avatar-ring"></span>
+                  <span class="profile-presence"></span>
+                </div>
+                <div class="profile-meta">
+                  <div class="profile-name">Ali Al Yaman</div>
+                  <div class="profile-email">ali@orayzen.com</div>
+                  <div class="profile-tags">
+                    <span class="profile-tag role">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                      </svg>
+                      Admin
+                    </span>
+                    <span class="profile-tag status">
+                      <span class="dot"></span>Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="profile-managed-hint">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+                <span>
+                  Your identity is managed centrally by platform admins. To
+                  change your name or email, contact another admin.
+                </span>
+              </div>
+
+              <div class="id-rows">
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M23 11h-6M20 8v6" />
+                    </svg>
+                    User ID
+                  </div>
+                  <div class="id-row-value value-mono">
+                    usr_7b2f9a3c1e5d<span class="copy-trail">· copy</span>
+                  </div>
+                </div>
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    Member since
+                  </div>
+                  <div class="id-row-value value-mono">
+                    Oct 22, 2025<span class="copy-trail">· 6 months</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── SECURITY ── -->
+          <section class="card anchor" id="security">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon blue">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Security</h2>
+                  <p class="card-desc">Manage sign-in and account protection</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Password row -->
+              <div
+                class="toggle-row"
+                style="border-bottom: 1px solid rgba(255, 255, 255, 0.035)"
+              >
+                <div class="toggle-meta">
+                  <div class="toggle-label">Password</div>
+                  <div class="toggle-desc">
+                    Admins sign in with a one-time code. Password login is
+                    reserved for venue managers.
+                  </div>
+                </div>
+                <button
+                  class="btn"
+                  type="button"
+                  disabled
+                  style="opacity: 0.5; cursor: not-allowed"
+                >
+                  Not applicable
+                </button>
+              </div>
+
+              <!-- 2FA -->
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">
+                    Two-factor authentication
+                    <span class="chip-new">Recommended</span>
+                  </div>
+                  <div class="toggle-desc">
+                    Require a 6-digit code from an authenticator app after OTP
+                    login for an added layer.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                  title="Disable 2FA"
+                ></button>
+              </div>
+
+              <!-- Sign-in alerts -->
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">Sign-in alerts</div>
+                  <div class="toggle-desc">
+                    Email me whenever my account is accessed from a new device.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                ></button>
+              </div>
+
+              <div class="card-divider"></div>
+              <div class="card-section-label">Active sessions</div>
+
+              <div class="session-list">
+                <div class="session current">
+                  <div class="session-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <path d="M8 21h8M12 17v4" />
+                    </svg>
+                  </div>
+                  <div class="session-meta">
+                    <div class="session-primary">
+                      Chrome on macOS
+                      <span class="chip">This device</span>
+                    </div>
+                    <div class="session-secondary">
+                      Dubai, AE · active now · 192.168.1.12
+                    </div>
+                  </div>
+                </div>
+                <div class="session">
+                  <div class="session-icon">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="5" y="2" width="14" height="20" rx="2" />
+                      <path d="M12 18h.01" />
+                    </svg>
+                  </div>
+                  <div class="session-meta">
+                    <div class="session-primary">Safari on iPhone</div>
+                    <div class="session-secondary">
+                      Dubai, AE · 2 hours ago · 192.168.1.8
+                    </div>
+                  </div>
+                  <button class="session-action" type="button">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── NOTIFICATIONS (Claude DNA) ── -->
+          <section class="card anchor" id="notifications">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon blue">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Notifications</h2>
+                  <p class="card-desc">When and how you get alerted by email</p>
+                </div>
+              </div>
+              <div class="tabs">
+                <button class="tab active" type="button">Email</button>
+                <button class="tab" type="button">In-app</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="card-section-label">Operations</div>
+
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">Overdue invoices</div>
+                  <div class="toggle-desc">
+                    Alert me when any venue has invoices more than 7 days past
+                    due.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                ></button>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">New venue onboarded</div>
+                  <div class="toggle-desc">
+                    Get notified when a venue is added to the platform.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                ></button>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">Manager activity digest</div>
+                  <div class="toggle-desc">
+                    Weekly summary of venue-manager actions and updates.
+                  </div>
+                </div>
+                <button
+                  class="switch"
+                  aria-pressed="false"
+                  role="switch"
+                ></button>
+              </div>
+
+              <div class="card-divider"></div>
+              <div class="card-section-label">Security</div>
+
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">Unusual sign-in</div>
+                  <div class="toggle-desc">
+                    Alert me when my account is accessed from a new device or
+                    region.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                ></button>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">New admin created</div>
+                  <div class="toggle-desc">
+                    Notify me when a new admin user is onboarded by another
+                    admin.
+                  </div>
+                </div>
+                <button
+                  class="switch on"
+                  aria-pressed="true"
+                  role="switch"
+                ></button>
+              </div>
+
+              <div class="card-divider"></div>
+              <div class="card-section-label">Product</div>
+
+              <div class="toggle-row">
+                <div class="toggle-meta">
+                  <div class="toggle-label">
+                    Product updates
+                    <span class="chip-new">New</span>
+                  </div>
+                  <div class="toggle-desc">
+                    Monthly digest of new features and improvements.
+                  </div>
+                </div>
+                <button
+                  class="switch"
+                  aria-pressed="false"
+                  role="switch"
+                ></button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── APPEARANCE ── -->
+          <section class="card anchor" id="appearance">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon amber">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="4" />
+                    <path
+                      d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Appearance</h2>
+                  <p class="card-desc">Theme and display density</p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="card-section-label">Theme</div>
+              <div class="theme-picker">
+                <button class="theme-card selected" type="button">
+                  <div class="theme-preview dark">
+                    <div class="theme-preview-bar accent"></div>
+                    <div class="theme-preview-bar"></div>
+                    <div class="theme-preview-bar"></div>
+                  </div>
+                  <div class="theme-meta">
+                    <span class="theme-name">Dark</span>
+                    <span class="theme-radio"></span>
+                  </div>
+                </button>
+                <button class="theme-card" type="button">
+                  <div class="theme-preview light">
+                    <div class="theme-preview-bar accent"></div>
+                    <div class="theme-preview-bar"></div>
+                    <div class="theme-preview-bar"></div>
+                  </div>
+                  <div class="theme-meta">
+                    <span class="theme-name">Light</span>
+                    <span class="theme-radio"></span>
+                  </div>
+                </button>
+                <button class="theme-card" type="button">
+                  <div class="theme-preview system">
+                    <div class="theme-preview-bar accent"></div>
+                    <div class="theme-preview-bar"></div>
+                    <div class="theme-preview-bar"></div>
+                  </div>
+                  <div class="theme-meta">
+                    <span class="theme-name">System</span>
+                    <span class="theme-radio"></span>
+                  </div>
+                </button>
+              </div>
+
+              <div class="density-row">
+                <div class="card-section-label">Density</div>
+                <div class="density-buttons">
+                  <button class="density-btn" type="button">Compact</button>
+                  <button class="density-btn active" type="button">
+                    Comfortable
+                  </button>
+                  <button class="density-btn" type="button">Spacious</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── API KEYS (Unkey DNA) ── -->
+          <section class="card anchor" id="api-keys">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon amber">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">
+                    API Keys
+                    <span class="soon-badge" style="margin-left: 8px"
+                      >Coming soon</span
+                    >
+                  </h2>
+                  <p class="card-desc">
+                    Personal tokens for programmatic platform access
+                  </p>
+                </div>
+              </div>
+              <div class="card-head-actions">
+                <button
+                  class="btn btn-primary-sm"
+                  type="button"
+                  disabled
+                  style="opacity: 0.6; cursor: not-allowed"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Create key
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="keys-table">
+                <div class="keys-header">
+                  <span>Name</span>
+                  <span>Key</span>
+                  <span>Status</span>
+                  <span>Created</span>
+                  <span></span>
+                </div>
+                <div class="keys-row" style="opacity: 0.65">
+                  <span class="key-name">Production read-only</span>
+                  <span class="key-value">
+                    <span class="key-value-chip">sk_live_••••••••2f9a</span>
+                  </span>
+                  <span>
+                    <span class="key-status active">Active</span>
+                  </span>
+                  <span class="key-created">Apr 12, 2026</span>
+                  <span class="key-actions">
+                    <button class="icon-btn" type="button" title="Copy">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect
+                          x="9"
+                          y="9"
+                          width="13"
+                          height="13"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path
+                          d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                        />
+                      </svg>
+                    </button>
+                    <button class="icon-btn" type="button" title="Rotate">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8" />
+                        <path d="M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+                      </svg>
+                    </button>
+                    <button
+                      class="icon-btn danger"
+                      type="button"
+                      title="Revoke"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path
+                          d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+                        />
+                      </svg>
+                    </button>
+                  </span>
+                </div>
+                <div class="keys-empty">
+                  <div class="keys-empty-title">Awaiting backend endpoint</div>
+                  <div class="keys-empty-desc">
+                    API keys will be available once the token-issuance endpoint
+                    ships. The row above is an illustrative preview.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── PLATFORM INFO ── -->
+          <section class="card anchor" id="platform-info">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon neutral">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="2" y="2" width="20" height="8" rx="2" />
+                    <rect x="2" y="14" width="20" height="8" rx="2" />
+                    <path d="M6 6h.01M6 18h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Platform info</h2>
+                  <p class="card-desc">
+                    Read-only environment metadata for support and debugging
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="platform-grid">
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path
+                        d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                      />
+                    </svg>
+                    API endpoint
+                  </div>
+                  <div class="id-row-value">
+                    http://localhost:8080<span class="copy-trail">· copy</span>
+                  </div>
+                </div>
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M4 9h16M4 15h16M10 3L8 21M16 3l-2 18" />
+                    </svg>
+                    Version
+                  </div>
+                  <div class="id-row-value">
+                    v1.0.0
+                    <span
+                      class="soon-badge"
+                      style="
+                        margin-left: 6px;
+                        background: rgba(16, 185, 129, 0.1);
+                        color: var(--green-text);
+                        border-color: rgba(16, 185, 129, 0.2);
+                      "
+                      >stable</span
+                    >
+                  </div>
+                </div>
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <ellipse cx="12" cy="5" rx="9" ry="3" />
+                      <path
+                        d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"
+                      />
+                    </svg>
+                    Environment
+                  </div>
+                  <div class="id-row-value">
+                    Development
+                    <span
+                      class="soon-badge"
+                      style="
+                        margin-left: 6px;
+                        background: rgba(99, 102, 241, 0.1);
+                        color: var(--blue-text);
+                        border-color: rgba(99, 102, 241, 0.2);
+                      "
+                      >local</span
+                    >
+                  </div>
+                </div>
+                <div class="id-row">
+                  <div class="id-row-label">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    Build
+                  </div>
+                  <div class="id-row-value value-mono">
+                    2f2814a · Apr 22, 2026
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── DANGER ZONE ── -->
+          <section class="card anchor" id="danger">
+            <div class="card-head">
+              <div class="card-head-title-wrap">
+                <div class="card-head-icon red">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="card-title">Danger zone</h2>
+                  <p class="card-desc">
+                    Irreversible or widely-impacting actions
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="danger-row">
+                <div class="danger-meta">
+                  <div class="danger-label">Sign out everywhere</div>
+                  <div class="danger-desc">
+                    Immediately terminate all active sessions on every device.
+                    You'll need to sign in again with a fresh OTP.
+                  </div>
+                </div>
+                <button class="danger-btn" type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <path d="M16 17l5-5-5-5M21 12H9" />
+                  </svg>
+                  Sign out everywhere
+                </button>
+              </div>
+              <div class="danger-row">
+                <div class="danger-meta">
+                  <div class="danger-label">
+                    Delete account
+                    <span class="soon-badge" style="margin-left: 6px"
+                      >Soon</span
+                    >
+                  </div>
+                  <div class="danger-desc">
+                    Permanently delete your admin account and associated audit
+                    records. This cannot be undone.
+                  </div>
+                </div>
+                <button
+                  class="danger-btn"
+                  type="button"
+                  disabled
+                  style="opacity: 0.5; cursor: not-allowed"
+                >
+                  Delete account
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

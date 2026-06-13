@@ -1,0 +1,1205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Create User v2 — Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --bg-0: #0a0d14;
+        --bg-1: #0f131b;
+        --bg-2: #14181f;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-strong: rgba(255, 255, 255, 0.1);
+        --border-teal: rgba(0, 212, 170, 0.18);
+        --text-1: #f2f3f5;
+        --text-2: #a8aebb;
+        --text-3: #737986;
+        --text-4: #545967;
+        --teal: #00d4aa;
+        --teal-text: #39e0bb;
+        --teal-subtle: rgba(0, 212, 170, 0.1);
+        --teal-glow: rgba(0, 212, 170, 0.2);
+        --green: #10b981;
+        --green-text: #34d399;
+        --amber: #f59e0b;
+        --amber-text: #fbbf24;
+        --red: #f43f5e;
+        --blue: #6366f1;
+        --blue-text: #818cf8;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% -10%,
+            rgba(0, 212, 170, 0.04),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 90% 90%,
+            rgba(99, 102, 241, 0.025),
+            transparent 60%
+          ),
+          #0a0d14;
+        color: var(--text-1);
+        font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+        font-feature-settings:
+          "ss01",
+          "cv11",
+          "tnum" off;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      .form-hint,
+      .preview-email,
+      .preview-role-label,
+      .preview-meta-value {
+        font-feature-settings: "tnum" 1;
+      }
+
+      .page {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 32px 32px 80px;
+      }
+
+      /* ════════════════ Breadcrumb ════════════════ */
+      .breadcrumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 18px;
+        padding: 5px 10px 5px 8px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-1);
+        color: var(--text-3);
+        font-size: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.15s var(--ease-out);
+      }
+      .breadcrumb:hover {
+        border-color: var(--border-strong);
+        color: var(--text-1);
+        background: var(--bg-2);
+        transform: translateX(-1px);
+      }
+      .breadcrumb svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      /* ════════════════ Header ════════════════ */
+      .header {
+        margin-bottom: 28px;
+      }
+
+      .h1 {
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--text-1);
+        margin: 0 0 6px;
+      }
+
+      .subtitle {
+        font-size: 13.5px;
+        color: var(--text-3);
+        letter-spacing: -0.003em;
+      }
+
+      /* Two-column */
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+      }
+
+      /* ════════════════ Form card ════════════════ */
+      .form-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-1);
+        overflow: hidden;
+        animation: cardEnter 0.4s var(--ease-out);
+      }
+
+      @keyframes cardEnter {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .section {
+        padding: 22px 24px;
+      }
+      .section + .section {
+        border-top: 1px solid var(--border);
+      }
+
+      .section-head {
+        margin-bottom: 14px;
+      }
+
+      .section-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .step-num {
+        display: grid;
+        place-items: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: var(--teal-subtle);
+        border: 1px solid rgba(0, 212, 170, 0.14);
+        color: var(--teal-text);
+        font-size: 10px;
+        font-weight: 600;
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .step-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--teal-text);
+      }
+
+      .section-title {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        margin: 0 0 2px;
+      }
+
+      .section-desc {
+        font-size: 12.5px;
+        color: var(--text-3);
+        line-height: 1.5;
+      }
+
+      /* ════════════════ Role picker (Conduktor DNA) ════════════════ */
+      .role-picker {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .role-card {
+        position: relative;
+        padding: 16px 18px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.18s var(--ease-out);
+        text-align: left;
+      }
+      .role-card:hover {
+        border-color: var(--border-strong);
+        background: rgba(255, 255, 255, 0.025);
+        transform: translateY(-1px);
+      }
+      .role-card.selected.admin-role {
+        border-color: rgba(0, 212, 170, 0.3);
+        background: linear-gradient(
+          180deg,
+          rgba(0, 212, 170, 0.06),
+          rgba(0, 212, 170, 0.02)
+        );
+        box-shadow:
+          0 0 0 3px rgba(0, 212, 170, 0.08),
+          0 6px 18px -8px rgba(0, 212, 170, 0.25);
+      }
+      .role-card.selected.vm-role {
+        border-color: rgba(245, 158, 11, 0.3);
+        background: linear-gradient(
+          180deg,
+          rgba(245, 158, 11, 0.05),
+          rgba(245, 158, 11, 0.01)
+        );
+        box-shadow:
+          0 0 0 3px rgba(245, 158, 11, 0.06),
+          0 6px 18px -8px rgba(245, 158, 11, 0.22);
+      }
+
+      .role-card-head {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 8px;
+      }
+
+      .role-card-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+      }
+      .role-card-icon.admin {
+        background: rgba(0, 212, 170, 0.14);
+        color: var(--teal-text);
+        border: 1px solid rgba(0, 212, 170, 0.2);
+      }
+      .role-card-icon.vm {
+        background: rgba(245, 158, 11, 0.14);
+        color: var(--amber-text);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+      .role-card-icon svg {
+        width: 17px;
+        height: 17px;
+      }
+
+      .role-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.005em;
+        color: var(--text-1);
+        line-height: 1.2;
+      }
+
+      .role-card-desc {
+        font-size: 12px;
+        color: var(--text-3);
+        line-height: 1.5;
+      }
+
+      .role-card-check {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.4px solid var(--border-strong);
+        background: transparent;
+        transition: all 0.15s var(--ease-out);
+      }
+      .role-card.selected.admin-role .role-card-check {
+        border-color: var(--teal);
+        background: var(--teal);
+      }
+      .role-card.selected.vm-role .role-card-check {
+        border-color: var(--amber);
+        background: var(--amber);
+      }
+      .role-card.selected .role-card-check::after {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 4px;
+        height: 8px;
+        border-right: 1.5px solid #1a1100;
+        border-bottom: 1.5px solid #1a1100;
+        transform: rotate(45deg);
+      }
+
+      .perms-list {
+        list-style: none;
+        padding: 0;
+        margin: 10px 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .perms-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        font-size: 11.5px;
+        color: var(--text-3);
+        line-height: 1.4;
+      }
+      .perms-list svg {
+        flex-shrink: 0;
+        width: 10px;
+        height: 10px;
+        margin-top: 3px;
+        color: var(--teal-text);
+      }
+      .role-card.vm-role .perms-list svg {
+        color: var(--amber-text);
+      }
+
+      /* ════════════════ Form fields ════════════════ */
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .form-field:last-child {
+        margin-bottom: 0;
+      }
+
+      .form-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .form-label .required {
+        color: var(--red);
+        font-size: 11px;
+        opacity: 0.85;
+      }
+
+      .form-input-wrap {
+        position: relative;
+      }
+      .form-input-wrap svg.leading {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 13px;
+        height: 13px;
+        color: var(--text-4);
+        pointer-events: none;
+        transition: color 0.15s var(--ease-out);
+      }
+      .form-input-wrap button.trailing {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 28px;
+        padding: 0 9px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--text-3);
+        font-size: 11px;
+        font-weight: 500;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+      }
+      .form-input-wrap button.trailing:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+      .form-input-wrap button.trailing svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .form-input {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px 0 34px;
+        border: 1px solid var(--border);
+        background: var(--bg-0);
+        color: var(--text-1);
+        font: inherit;
+        font-size: 13.5px;
+        border-radius: 6px;
+        transition: all 0.15s var(--ease-out);
+      }
+      .form-input.with-trailing {
+        padding-right: 106px;
+      }
+      .form-input.mono {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      .form-input::placeholder {
+        color: var(--text-4);
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px var(--teal-subtle);
+      }
+      .form-input-wrap:focus-within svg.leading {
+        color: var(--teal-text);
+      }
+
+      .form-hint {
+        font-size: 11px;
+        color: var(--text-4);
+        line-height: 1.4;
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      .form-hint svg {
+        flex-shrink: 0;
+        width: 11px;
+        height: 11px;
+        margin-top: 2px;
+      }
+      .form-hint.info {
+        color: var(--blue-text);
+      }
+      .form-hint.info svg {
+        color: var(--blue-text);
+      }
+      .form-hint.amber {
+        color: var(--amber-text);
+      }
+      .form-hint.amber svg {
+        color: var(--amber-text);
+      }
+
+      /* Strength meter */
+      .strength {
+        margin-top: 6px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 3px;
+      }
+      .strength span {
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .strength.s2 span:nth-child(-n + 2) {
+        background: var(--amber);
+      }
+      .strength.s3 span:nth-child(-n + 3) {
+        background: var(--green);
+      }
+      .strength.s4 span {
+        background: var(--green);
+      }
+
+      /* ════════════════ Footer actions ════════════════ */
+      .footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        background: rgba(255, 255, 255, 0.008);
+        border-top: 1px solid var(--border);
+      }
+
+      .footer-hint {
+        font-size: 11px;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .footer-hint kbd {
+        display: inline-flex;
+        align-items: center;
+        padding: 1.5px 5px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-2);
+        border-radius: 4px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10px;
+        color: var(--text-3);
+        line-height: 1;
+      }
+
+      .footer-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-2);
+        transition: all 0.15s var(--ease-out);
+        text-decoration: none;
+      }
+      .btn:hover {
+        border-color: var(--border-strong);
+        color: var(--text-1);
+        background: var(--bg-2);
+      }
+
+      .btn-primary {
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: #1a1100;
+        font-weight: 600;
+        box-shadow: 0 0 20px -6px rgba(245, 158, 11, 0.35);
+      }
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #fbbf24 0%, #ea8c06 100%);
+        box-shadow: 0 0 28px -6px rgba(245, 158, 11, 0.5);
+        transform: translateY(-1px);
+        color: #1a1100;
+      }
+      .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ════════════════ Preview pane ════════════════ */
+      .preview {
+        position: sticky;
+        top: 32px;
+        align-self: start;
+        animation: cardEnter 0.4s var(--ease-out) 0.1s both;
+      }
+
+      .preview-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        margin-bottom: 10px;
+        padding-left: 2px;
+      }
+
+      .preview-card {
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        border-radius: var(--radius-md);
+        padding: 20px;
+      }
+
+      .preview-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: -0.02em;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.28),
+          rgba(245, 158, 11, 0.08)
+        );
+        color: var(--amber-text);
+        border: 1.5px solid rgba(245, 158, 11, 0.22);
+        margin-bottom: 14px;
+      }
+
+      .preview-name {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        line-height: 1.2;
+      }
+
+      .preview-email {
+        font-size: 12px;
+        color: var(--text-4);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        line-height: 1.4;
+        margin-top: 2px;
+      }
+
+      .preview-role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 4px 10px 4px 8px;
+        border-radius: 999px;
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--amber-text);
+        border: 1px solid rgba(245, 158, 11, 0.14);
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .preview-role-badge svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .preview-divider {
+        height: 1px;
+        margin: 16px 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border),
+          transparent
+        );
+      }
+
+      .preview-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .preview-meta-row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 11.5px;
+      }
+
+      .preview-meta-label {
+        color: var(--text-4);
+        font-weight: 500;
+      }
+
+      .preview-meta-value {
+        color: var(--text-2);
+        font-weight: 500;
+        text-align: right;
+      }
+      .preview-meta-value.mono {
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .preview-info {
+        margin-top: 14px;
+        padding: 10px 12px;
+        border-radius: 6px;
+        background: rgba(99, 102, 241, 0.08);
+        border: 1px solid rgba(99, 102, 241, 0.14);
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .preview-info svg {
+        flex-shrink: 0;
+        width: 13px;
+        height: 13px;
+        margin-top: 1px;
+        color: var(--blue-text);
+      }
+      .preview-info-text {
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: var(--text-2);
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        .preview {
+          position: static;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0s !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- Breadcrumb / back -->
+      <a class="breadcrumb" href="./users-v2.html">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Users
+      </a>
+
+      <div class="header">
+        <h1 class="h1">Create a user</h1>
+        <p class="subtitle">
+          Choose a role and enter their details. Admins log in with a one-time
+          code; Venue Managers log in with a temporary password you set.
+        </p>
+      </div>
+
+      <div class="layout">
+        <div class="form-card">
+          <!-- STEP 1 — Role picker (Venue Manager selected to show full form) -->
+          <div class="section">
+            <div class="section-head">
+              <div class="section-step">
+                <span class="step-num">1</span>
+                <span class="step-label">Role</span>
+              </div>
+              <h2 class="section-title">What should they be able to do?</h2>
+              <p class="section-desc">
+                Admins have platform-wide access. Venue Managers are scoped to
+                specific venues.
+              </p>
+            </div>
+            <div class="role-picker">
+              <button class="role-card admin-role" type="button">
+                <div class="role-card-head">
+                  <div class="role-card-icon admin">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="role-card-title">Admin</div>
+                  </div>
+                </div>
+                <div class="role-card-desc">
+                  Full platform access across all venues, invoices, and users.
+                </div>
+                <ul class="perms-list">
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Manage all venues and invoices
+                  </li>
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Create other admins and managers
+                  </li>
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    OTP login via email (no password)
+                  </li>
+                </ul>
+                <div class="role-card-check"></div>
+              </button>
+              <button class="role-card vm-role selected" type="button">
+                <div class="role-card-head">
+                  <div class="role-card-icon vm">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M9 9h6M9 13h6M9 17h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="role-card-title">Venue Manager</div>
+                  </div>
+                </div>
+                <div class="role-card-desc">
+                  Scoped to assigned venues. Manages courts, bookings, and
+                  invoices.
+                </div>
+                <ul class="perms-list">
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Manage assigned venues only
+                  </li>
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Add courts and set pricing
+                  </li>
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Login with email + temporary password
+                  </li>
+                </ul>
+                <div class="role-card-check"></div>
+              </button>
+            </div>
+          </div>
+
+          <!-- STEP 2 — Personal info -->
+          <div class="section">
+            <div class="section-head">
+              <div class="section-step">
+                <span class="step-num">2</span>
+                <span class="step-label">Personal info</span>
+              </div>
+              <h2 class="section-title">Who are they?</h2>
+              <p class="section-desc">
+                Their name appears in the directory and on audit logs.
+              </p>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label"
+                  >First name<span class="required">*</span></label
+                >
+                <div class="form-input-wrap">
+                  <svg
+                    class="leading"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <input class="form-input" placeholder="Jane" />
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label"
+                  >Last name<span class="required">*</span></label
+                >
+                <div class="form-input-wrap">
+                  <svg
+                    class="leading"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <input class="form-input" placeholder="Smith" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3 — Contact -->
+          <div class="section">
+            <div class="section-head">
+              <div class="section-step">
+                <span class="step-num">3</span>
+                <span class="step-label">Contact</span>
+              </div>
+              <h2 class="section-title">How do we reach them?</h2>
+              <p class="section-desc">
+                Email is how they receive their credentials. Phone is required
+                for Venue Managers.
+              </p>
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="form-label"
+                  >Email address<span class="required">*</span></label
+                >
+                <div class="form-input-wrap">
+                  <svg
+                    class="leading"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                    />
+                    <path d="M22 6L12 13 2 6" />
+                  </svg>
+                  <input class="form-input" placeholder="manager@venue.com" />
+                </div>
+              </div>
+              <div class="form-field">
+                <label class="form-label"
+                  >Phone number<span class="required">*</span></label
+                >
+                <div class="form-input-wrap">
+                  <svg
+                    class="leading"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"
+                    />
+                  </svg>
+                  <input class="form-input" placeholder="+966 50 123 4567" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4 — Credentials (only for VM) -->
+          <div class="section">
+            <div class="section-head">
+              <div class="section-step">
+                <span class="step-num">4</span>
+                <span class="step-label">Credentials</span>
+              </div>
+              <h2 class="section-title">Set a temporary password</h2>
+              <p class="section-desc">
+                Venue Managers log in with email + temporary password. They'll
+                be prompted to change it on first login. Admins skip this step
+                and use OTP.
+              </p>
+            </div>
+            <div class="form-field">
+              <label class="form-label"
+                >Temporary password<span class="required">*</span></label
+              >
+              <div class="form-input-wrap">
+                <svg
+                  class="leading"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input
+                  class="form-input mono with-trailing"
+                  type="text"
+                  value="Tr-4xV9-bQ82!"
+                />
+                <button class="trailing" type="button" title="Generate new">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8" />
+                    <path d="M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+                  </svg>
+                  Generate
+                </button>
+              </div>
+              <div class="strength s4">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="form-hint amber">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"
+                  />
+                </svg>
+                Share this password with the manager via a secure channel — it
+                won't be shown again after creation
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="footer">
+            <div class="footer-hint">
+              <kbd>⌘</kbd><kbd>↵</kbd>
+              <span>to create user</span>
+            </div>
+            <div class="footer-actions">
+              <a class="btn" href="./users-v2.html">Cancel</a>
+              <button class="btn btn-primary" type="button">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M9 9h6M9 13h6M9 17h4" />
+                </svg>
+                Create Venue Manager
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column — Live preview -->
+        <div class="preview">
+          <div class="preview-label">Preview</div>
+          <div class="preview-card">
+            <div class="preview-avatar">JS</div>
+            <div class="preview-name">Jane Smith</div>
+            <div class="preview-email">manager@venue.com</div>
+            <span class="preview-role-badge">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M9 9h6M9 13h6M9 17h4" />
+              </svg>
+              <span class="preview-role-label">Venue Manager</span>
+            </span>
+            <div class="preview-divider"></div>
+            <div class="preview-meta">
+              <div class="preview-meta-row">
+                <span class="preview-meta-label">Access scope</span>
+                <span class="preview-meta-value">Assigned venues only</span>
+              </div>
+              <div class="preview-meta-row">
+                <span class="preview-meta-label">Login method</span>
+                <span class="preview-meta-value">Email + temp password</span>
+              </div>
+              <div class="preview-meta-row">
+                <span class="preview-meta-label">Phone</span>
+                <span class="preview-meta-value mono">+966 50 123 4567</span>
+              </div>
+              <div class="preview-meta-row">
+                <span class="preview-meta-label">Initial status</span>
+                <span class="preview-meta-value">Pending · first login</span>
+              </div>
+            </div>
+            <div class="preview-info">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4M12 8h.01" />
+              </svg>
+              <div class="preview-info-text">
+                After creating, share the temporary password with the manager —
+                it won't be shown again.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

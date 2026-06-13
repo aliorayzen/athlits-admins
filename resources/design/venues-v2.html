@@ -1,0 +1,2113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Venues v2 — Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg-0: #0a0d14;
+        --bg-1: #0f131b;
+        --bg-2: #14181f;
+        --bg-hover: rgba(255, 255, 255, 0.025);
+        --bg-row-hover: rgba(255, 255, 255, 0.015);
+        --border: rgba(255, 255, 255, 0.06);
+        --border-strong: rgba(255, 255, 255, 0.1);
+        --border-teal: rgba(0, 212, 170, 0.18);
+        --text-1: #f2f3f5;
+        --text-2: #a8aebb;
+        --text-3: #737986;
+        --text-4: #545967;
+        --teal: #00d4aa;
+        --teal-text: #39e0bb;
+        --teal-subtle: rgba(0, 212, 170, 0.1);
+        --teal-glow: rgba(0, 212, 170, 0.2);
+        --green: #10b981;
+        --amber: #f59e0b;
+        --red: #f43f5e;
+        --indigo: #6366f1;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% -10%,
+            rgba(0, 212, 170, 0.04),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 90% 90%,
+            rgba(99, 102, 241, 0.025),
+            transparent 60%
+          ),
+          #0a0d14;
+        color: var(--text-1);
+        font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+        font-feature-settings:
+          "ss01",
+          "cv11",
+          "tnum" off;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      /* Numeric surfaces — systematic tabular enforcement (web-typography) */
+      .kpi-value,
+      .rating,
+      .courts-cell,
+      .created-cell,
+      .count-pill,
+      .chip-count,
+      .results-info,
+      .page-btn,
+      .search-kbd,
+      .venue-slug,
+      .city-country,
+      .delta {
+        font-feature-settings: "tnum" 1;
+      }
+
+      .page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 32px 80px;
+      }
+
+      /* ════════════════ Header ════════════════ */
+      .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 28px;
+      }
+
+      .title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .h1 {
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--text-1);
+        margin: 0;
+      }
+
+      .count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg-1);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-3);
+        font-feature-settings: "tnum" 1;
+      }
+
+      .count-pill::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 5px var(--teal-glow);
+      }
+
+      .subtitle {
+        font-size: 13px;
+        color: var(--text-3);
+        font-weight: 400;
+        letter-spacing: -0.003em;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-2);
+        transition: all 0.15s var(--ease-out);
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        border-color: var(--border-strong);
+        color: var(--text-1);
+        background: var(--bg-2);
+      }
+
+      .btn-primary {
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+        color: #032921;
+        font-weight: 600;
+        box-shadow: 0 0 20px -6px rgba(0, 212, 170, 0.35);
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #1be2ba 0%, #0cc89f 100%);
+        box-shadow: 0 0 28px -6px rgba(0, 212, 170, 0.5);
+        transform: translateY(-1px);
+        color: #032921;
+      }
+
+      .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ════════════════ KPI strip ════════════════ */
+      .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        margin-bottom: 20px;
+        border: 1px solid var(--border);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.01) 0%,
+            transparent 50%
+          ),
+          var(--bg-1);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .kpi {
+        padding: 16px 20px;
+        position: relative;
+      }
+
+      .kpi + .kpi::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 20%;
+        bottom: 20%;
+        width: 1px;
+        background: var(--border);
+      }
+
+      .kpi-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .kpi-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--text-4);
+      }
+      .kpi-dot.ok {
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+      }
+      .kpi-dot.warn {
+        background: var(--amber);
+        box-shadow: 0 0 5px var(--amber);
+      }
+      .kpi-dot.star {
+        background: var(--teal);
+        box-shadow: 0 0 5px var(--teal);
+      }
+
+      .kpi-value {
+        margin-top: 8px;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1;
+        font-feature-settings: "tnum" 1;
+        color: var(--text-1);
+      }
+
+      .kpi-value.ok {
+        color: #22d3ee;
+      }
+
+      .kpi-sub {
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-3);
+      }
+
+      .kpi-sub .delta {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--green);
+      }
+      .kpi-sub .delta.negative {
+        color: var(--red);
+      }
+
+      /* ════════════════ Filter bar ════════════════ */
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 0 14px;
+      }
+
+      /* Chip switcher with sliding indicator (microinteractions) */
+      .chips {
+        position: relative;
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-1);
+        gap: 2px;
+      }
+
+      .chip-indicator {
+        position: absolute;
+        top: 2px;
+        bottom: 2px;
+        left: 2px;
+        border-radius: 4px;
+        background: var(--bg-2);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.04) inset,
+          0 1px 2px rgba(0, 0, 0, 0.25);
+        transition:
+          transform 0.28s var(--ease-out),
+          width 0.28s var(--ease-out);
+        pointer-events: none;
+      }
+
+      .chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-3);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        transition: color 0.18s var(--ease-out);
+        z-index: 1;
+      }
+
+      .chip:hover {
+        color: var(--text-1);
+      }
+
+      .chip.active {
+        color: var(--text-1);
+      }
+
+      .chip:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--teal);
+      }
+
+      .chip-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      .chip-dot.all {
+        background: var(--text-4);
+      }
+      .chip-dot.ok {
+        background: var(--green);
+        box-shadow: 0 0 4px var(--green);
+      }
+      .chip-dot.warn {
+        background: var(--amber);
+        box-shadow: 0 0 4px var(--amber);
+      }
+
+      .chip-count {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10.5px;
+        color: var(--text-4);
+        font-feature-settings: "tnum" 1;
+        padding-left: 2px;
+      }
+
+      .chip.active .chip-count {
+        color: var(--text-2);
+      }
+
+      .search {
+        position: relative;
+        width: 280px;
+      }
+
+      .search input {
+        width: 100%;
+        height: 32px;
+        padding: 0 12px 0 34px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-1);
+        font: inherit;
+        font-size: 12.5px;
+        transition: all 0.15s var(--ease-out);
+      }
+
+      .search input::placeholder {
+        color: var(--text-4);
+      }
+
+      .search input:focus {
+        outline: none;
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px var(--teal-subtle);
+      }
+
+      .search svg {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 13px;
+        height: 13px;
+        color: var(--text-4);
+        pointer-events: none;
+      }
+
+      .search-kbd {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10px;
+        color: var(--text-4);
+        padding: 2px 5px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        line-height: 1;
+        opacity: 0.7;
+      }
+
+      /* ════════════════ Bulk selection bar (ux-heuristics clarity) ════════════════ */
+      .bulk-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 10px;
+        padding: 8px 14px 8px 10px;
+        border: 1px solid var(--border-teal);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(0, 212, 170, 0.08),
+            rgba(0, 212, 170, 0.02)
+          ),
+          var(--bg-1);
+        border-radius: var(--radius-sm);
+        animation: bulkBarEnter 0.3s var(--ease-out);
+      }
+
+      @keyframes bulkBarEnter {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bulk-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--text-1);
+      }
+
+      .bulk-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px;
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        border-radius: 999px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .bulk-clear {
+        background: none;
+        border: none;
+        color: var(--text-3);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 0;
+        transition: color 0.12s var(--ease-out);
+      }
+
+      .bulk-clear:hover {
+        color: var(--text-1);
+      }
+
+      .bulk-actions {
+        display: inline-flex;
+        gap: 6px;
+      }
+
+      .bulk-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-2);
+        color: var(--text-2);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+      }
+
+      .bulk-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+
+      .bulk-btn.danger:hover {
+        border-color: rgba(244, 63, 94, 0.3);
+        color: var(--red);
+        background: rgba(244, 63, 94, 0.08);
+      }
+
+      .bulk-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      /* ════════════════ Table ════════════════ */
+      .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-1);
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      thead {
+        background: rgba(255, 255, 255, 0.012);
+      }
+
+      th {
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      th.sortable {
+        cursor: pointer;
+      }
+
+      th.sortable:hover {
+        color: var(--text-2);
+      }
+
+      th.sortable:hover .sort-arrow {
+        opacity: 0.7;
+      }
+
+      /* Sort indicator — SVG chevrons (ux-heuristics clarity) */
+      th .sort-arrow {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 1px;
+        margin-left: 5px;
+        vertical-align: middle;
+        opacity: 0.35;
+        transition: opacity 0.15s var(--ease-out);
+      }
+
+      th .sort-arrow svg {
+        width: 7px;
+        height: 4px;
+      }
+
+      th.sort-active .sort-arrow {
+        opacity: 1;
+      }
+
+      th.sort-active.sort-desc .sort-arrow svg:first-child {
+        opacity: 0.25;
+      }
+
+      th.sort-active.sort-asc .sort-arrow svg:last-child {
+        opacity: 0.25;
+      }
+
+      th.sort-active .sort-arrow svg {
+        color: var(--teal);
+      }
+
+      th.right {
+        text-align: right;
+      }
+      th.center {
+        text-align: center;
+      }
+
+      th.checkbox,
+      td.checkbox {
+        width: 40px;
+        padding-left: 16px;
+        padding-right: 0;
+      }
+
+      /* Row stagger fade-up on mount (top-design signature) */
+      tbody tr {
+        transition: background 0.12s var(--ease-out);
+        animation: rowEnter 0.5s var(--ease-out) both;
+      }
+
+      tbody tr:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      tbody tr:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      tbody tr:nth-child(3) {
+        animation-delay: 0.15s;
+      }
+      tbody tr:nth-child(4) {
+        animation-delay: 0.2s;
+      }
+      tbody tr:nth-child(5) {
+        animation-delay: 0.25s;
+      }
+      tbody tr:nth-child(6) {
+        animation-delay: 0.3s;
+      }
+      tbody tr:nth-child(7) {
+        animation-delay: 0.35s;
+      }
+
+      @keyframes rowEnter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      tbody tr + tr td {
+        border-top: 1px solid rgba(255, 255, 255, 0.035);
+      }
+
+      tbody tr:hover {
+        background: var(--bg-row-hover);
+      }
+
+      tbody tr:hover .row-actions {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      tbody tr.selected {
+        background: rgba(0, 212, 170, 0.04);
+      }
+
+      tbody tr.selected:hover {
+        background: rgba(0, 212, 170, 0.055);
+      }
+
+      td {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--text-2);
+        vertical-align: middle;
+      }
+
+      td.right {
+        text-align: right;
+      }
+
+      /* Checkbox — with checked state + press feedback (microinteractions) */
+      .checkbox-ui {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1.3px solid var(--border-strong);
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.12s var(--ease-out);
+      }
+
+      .checkbox-ui:hover {
+        border-color: var(--teal);
+      }
+
+      .checkbox-ui:active {
+        transform: scale(0.88);
+      }
+
+      .checkbox-ui.checked {
+        border-color: var(--teal);
+        background: var(--teal);
+      }
+
+      .checkbox-ui.checked::after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 0px;
+        width: 4px;
+        height: 8px;
+        border-right: 1.5px solid #032921;
+        border-bottom: 1.5px solid #032921;
+        transform: rotate(45deg);
+      }
+
+      .checkbox-ui.indeterminate {
+        border-color: var(--teal);
+        background: var(--teal);
+      }
+
+      .checkbox-ui.indeterminate::after {
+        content: "";
+        position: absolute;
+        left: 2px;
+        right: 2px;
+        top: 50%;
+        height: 1.5px;
+        background: #032921;
+        transform: translateY(-50%);
+      }
+
+      /* Venue cell */
+      .venue-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 240px;
+      }
+
+      .venue-thumb {
+        position: relative;
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background-size: cover;
+        background-position: center;
+        transition: transform 0.2s var(--ease-out);
+      }
+
+      tbody tr:hover .venue-thumb {
+        transform: scale(1.04);
+      }
+
+      .venue-thumb-gradient {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: var(--teal-text);
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+      }
+
+      .venue-thumb-gradient.g1 {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 212, 170, 0.25) 0%,
+          rgba(0, 212, 170, 0.06) 100%
+        );
+      }
+      .venue-thumb-gradient.g2 {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.22) 0%,
+          rgba(99, 102, 241, 0.04) 100%
+        );
+        color: #a5b4fc;
+      }
+      .venue-thumb-gradient.g3 {
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.2) 0%,
+          rgba(245, 158, 11, 0.04) 100%
+        );
+        color: #fcd34d;
+      }
+      .venue-thumb-gradient.g4 {
+        background: linear-gradient(
+          135deg,
+          rgba(244, 63, 94, 0.2) 0%,
+          rgba(244, 63, 94, 0.04) 100%
+        );
+        color: #fda4af;
+      }
+
+      .venue-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .venue-name {
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-1);
+        letter-spacing: -0.005em;
+        line-height: 1.25;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .venue-slug {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        color: var(--text-4);
+        line-height: 1.3;
+      }
+
+      /* "New" tag — subtle teal shimmer (top-design signature detail) */
+      .new-tag {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 5px;
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border-radius: 3px;
+        line-height: 1.4;
+        overflow: hidden;
+        border: 1px solid rgba(0, 212, 170, 0.14);
+      }
+
+      .new-tag::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 212, 170, 0.3) 50%,
+          transparent
+        );
+        transform: translateX(-100%);
+        animation: newShimmer 3.5s var(--ease-out) 1s infinite;
+      }
+
+      @keyframes newShimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        30%,
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* City cell */
+      .city-cell {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        color: var(--text-2);
+      }
+
+      .flag {
+        font-size: 14px;
+        line-height: 1;
+      }
+
+      .city-country {
+        color: var(--text-4);
+        font-size: 11px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      /* Status cell */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 8px 3px 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+      }
+
+      .status.active {
+        background: rgba(16, 185, 129, 0.08);
+        color: var(--green);
+      }
+
+      .status.suspended {
+        background: rgba(245, 158, 11, 0.08);
+        color: var(--amber);
+      }
+
+      .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      .status.active .status-dot {
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+        animation: pulseDot 2.4s var(--ease-out) infinite;
+      }
+      .status.suspended .status-dot {
+        background: var(--amber);
+      }
+
+      @keyframes pulseDot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      /* Rating cell */
+      .rating {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum" 1;
+        font-size: 12.5px;
+        color: var(--text-1);
+        font-weight: 500;
+      }
+
+      .rating-star {
+        color: var(--amber);
+      }
+
+      .rating.empty {
+        color: var(--text-4);
+        font-weight: 400;
+      }
+
+      /* Courts + Created */
+      .courts-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--text-2);
+        font-feature-settings: "tnum" 1;
+      }
+
+      .courts-cell svg {
+        color: var(--text-4);
+      }
+
+      .created-cell {
+        font-size: 12px;
+        color: var(--text-3);
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Row actions */
+      .row-actions {
+        display: inline-flex;
+        gap: 4px;
+        opacity: 0;
+        transform: translateX(4px);
+        transition: all 0.18s var(--ease-out);
+      }
+
+      .icon-btn {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        color: var(--text-3);
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+      }
+
+      .icon-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+
+      .icon-btn svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .view-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 28px;
+        padding: 0 10px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        color: var(--text-2);
+        font-size: 11.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+        text-decoration: none;
+      }
+
+      .view-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+
+      .view-btn svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      /* Footer / pagination */
+      .table-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.008);
+      }
+
+      .results-info {
+        font-size: 12px;
+        color: var(--text-4);
+        font-feature-settings: "tnum" 1;
+      }
+
+      .pagination {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .page-btn {
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 5px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-3);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-feature-settings: "tnum" 1;
+      }
+
+      .page-btn:hover {
+        background: var(--bg-2);
+        color: var(--text-1);
+      }
+
+      .page-btn.active {
+        border-color: var(--border-teal);
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+      }
+
+      .page-btn.ghost {
+        color: var(--text-4);
+      }
+
+      .page-btn.ghost:hover {
+        color: var(--text-2);
+      }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0s !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- ════════════════ Header ════════════════ -->
+      <div class="header">
+        <div class="title-wrap">
+          <div class="title-row">
+            <h1 class="h1">Venues</h1>
+            <span class="count-pill">24</span>
+          </div>
+          <div class="subtitle">Manage all onboarded venues and corporates</div>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+            Export
+          </button>
+          <button class="btn btn-primary" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Add Venue
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════ KPI strip ════════════════ -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-label"><span class="kpi-dot"></span>Total venues</div>
+          <div class="kpi-value">24</div>
+          <div class="kpi-sub">
+            <span class="delta">+3</span>
+            <span>this month</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label"><span class="kpi-dot ok"></span>Active</div>
+          <div class="kpi-value ok">21</div>
+          <div class="kpi-sub">
+            <span>87.5% of total</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">
+            <span class="kpi-dot warn"></span>Suspended
+          </div>
+          <div class="kpi-value">3</div>
+          <div class="kpi-sub">
+            <span class="delta negative">+1</span>
+            <span>this week</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">
+            <span class="kpi-dot star"></span>Avg rating
+          </div>
+          <div class="kpi-value">
+            4.6<span
+              style="font-size: 14px; color: var(--text-4); font-weight: 500"
+            >
+              / 5</span
+            >
+          </div>
+          <div class="kpi-sub">
+            <span class="delta">+0.2</span>
+            <span>vs last month</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ Filter bar ════════════════ -->
+      <div class="filter-bar">
+        <div class="chips" role="tablist">
+          <span
+            class="chip-indicator"
+            style="transform: translateX(0); width: 70px"
+            aria-hidden="true"
+          ></span>
+          <button class="chip active" role="tab" aria-selected="true">
+            <span class="chip-dot all"></span>All
+            <span class="chip-count">24</span>
+          </button>
+          <button class="chip" role="tab" aria-selected="false">
+            <span class="chip-dot ok"></span>Active
+            <span class="chip-count">21</span>
+          </button>
+          <button class="chip" role="tab" aria-selected="false">
+            <span class="chip-dot warn"></span>Suspended
+            <span class="chip-count">3</span>
+          </button>
+        </div>
+        <div class="search">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3-3" />
+          </svg>
+          <input type="search" placeholder="Search venues, cities…" />
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <!-- ════════════════ Bulk selection bar (visible when rows selected) ════════════════ -->
+      <div class="bulk-bar" role="region" aria-label="Bulk actions">
+        <div class="bulk-meta">
+          <span class="bulk-count">2 selected</span>
+          <button class="bulk-clear" type="button">Clear</button>
+        </div>
+        <div class="bulk-actions">
+          <button class="bulk-btn" type="button" title="Export selected as CSV">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+            Export
+          </button>
+          <button class="bulk-btn" type="button" title="Suspend selected">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="6" y="4" width="4" height="16" />
+              <rect x="14" y="4" width="4" height="16" />
+            </svg>
+            Suspend
+          </button>
+          <button class="bulk-btn danger" type="button" title="Delete selected">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+              />
+            </svg>
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════ Table ════════════════ -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="checkbox">
+                <div
+                  class="checkbox-ui indeterminate"
+                  aria-label="Select all"
+                ></div>
+              </th>
+              <th class="sortable sort-active sort-desc" aria-sort="descending">
+                Venue
+                <span class="sort-arrow" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 3.5L4 1l3 2.5" />
+                  </svg>
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 1.5L4 4l3-2.5" />
+                  </svg>
+                </span>
+              </th>
+              <th class="sortable" aria-sort="none">
+                City
+                <span class="sort-arrow" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 3.5L4 1l3 2.5" />
+                  </svg>
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 1.5L4 4l3-2.5" />
+                  </svg>
+                </span>
+              </th>
+              <th>Status</th>
+              <th class="sortable" aria-sort="none">
+                Rating
+                <span class="sort-arrow" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 3.5L4 1l3 2.5" />
+                  </svg>
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 1.5L4 4l3-2.5" />
+                  </svg>
+                </span>
+              </th>
+              <th>Courts</th>
+              <th class="sortable" aria-sort="none">
+                Created
+                <span class="sort-arrow" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 3.5L4 1l3 2.5" />
+                  </svg>
+                  <svg
+                    viewBox="0 0 8 5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M1 1.5L4 4l3-2.5" />
+                  </svg>
+                </span>
+              </th>
+              <th class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 -->
+            <tr class="selected">
+              <td class="checkbox">
+                <div class="checkbox-ui checked"></div>
+              </td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1534787238916-9ba6764efd4f?w=120&h=120&fit=crop&auto=format&quot;);
+                    "
+                  ></div>
+                  <div class="venue-meta">
+                    <div class="venue-name">
+                      Arena Sports City
+                      <span class="new-tag">New</span>
+                    </div>
+                    <div class="venue-slug">arena-sports-city</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇦🇪</span>
+                  <span>Dubai</span>
+                  <span class="city-country">AE</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.8
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  6
+                </span>
+              </td>
+              <td><span class="created-cell">Oct 12, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 2 -->
+            <tr class="selected">
+              <td class="checkbox">
+                <div class="checkbox-ui checked"></div>
+              </td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-gradient g2">PP</div>
+                  </div>
+                  <div class="venue-meta">
+                    <div class="venue-name">Padel Pro Marina</div>
+                    <div class="venue-slug">padel-pro-marina</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇦🇪</span>
+                  <span>Abu Dhabi</span>
+                  <span class="city-country">AE</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.7
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  4
+                </span>
+              </td>
+              <td><span class="created-cell">Sep 28, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 3 -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=120&h=120&fit=crop&auto=format&quot;);
+                    "
+                  ></div>
+                  <div class="venue-meta">
+                    <div class="venue-name">Elite Football Hub</div>
+                    <div class="venue-slug">elite-football-hub</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇸🇦</span>
+                  <span>Riyadh</span>
+                  <span class="city-country">SA</span>
+                </div>
+              </td>
+              <td>
+                <span class="status suspended">
+                  <span class="status-dot"></span>Suspended
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.2
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  8
+                </span>
+              </td>
+              <td><span class="created-cell">Aug 15, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 4 -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-gradient g3">CK</div>
+                  </div>
+                  <div class="venue-meta">
+                    <div class="venue-name">Champions Kingdom</div>
+                    <div class="venue-slug">champions-kingdom</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇶🇦</span>
+                  <span>Doha</span>
+                  <span class="city-country">QA</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.9
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  5
+                </span>
+              </td>
+              <td><span class="created-cell">Jul 02, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 5 -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-gradient g4">TB</div>
+                  </div>
+                  <div class="venue-meta">
+                    <div class="venue-name">The Baseline Club</div>
+                    <div class="venue-slug">the-baseline-club</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇰🇼</span>
+                  <span>Kuwait City</span>
+                  <span class="city-country">KW</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating empty">—</span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  3
+                </span>
+              </td>
+              <td><span class="created-cell">Jun 18, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 6 -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1459865264687-595d652de67e?w=120&h=120&fit=crop&auto=format&quot;);
+                    "
+                  ></div>
+                  <div class="venue-meta">
+                    <div class="venue-name">Oasis Tennis Academy</div>
+                    <div class="venue-slug">oasis-tennis-academy</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇦🇪</span>
+                  <span>Sharjah</span>
+                  <span class="city-country">AE</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.4
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  6
+                </span>
+              </td>
+              <td><span class="created-cell">May 24, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+
+            <!-- Row 7 -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-gradient g1">NC</div>
+                  </div>
+                  <div class="venue-meta">
+                    <div class="venue-name">North Cricket Ground</div>
+                    <div class="venue-slug">north-cricket-ground</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="city-cell">
+                  <span class="flag">🇴🇲</span>
+                  <span>Muscat</span>
+                  <span class="city-country">OM</span>
+                </div>
+              </td>
+              <td>
+                <span class="status active">
+                  <span class="status-dot"></span>Active
+                </span>
+              </td>
+              <td>
+                <span class="rating">
+                  <svg
+                    class="rating-star"
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                  4.5
+                </span>
+              </td>
+              <td>
+                <span class="courts-cell">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="5" width="18" height="14" rx="1.5" />
+                    <path d="M12 5v14M3 12h18" />
+                  </svg>
+                  2
+                </span>
+              </td>
+              <td><span class="created-cell">Apr 08, 2025</span></td>
+              <td class="right">
+                <span class="row-actions">
+                  <button class="icon-btn" title="Quick edit">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M17 3a2.85 2.85 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"
+                      />
+                    </svg>
+                  </button>
+                </span>
+                <a class="view-btn" href="#">
+                  View
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Footer / pagination -->
+        <div class="table-footer">
+          <span class="results-info">1-7 of 24 venues</span>
+          <div class="pagination">
+            <button class="page-btn ghost">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn ghost">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

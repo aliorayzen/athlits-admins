@@ -1,0 +1,1200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Login — v2 (Visitors-style mockup)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Arena tokens (dark) ─────────────────────────────────── */
+      :root {
+        --bg-0: #08090c;
+        --bg-1: #0f1115;
+        --bg-2: #161a1f;
+        --bg-3: #1c2128;
+
+        --text-1: #f2f3f5;
+        --text-2: #c4c8d0;
+        --text-3: #838999;
+        --text-4: #5a6170;
+
+        --border: rgba(255, 255, 255, 0.065);
+        --border-strong: rgba(255, 255, 255, 0.12);
+
+        --teal: #00d4aa;
+        --teal-text: #1de9b6;
+        --teal-glow: rgba(0, 212, 170, 0.12);
+        --teal-bright: rgba(0, 212, 170, 0.35);
+
+        --semantic-red: #f43f5e;
+
+        --radius: 0.625rem;
+        --radius-pill: 999px;
+
+        --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        font-family:
+          "Geist",
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        background: var(--bg-0);
+        color: var(--text-1);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+      }
+
+      ::selection {
+        background: var(--teal-bright);
+        color: #fff;
+      }
+
+      input {
+        caret-color: var(--teal);
+      }
+
+      /* ── Screen container with atmosphere ────────────────────── */
+      .screen {
+        position: relative;
+        min-height: 100vh;
+        padding: 32px;
+        overflow: hidden;
+      }
+
+      /* Radial aura glow — the signature atmosphere, slow breathing pulse */
+      .screen::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 800px 500px at 50% 45%,
+            rgba(0, 212, 170, 0.12) 0%,
+            rgba(0, 212, 170, 0.04) 30%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 400px 300px at 50% 30%,
+            rgba(245, 158, 11, 0.04) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+        z-index: 0;
+        animation: aura-breathe 12s ease-in-out infinite;
+      }
+
+      @keyframes aura-breathe {
+        0%,
+        100% {
+          opacity: 0.85;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .screen::before {
+          animation: none !important;
+        }
+      }
+
+      /* Subtle grain */
+      .screen::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+        background-size: 128px;
+        opacity: 0.45;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── Top-left wordmark (Unkey pattern) ───────────────────── */
+      .brand {
+        position: relative;
+        z-index: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        color: var(--text-3);
+        transition: color 220ms var(--ease-expo);
+      }
+
+      .brand:hover {
+        color: var(--text-1);
+      }
+
+      .brand .wordmark {
+        background: linear-gradient(
+          135deg,
+          var(--text-2) 0%,
+          var(--teal-text) 130%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: filter 220ms var(--ease-expo);
+      }
+
+      .brand:hover .wordmark {
+        filter: brightness(1.15);
+      }
+
+      .brand svg {
+        width: 26px;
+        height: 26px;
+        filter: drop-shadow(0 0 10px rgba(0, 212, 170, 0.22));
+        transition: filter 220ms var(--ease-expo);
+      }
+
+      .brand:hover svg {
+        filter: drop-shadow(0 0 16px rgba(0, 212, 170, 0.4));
+      }
+
+      /* ── Centered composition ────────────────────────────────── */
+      .stage {
+        position: relative;
+        z-index: 1;
+        min-height: calc(100vh - 64px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 48px 24px;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 440px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      /* ── Display heading ─────────────────────────────────────── */
+      h1 {
+        font-family: "Geist", sans-serif;
+        font-size: clamp(44px, 6vw, 56px);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+        text-wrap: balance;
+        background: linear-gradient(
+          165deg,
+          #ffffff 0%,
+          #e6e8ec 45%,
+          #a8e6d5 130%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        margin-top: 14px;
+        color: var(--text-3);
+        font-size: 15px;
+        font-weight: 400;
+        line-height: 1.55;
+        max-width: 360px;
+      }
+
+      .subtitle strong {
+        color: var(--text-2);
+        font-weight: 500;
+      }
+
+      /* ── Pill email input with inline arrow (Fey/Visitors) ────── */
+      .email-form {
+        margin-top: 36px;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .field-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: var(--text-4);
+      }
+
+      .kbd-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: "Geist Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-4);
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .kbd {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        background: var(--bg-1);
+        font-size: 11px;
+        box-shadow:
+          inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .pill {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        padding: 6px 6px 6px 20px;
+        transition: all 200ms var(--ease-expo);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      }
+
+      .pill:focus-within {
+        border-color: rgba(0, 212, 170, 0.35);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          0 0 0 3px rgba(0, 212, 170, 0.1),
+          0 0 32px -4px var(--teal-bright);
+        transform: translateY(-1px);
+      }
+
+      .pill.is-error {
+        border-color: var(--semantic-red);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          0 4px 14px -4px rgba(244, 63, 94, 0.3);
+      }
+
+      .pill.is-shaking {
+        animation: pill-shake 0.36s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+      }
+
+      @keyframes pill-shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-6px);
+        }
+        40% {
+          transform: translateX(6px);
+        }
+        60% {
+          transform: translateX(-4px);
+        }
+        80% {
+          transform: translateX(4px);
+        }
+      }
+
+      .valid-check {
+        display: none;
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+        color: var(--teal);
+        flex-shrink: 0;
+      }
+
+      .pill.is-valid .valid-check {
+        display: block;
+        animation: check-pop 0.3s var(--ease-expo);
+      }
+
+      @keyframes check-pop {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes pill-spinner-rotate {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .pill button .arrow-icon,
+      .pill button .spinner-icon {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2.5;
+      }
+
+      .pill button .spinner-icon {
+        display: none;
+        animation: pill-spinner-rotate 0.8s linear infinite;
+      }
+
+      .pill.is-loading button .arrow-icon {
+        display: none;
+      }
+      .pill.is-loading button .spinner-icon {
+        display: block;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .pill.is-shaking,
+        .pill.is-valid .valid-check,
+        .pill.is-loading button .spinner-icon {
+          animation: none !important;
+        }
+      }
+
+      .pill input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text-1);
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 400;
+        padding: 12px 8px 12px 0;
+      }
+
+      .pill input::placeholder {
+        color: var(--text-4);
+      }
+
+      .pill button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, var(--teal), #00b894);
+        color: #060a0e;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 200ms var(--ease-expo);
+        box-shadow: 0 0 16px -4px var(--teal-bright);
+        flex-shrink: 0;
+      }
+
+      .pill button:hover {
+        transform: translateY(-1px) scale(1.04);
+        box-shadow: 0 0 24px -4px var(--teal-bright);
+        filter: brightness(1.1);
+      }
+
+      .pill button:active {
+        transform: scale(0.96);
+      }
+
+      .pill button svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2.5;
+      }
+
+      /* ── Divider ─────────────────────────────────────────────── */
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 36px 0 20px;
+        color: var(--text-4);
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      /* ── SSO buttons (disabled placeholders) ─────────────────── */
+      .sso-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      .sso {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 16px;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        border-radius: var(--radius);
+        color: var(--text-3);
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: not-allowed;
+        opacity: 0.55;
+        transition: opacity 220ms var(--ease-expo);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      }
+
+      .sso:hover {
+        opacity: 0.7;
+      }
+
+      .sso > svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .sso-label {
+        position: relative;
+        top: -1px;
+        flex: 1;
+        text-align: left;
+      }
+
+      .sso .lock {
+        width: 11px;
+        height: 11px;
+        opacity: 0.7;
+      }
+
+      .sso-soon {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-4);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      /* ── Constellation (city dots) — signature moment ────────── */
+      .constellation {
+        margin-top: 64px;
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        height: 48px;
+      }
+
+      .constellation svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+        transform: translate3d(
+          calc(var(--mx, 0) * 6px),
+          calc(var(--my, 0) * 4px),
+          0
+        );
+        transition: transform 400ms var(--ease-expo);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .constellation svg {
+          transform: none !important;
+        }
+      }
+
+      @keyframes dot-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(4px) scale(0.6);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .constellation .dots circle {
+        transform-origin: center;
+        transform-box: fill-box;
+        animation:
+          dot-fade-in 0.5s var(--ease-expo) both,
+          dot-pulse 3.5s ease-in-out infinite;
+      }
+
+      /* Per-dot stagger offsets — 120ms apart */
+      .constellation .dots circle:nth-child(1) {
+        animation-delay: 0.9s, calc(0.9s + 0s);
+      }
+      .constellation .dots circle:nth-child(2) {
+        animation-delay: 1.02s, calc(1.02s + 0.4s);
+      }
+      .constellation .dots circle:nth-child(3) {
+        animation-delay: 1.14s, calc(1.14s + 0.8s);
+      }
+      .constellation .dots circle:nth-child(4) {
+        animation-delay: 1.26s, calc(1.26s + 1.2s);
+      }
+      .constellation .dots circle:nth-child(5) {
+        animation-delay: 1.38s, calc(1.38s + 1.6s);
+      }
+      .constellation .dots circle:nth-child(6) {
+        animation-delay: 1.5s, calc(1.5s + 2s);
+      }
+      .constellation .dots circle:nth-child(7) {
+        animation-delay: 1.62s, calc(1.62s + 2.4s);
+      }
+      .constellation .dots circle:nth-child(8) {
+        animation-delay: 1.74s, calc(1.74s + 2.8s);
+      }
+
+      @keyframes dot-pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .constellation .dots circle {
+          animation: none !important;
+          opacity: 0.7 !important;
+        }
+      }
+
+      .constellation-caption {
+        margin-top: 10px;
+        text-align: center;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-4);
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+      }
+
+      /* ── Footer help ─────────────────────────────────────────── */
+      .help {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-4);
+      }
+
+      .help a {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-3);
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 1px dashed var(--border-strong);
+        padding-bottom: 2px;
+        transition: color 220ms var(--ease-expo);
+      }
+
+      .help a:hover {
+        color: var(--teal-text);
+      }
+
+      .help a svg {
+        width: 12px;
+        height: 12px;
+        transition: transform 220ms var(--ease-expo);
+      }
+
+      .help a:hover svg {
+        transform: translateX(-1px) scale(1.15);
+      }
+
+      /* ── OTP variant ─────────────────────────────────────────── */
+      .otp-row {
+        margin-top: 36px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .otp-digit {
+        width: 52px;
+        height: 60px;
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        background: var(--bg-1);
+        color: var(--text-1);
+        font-family: "Geist Mono", monospace;
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        outline: none;
+        transition: all 200ms var(--ease-expo);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      }
+
+      .otp-digit.filled {
+        border-color: rgba(0, 212, 170, 0.35);
+        background: rgba(0, 212, 170, 0.04);
+      }
+
+      .otp-digit:focus {
+        border-color: var(--teal);
+        background: rgba(0, 212, 170, 0.03);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          0 0 0 3px rgba(0, 212, 170, 0.1);
+      }
+
+      .otp-meta {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 380px;
+        font-size: 11.5px;
+        color: var(--text-4);
+      }
+
+      .otp-meta .expires {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .back-link {
+        margin-top: 28px;
+        background: transparent;
+        border: none;
+        color: var(--text-3);
+        font-size: 13.5px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-family: inherit;
+        transition: all 200ms var(--ease-expo);
+      }
+
+      .back-link:hover {
+        color: var(--text-1);
+        background: var(--bg-1);
+      }
+
+      .back-link svg {
+        transition: transform 200ms var(--ease-expo);
+      }
+
+      .back-link:hover svg {
+        transform: translateX(-3px);
+      }
+
+      /* ── Mockup switcher (not in production) ─────────────────── */
+      .switcher {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        background: rgba(15, 17, 21, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-pill);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .switcher button {
+        padding: 8px 16px;
+        border-radius: var(--radius-pill);
+        border: none;
+        background: transparent;
+        color: var(--text-3);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 180ms var(--ease-expo);
+      }
+
+      .switcher button.active {
+        background: var(--teal);
+        color: #060a0e;
+      }
+
+      .switcher button:not(.active):hover {
+        color: var(--text-1);
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: flex;
+      }
+
+      /* ── Entry choreography ──────────────────────────────────── */
+      @keyframes slide-up {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .stagger-1 {
+        animation: slide-up 0.7s var(--ease-expo) 0.1s both;
+      }
+      .stagger-2 {
+        animation: slide-up 0.7s var(--ease-expo) 0.2s both;
+      }
+      .stagger-3 {
+        animation: slide-up 0.7s var(--ease-expo) 0.3s both;
+      }
+      .stagger-4 {
+        animation: slide-up 0.7s var(--ease-expo) 0.4s both;
+      }
+      .stagger-5 {
+        animation: slide-up 0.7s var(--ease-expo) 0.5s both;
+      }
+      .stagger-6 {
+        animation: slide-up 0.7s var(--ease-expo) 0.6s both;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        [class*="stagger-"] {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <!-- Top-left Arena wordmark -->
+      <a href="#" class="brand">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M24 4L42 14.5V33.5L24 44L6 33.5V14.5L24 4Z"
+            stroke="#00d4aa"
+            stroke-width="1"
+            fill="#00d4aa"
+            fill-opacity="0.04"
+          />
+          <path
+            d="M24 8L38 16V32L24 40L10 32V16L24 8Z"
+            fill="#00d4aa"
+            fill-opacity="0.08"
+          />
+          <path
+            d="M24 12L34 18V30L24 36L14 30V18L24 12Z"
+            fill="#00d4aa"
+            fill-opacity="0.15"
+          />
+          <circle cx="24" cy="24" r="7" fill="#00d4aa" fill-opacity="0.35" />
+          <circle cx="24" cy="24" r="3.5" fill="#00d4aa" fill-opacity="0.8" />
+        </svg>
+        <span class="wordmark">Arena</span>
+      </a>
+
+      <div class="stage">
+        <!-- ── VIEW A: email step ───────────────────────────── -->
+        <div class="view active card" data-view="email">
+          <h1 class="stagger-1" id="greeting">Welcome back</h1>
+          <p class="subtitle stagger-2">
+            Your venues, <strong>one tap away</strong>.
+          </p>
+
+          <form
+            class="email-form stagger-3"
+            onsubmit="
+              event.preventDefault();
+              showOtp();
+            "
+          >
+            <div class="field-label">
+              <span>Work email</span>
+              <span class="kbd-hint">
+                <span class="kbd">⏎</span> to continue
+              </span>
+            </div>
+            <div class="pill" id="email-pill">
+              <input
+                id="email-input"
+                type="email"
+                placeholder="you@arena-scr.com"
+                value="admin@arena-scr.com"
+              />
+              <svg
+                class="valid-check"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12l5 5L20 7" />
+              </svg>
+              <button type="submit" aria-label="Send code">
+                <svg
+                  class="arrow-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    d="M5 12h14M13 6l6 6-6 6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <svg
+                  class="spinner-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path d="M21 12a9 9 0 11-6.219-8.56" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+          </form>
+
+          <div class="divider stagger-4">or continue with</div>
+
+          <div class="sso-row stagger-5">
+            <button class="sso" disabled type="button">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  fill="#EA4335"
+                />
+              </svg>
+              <span class="sso-label">Google</span>
+              <svg
+                class="lock"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            </button>
+            <button class="sso" disabled type="button">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
+                />
+              </svg>
+              <span class="sso-label">GitHub</span>
+              <svg
+                class="lock"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="sso-soon stagger-5">SSO · launching Q3</div>
+
+          <!-- ── Signature: 8-city constellation ──────────────── -->
+          <div class="constellation stagger-6">
+            <svg viewBox="0 0 520 48" fill="none">
+              <!-- faint connecting lines -->
+              <g opacity="0.12" stroke="#00d4aa" stroke-width="1">
+                <line x1="60" y1="28" x2="130" y2="18" />
+                <line x1="130" y1="18" x2="200" y2="30" />
+                <line x1="200" y1="30" x2="265" y2="14" />
+                <line x1="265" y1="14" x2="330" y2="26" />
+                <line x1="330" y1="26" x2="395" y2="18" />
+                <line x1="395" y1="18" x2="445" y2="32" />
+                <line x1="445" y1="32" x2="490" y2="20" />
+              </g>
+              <!-- dots with teal glow — staggered entry + pulse via CSS -->
+              <g class="dots">
+                <circle cx="60" cy="28" r="2.5" fill="#00d4aa" />
+                <circle cx="130" cy="18" r="2.5" fill="#00d4aa" />
+                <circle cx="200" cy="30" r="2.5" fill="#00d4aa" />
+                <circle cx="265" cy="14" r="3" fill="#00d4aa" />
+                <circle cx="330" cy="26" r="2.5" fill="#00d4aa" />
+                <circle cx="395" cy="18" r="2.5" fill="#00d4aa" />
+                <circle cx="445" cy="32" r="2.5" fill="#00d4aa" />
+                <circle cx="490" cy="20" r="2.5" fill="#00d4aa" />
+              </g>
+            </svg>
+            <div class="constellation-caption">
+              Operating <strong>8 cities</strong> · <strong>24 venues</strong> ·
+              zero downtime today
+            </div>
+          </div>
+
+          <div class="help stagger-6">
+            Need access?
+            <a href="mailto:support@orayzen.com">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+              Email support
+            </a>
+          </div>
+        </div>
+
+        <!-- ── VIEW B: OTP step ─────────────────────────────── -->
+        <div class="view card" data-view="otp">
+          <h1 class="stagger-1">Verify</h1>
+          <p class="subtitle stagger-2">
+            We sent a 6-digit code to
+            <strong>admin@arena-scr.com</strong>
+          </p>
+
+          <div
+            class="field-label stagger-3"
+            style="margin-top: 36px; width: 100%; max-width: 380px"
+          >
+            <span>6-digit code</span>
+            <span class="kbd-hint"> <span class="kbd">⌘V</span> to paste </span>
+          </div>
+          <div class="otp-row stagger-3" style="margin-top: 10px">
+            <input class="otp-digit filled" value="4" maxlength="1" />
+            <input class="otp-digit filled" value="7" maxlength="1" />
+            <input class="otp-digit filled" value="2" maxlength="1" />
+            <input class="otp-digit" value="" maxlength="1" />
+            <input class="otp-digit" value="" maxlength="1" />
+            <input class="otp-digit" value="" maxlength="1" />
+          </div>
+
+          <div class="otp-meta stagger-4">
+            <span>3 / 6 digits</span>
+            <span class="expires">Expires in 9:42</span>
+          </div>
+
+          <button class="back-link stagger-5" onclick="showEmail()">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to email
+          </button>
+
+          <div class="help stagger-6">
+            Didn't get it?
+            <a href="#" onclick="event.preventDefault()">Resend code</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mockup-only: view switcher -->
+      <div class="switcher">
+        <button id="btn-email" class="active" onclick="showEmail()">
+          Email step
+        </button>
+        <button id="btn-otp" onclick="showOtp()">OTP step</button>
+      </div>
+    </div>
+
+    <script>
+      const emailView = document.querySelector('[data-view="email"]');
+      const otpView = document.querySelector('[data-view="otp"]');
+      const btnEmail = document.getElementById("btn-email");
+      const btnOtp = document.getElementById("btn-otp");
+
+      function showEmail() {
+        emailView.classList.add("active");
+        otpView.classList.remove("active");
+        btnEmail.classList.add("active");
+        btnOtp.classList.remove("active");
+        restartStaggers(emailView);
+      }
+      function showOtp() {
+        otpView.classList.add("active");
+        emailView.classList.remove("active");
+        btnOtp.classList.add("active");
+        btnEmail.classList.remove("active");
+        restartStaggers(otpView);
+      }
+      function restartStaggers(root) {
+        root.querySelectorAll('[class*="stagger-"]').forEach((el) => {
+          const c = [...el.classList].find((x) => x.startsWith("stagger-"));
+          el.classList.remove(c);
+          // force reflow
+          void el.offsetWidth;
+          el.classList.add(c);
+        });
+      }
+
+      // Constellation parallax — dots drift subtly following cursor.
+      // Respects prefers-reduced-motion via CSS guard above.
+      const screen = document.querySelector(".screen");
+      let rafId = null;
+      screen.addEventListener("mousemove", (e) => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          const { innerWidth: w, innerHeight: h } = window;
+          const mx = (e.clientX / w - 0.5) * 2; // -1 … 1
+          const my = (e.clientY / h - 0.5) * 2;
+          screen.style.setProperty("--mx", mx.toFixed(3));
+          screen.style.setProperty("--my", my.toFixed(3));
+          rafId = null;
+        });
+      });
+
+      // ── Time-aware greeting (hooked-ux: small recognition reward) ──
+      const greetingEl = document.getElementById("greeting");
+      const hour = new Date().getHours();
+      const greeting =
+        hour < 5
+          ? "Still up?"
+          : hour < 12
+            ? "Good morning"
+            : hour < 17
+              ? "Good afternoon"
+              : hour < 22
+                ? "Good evening"
+                : "Working late?";
+      if (greetingEl) greetingEl.textContent = greeting;
+
+      // ── Interactive email pill: valid check + shake + spinner ──
+      const pill = document.getElementById("email-pill");
+      const emailInput = document.getElementById("email-input");
+      const emailForm = pill && pill.closest("form");
+      const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+      function syncValid() {
+        if (!pill || !emailInput) return;
+        pill.classList.toggle("is-valid", isValidEmail(emailInput.value));
+      }
+
+      if (emailInput) {
+        syncValid();
+        emailInput.addEventListener("input", () => {
+          pill.classList.remove("is-error");
+          syncValid();
+        });
+      }
+
+      if (emailForm) {
+        // Capture phase so we can intercept before the form's onsubmit fires
+        emailForm.addEventListener(
+          "submit",
+          (e) => {
+            if (!isValidEmail(emailInput.value)) {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              pill.classList.add("is-error", "is-shaking");
+              setTimeout(() => pill.classList.remove("is-shaking"), 400);
+              emailInput.focus();
+              return;
+            }
+            // Valid — show loading spinner briefly before transitioning
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            pill.classList.add("is-loading");
+            setTimeout(() => {
+              pill.classList.remove("is-loading");
+              showOtp();
+            }, 900);
+          },
+          true,
+        );
+      }
+    </script>
+  </body>
+</html>

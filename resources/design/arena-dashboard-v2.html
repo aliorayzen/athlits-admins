@@ -1,0 +1,3004 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@350;400;450;500;550;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /*
+ * Arena Admin Dashboard — v3
+ * Inspired by: Linear, Vercel, Stripe
+ * Key decisions:
+ *   - LCH-inspired neutral palette (not pure gray — slight blue undertone)
+ *   - Inter with optical sizing for sharper small text
+ *   - 1px borders only where structural, not decorative
+ *   - No colored left borders (too template-y) — hierarchy through scale + weight
+ *   - Metrics use tabular-nums for alignment
+ *   - Very tight spacing — density = professionalism
+ *   - No card shadows — depth through bg layering only
+ *   - Muted color unless interactive or status
+ */
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        /* surface stack — warm undertone, not dead gray */
+        --bg-0: #08090c;
+        --bg-1: #0f1115;
+        --bg-2: #161a1f;
+        --bg-3: #1c2128;
+        --bg-hover: rgba(255, 255, 255, 0.04);
+        --bg-active: rgba(255, 255, 255, 0.06);
+
+        /* borders — slightly warmer */
+        --border: rgba(255, 255, 255, 0.065);
+        --border-strong: rgba(255, 255, 255, 0.13);
+
+        /* text — brighter, warmer whites */
+        --text-1: #f2f3f5;
+        --text-2: #b8bcc5;
+        --text-3: #838999;
+        --text-4: #555d6e;
+
+        /* brand — slightly richer teal */
+        --teal: #00d4aa;
+        --teal-subtle: rgba(0, 212, 170, 0.08);
+        --teal-text: #1de9b6;
+        --teal-glow: rgba(0, 212, 170, 0.15);
+
+        /* semantic — richer, more saturated */
+        --green: #10b981;
+        --green-subtle: rgba(16, 185, 129, 0.1);
+        --amber: #f59e0b;
+        --amber-subtle: rgba(245, 158, 11, 0.1);
+        --red: #f43f5e;
+        --red-subtle: rgba(244, 63, 94, 0.08);
+        --blue: #6366f1;
+        --blue-subtle: rgba(99, 102, 241, 0.1);
+        --purple: #a78bfa;
+        --purple-subtle: rgba(167, 139, 250, 0.08);
+
+        --sidebar-w: 248px;
+        --radius: 10px;
+        --radius-sm: 7px;
+      }
+
+      html {
+        background: var(--bg-0);
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        font-feature-settings: "cv01", "cv02", "cv03", "cv04";
+        color: var(--text-1);
+        min-height: 100vh;
+        display: flex;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      /* ════════════════════════════════════════
+   SIDEBAR — Arena identity
+   ════════════════════════════════════════ */
+      .sidebar {
+        width: var(--sidebar-w);
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: #090c10;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      /* hexagonal texture — extremely subtle, uniquely Arena */
+      .sidebar::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='28' height='49' viewBox='0 0 28 49' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z' fill='rgba(45,212,171,0.018)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .sidebar > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* scrollbar */
+      .sidebar::-webkit-scrollbar {
+        width: 4px;
+      }
+      .sidebar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+      .sidebar:hover::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* ── header: brand identity ── */
+      .sb-header {
+        padding: 16px 14px 14px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+
+      .sb-logo {
+        width: 32px;
+        height: 32px;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      /* the hexagon logo — Arena's signature */
+      .sb-logo-hex {
+        width: 32px;
+        height: 32px;
+      }
+
+      .sb-header-text {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .sb-wordmark {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--text-1);
+        line-height: 1.15;
+      }
+
+      .sb-workspace-label {
+        font-size: 10.5px;
+        color: var(--teal-text);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* ambient teal glow behind logo — signature warmth */
+      .sb-header::after {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 10px;
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(
+          circle,
+          rgba(45, 212, 171, 0.06) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ── search trigger ── */
+      .sb-search {
+        margin: 2px 10px 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+
+      .sb-search:hover {
+        border-color: var(--border-strong);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .sb-search svg {
+        width: 14px;
+        height: 14px;
+        color: var(--text-4);
+        flex-shrink: 0;
+      }
+      .sb-search-text {
+        flex: 1;
+        font-size: 12.5px;
+        color: var(--text-4);
+        font-weight: 400;
+      }
+
+      .sb-search-kbd {
+        font-size: 10px;
+        font-family: inherit;
+        color: var(--text-4);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      /* ── nav ── */
+      .sb-nav {
+        padding: 4px 8px;
+        flex: 1;
+      }
+
+      .sb-section-label {
+        padding: 16px 8px 5px;
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-4);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .sb-section-label:first-child {
+        padding-top: 6px;
+      }
+
+      .sb-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        color: var(--text-2);
+        font-size: 13.5px;
+        font-weight: 450;
+        cursor: pointer;
+        transition: all 0.08s;
+        text-decoration: none;
+        position: relative;
+        margin-bottom: 2px;
+      }
+
+      .sb-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-1);
+      }
+
+      /* ── active: filled teal pill (inspo 1 & 3 style) + left accent ── */
+      .sb-item.active {
+        background: rgba(45, 212, 171, 0.1);
+        color: #fff;
+        font-weight: 550;
+        border: 1px solid rgba(45, 212, 171, 0.12);
+      }
+
+      .sb-item.active::before {
+        content: "";
+        position: absolute;
+        left: -1px;
+        top: 6px;
+        bottom: 6px;
+        width: 2.5px;
+        border-radius: 0 2px 2px 0;
+        background: var(--teal);
+      }
+
+      .sb-item svg {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
+        opacity: 0.5;
+        transition: all 0.08s;
+      }
+
+      .sb-item:hover svg {
+        opacity: 0.75;
+      }
+      .sb-item.active svg {
+        opacity: 1;
+        color: var(--teal-text);
+      }
+
+      .sb-item-label {
+        flex: 1;
+      }
+
+      /* venue count inline — makes it feel data-connected */
+      .sb-item-count {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-4);
+        font-variant-numeric: tabular-nums;
+        margin-left: auto;
+      }
+
+      /* keyboard shortcut hints */
+      .sb-kbd {
+        font-size: 10px;
+        font-family: inherit;
+        color: transparent;
+        font-weight: 500;
+        transition: color 0.15s;
+      }
+
+      .sidebar:hover .sb-kbd {
+        color: var(--text-4);
+      }
+
+      .sb-badge {
+        margin-left: auto;
+        font-size: 10px;
+        font-weight: 600;
+        min-width: 18px;
+        height: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9px;
+        background: var(--red-subtle);
+        color: var(--red);
+        padding: 0 5px;
+      }
+
+      /* ── separator ── */
+      .sb-sep {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border),
+          transparent
+        );
+        margin: 8px 16px;
+      }
+
+      /* ── live stats strip — makes sidebar feel alive ── */
+      .sb-stats {
+        margin: 4px 10px 0;
+        padding: 10px 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        display: flex;
+        gap: 0;
+      }
+
+      .sb-stat {
+        flex: 1;
+        text-align: center;
+        position: relative;
+      }
+
+      .sb-stat + .sb-stat::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 2px;
+        bottom: 2px;
+        width: 1px;
+        background: var(--border);
+      }
+
+      .sb-stat-val {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-1);
+        line-height: 1.2;
+      }
+
+      .sb-stat-label {
+        font-size: 9.5px;
+        font-weight: 500;
+        color: var(--text-4);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-top: 1px;
+      }
+
+      /* ── footer ── */
+      .sb-footer {
+        padding: 8px 8px 10px;
+        border-top: 1px solid var(--border);
+        margin-top: auto;
+      }
+
+      .sb-help {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 10px;
+        border-radius: var(--radius-sm);
+        color: var(--text-4);
+        font-size: 12.5px;
+        font-weight: 450;
+        cursor: pointer;
+        transition: all 0.08s;
+        margin-bottom: 2px;
+      }
+
+      .sb-help:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-3);
+      }
+      .sb-help svg {
+        width: 15px;
+        height: 15px;
+        opacity: 0.4;
+      }
+
+      /* notifications */
+      .sb-notif {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 10px;
+        border-radius: var(--radius-sm);
+        color: var(--text-4);
+        font-size: 12.5px;
+        font-weight: 450;
+        cursor: pointer;
+        transition: all 0.08s;
+        margin-bottom: 2px;
+        position: relative;
+      }
+
+      .sb-notif:hover {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-3);
+      }
+      .sb-notif svg {
+        width: 15px;
+        height: 15px;
+        opacity: 0.4;
+      }
+
+      .sb-notif-dot {
+        position: absolute;
+        left: 21px;
+        top: 7px;
+        width: 6px;
+        height: 6px;
+        background: var(--teal);
+        border-radius: 50%;
+        border: 1.5px solid #090c10;
+      }
+
+      .sb-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: background 0.08s;
+        position: relative;
+      }
+
+      .sb-user:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .sb-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          rgba(45, 212, 171, 0.15),
+          rgba(45, 212, 171, 0.05)
+        );
+        border: 1px solid rgba(45, 212, 171, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--teal-text);
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      /* online indicator */
+      .sb-avatar::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        right: -1px;
+        width: 9px;
+        height: 9px;
+        background: var(--green);
+        border: 2px solid #090c10;
+        border-radius: 50%;
+      }
+
+      .sb-user-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .sb-user-name {
+        font-size: 12.5px;
+        font-weight: 520;
+        color: var(--text-1);
+        line-height: 1.3;
+      }
+
+      .sb-user-role {
+        font-size: 11px;
+        color: var(--text-4);
+        font-weight: 400;
+      }
+
+      .sb-logout {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+        border: none;
+        background: transparent;
+        color: var(--text-4);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.1s;
+        opacity: 0;
+      }
+
+      .sb-user:hover .sb-logout {
+        opacity: 1;
+      }
+      .sb-logout:hover {
+        background: var(--red-subtle);
+        color: var(--red);
+      }
+
+      /* ════════════════════════════════════════
+   GLOBAL TRANSITIONS
+   ════════════════════════════════════════ */
+      * {
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .page.on {
+        animation: fadeIn 0.25s ease-out;
+      }
+
+      /* focus ring — branded */
+      :focus-visible {
+        outline: 2px solid rgba(0, 212, 170, 0.4);
+        outline-offset: 2px;
+      }
+
+      ::selection {
+        background: rgba(0, 212, 170, 0.2);
+        color: #fff;
+      }
+
+      /* ════════════════════════════════════════
+   MAIN
+   ════════════════════════════════════════ */
+      .main {
+        margin-left: var(--sidebar-w);
+        flex: 1;
+        min-height: 100vh;
+        background: var(--bg-0);
+      }
+
+      .main-inner {
+        max-width: 1140px;
+        margin: 0 auto;
+        padding: 32px 44px 64px;
+      }
+
+      /* ════════════════════════════════════════
+   PAGE HEADER
+   ════════════════════════════════════════ */
+      .ph {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 32px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .ph h1 {
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--text-1);
+      }
+
+      .ph-sub {
+        font-size: 13.5px;
+        color: var(--text-3);
+        margin-top: 3px;
+      }
+
+      .ph-actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      /* ════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════ */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all 0.15s;
+        line-height: 1.3;
+      }
+
+      .btn svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      .btn-ghost {
+        background: var(--bg-2);
+        border: 1px solid var(--border-strong);
+        color: var(--text-2);
+      }
+      .btn-ghost:hover {
+        background: var(--bg-3);
+        color: var(--text-1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--teal), #00b894);
+        border: 1px solid rgba(0, 212, 170, 0.3);
+        color: #060a0e;
+        font-weight: 600;
+        box-shadow: 0 1px 12px -2px var(--teal-glow);
+      }
+      .btn-primary:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 2px 20px -2px var(--teal-glow);
+        transform: translateY(-1px);
+      }
+
+      /* ════════════════════════════════════════
+   METRICS — enhanced with hover + better hierarchy
+   ════════════════════════════════════════ */
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 28px;
+        background: var(--bg-1);
+      }
+
+      .metric {
+        padding: 22px 26px;
+        position: relative;
+        transition: background 0.15s;
+      }
+
+      .metric:hover {
+        background: var(--bg-hover);
+      }
+
+      .metric + .metric::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 18px;
+        bottom: 18px;
+        width: 1px;
+        background: var(--border);
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: var(--text-3);
+        font-weight: 500;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .metric-value {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+
+      .metric-delta {
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+
+      .metric-delta.up {
+        color: var(--green);
+        background: var(--green-subtle);
+      }
+      .metric-delta.down {
+        color: var(--red);
+        background: var(--red-subtle);
+      }
+      .metric-delta.flat {
+        color: var(--text-3);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      .metric-spark {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 110px;
+        height: 44px;
+        opacity: 0.3;
+        transition: opacity 0.2s;
+      }
+
+      .metric:hover .metric-spark {
+        opacity: 0.5;
+      }
+
+      /* ════════════════════════════════════════
+   CONTENT GRID
+   ════════════════════════════════════════ */
+      .content-grid {
+        display: grid;
+        grid-template-columns: 7fr 5fr;
+        gap: 18px;
+      }
+
+      .content-grid-full {
+        grid-column: 1 / -1;
+      }
+
+      /* ════════════════════════════════════════
+   CARDS — hover lift + better structure
+   ════════════════════════════════════════ */
+      .card {
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+      }
+
+      .card:hover {
+        border-color: var(--border-strong);
+        box-shadow: 0 2px 16px -4px rgba(0, 0, 0, 0.3);
+      }
+
+      .card-h {
+        padding: 18px 22px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .card-t {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-1);
+        letter-spacing: -0.01em;
+      }
+
+      .card-link {
+        font-size: 12px;
+        color: var(--teal-text);
+        text-decoration: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s;
+        padding: 4px 10px;
+        border-radius: 5px;
+      }
+      .card-link:hover {
+        background: var(--teal-subtle);
+        color: var(--teal);
+      }
+
+      /* ════════════════════════════════════════
+   TABLE — better row spacing + hover
+   ════════════════════════════════════════ */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-4);
+        padding: 10px 22px;
+        border-bottom: 1px solid var(--border);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      td {
+        padding: 12px 22px;
+        font-size: 13.5px;
+        color: var(--text-2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr {
+        transition: background 0.1s;
+      }
+      tr:hover {
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .cell-primary {
+        color: var(--text-1);
+        font-weight: 550;
+      }
+
+      .cell-mono {
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: 11.5px;
+        color: var(--text-3);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .cell-number {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--text-1);
+        letter-spacing: -0.01em;
+      }
+
+      /* ════════════════════════════════════════
+   BADGES — more defined, slightly larger
+   ════════════════════════════════════════ */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .pill::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 4px currentColor;
+      }
+
+      .pill-green {
+        color: var(--green);
+        background: var(--green-subtle);
+      }
+      .pill-amber {
+        color: var(--amber);
+        background: var(--amber-subtle);
+      }
+      .pill-red {
+        color: var(--red);
+        background: var(--red-subtle);
+      }
+      .pill-blue {
+        color: var(--blue);
+        background: var(--blue-subtle);
+      }
+      .pill-gray {
+        color: var(--text-3);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      /* ════════════════════════════════════════
+   CHART
+   ════════════════════════════════════════ */
+      .chart-wrap {
+        padding: 4px 22px 18px;
+      }
+
+      .chart-header {
+        display: flex;
+        gap: 2px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 3px;
+        border-radius: var(--radius-sm);
+      }
+
+      .chart-period {
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 450;
+        color: var(--text-4);
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: inherit;
+        transition: all 0.12s;
+      }
+
+      .chart-period:hover {
+        color: var(--text-2);
+      }
+      .chart-period.on {
+        color: var(--text-1);
+        background: var(--bg-3);
+        font-weight: 550;
+      }
+
+      /* ════════════════════════════════════════
+   ACTIVITY FEED — richer avatars
+   ════════════════════════════════════════ */
+      .feed {
+        list-style: none;
+      }
+
+      .feed-item {
+        display: flex;
+        gap: 12px;
+        padding: 11px 22px;
+        align-items: flex-start;
+        transition: background 0.1s;
+        border-radius: var(--radius-sm);
+        margin: 0 4px;
+      }
+
+      .feed-item:hover {
+        background: var(--bg-hover);
+      }
+
+      .feed-av {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10.5px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .feed-body {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .feed-text {
+        font-size: 13px;
+        color: var(--text-2);
+        line-height: 1.45;
+      }
+
+      .feed-text b {
+        color: var(--text-1);
+        font-weight: 600;
+      }
+
+      .feed-time {
+        font-size: 11px;
+        color: var(--text-4);
+        margin-top: 2px;
+      }
+
+      /* ════════════════════════════════════════
+   QUICK ACTIONS — better hover, teal accent on hover
+   ════════════════════════════════════════ */
+      .actions-row {
+        display: flex;
+        gap: 10px;
+        padding: 14px 22px 18px;
+      }
+
+      .action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 16px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-2);
+        font-size: 12.5px;
+        font-weight: 520;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+      }
+
+      .action-btn:hover {
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        border-color: rgba(0, 212, 170, 0.15);
+        transform: translateY(-1px);
+      }
+
+      .action-btn svg {
+        width: 15px;
+        height: 15px;
+        opacity: 0.5;
+      }
+      .action-btn:hover svg {
+        opacity: 0.8;
+        color: var(--teal);
+      }
+
+      /* ════════════════════════════════════════
+   SEARCH — wider, more prominent
+   ════════════════════════════════════════ */
+      .search-wrap {
+        position: relative;
+        max-width: 360px;
+        margin-bottom: 20px;
+      }
+
+      .search-wrap svg {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 15px;
+        height: 15px;
+        color: var(--text-4);
+        transition: color 0.12s;
+      }
+
+      .search-wrap:focus-within svg {
+        color: var(--teal);
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 10px 14px 10px 38px;
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-1);
+        font-size: 13.5px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.15s;
+      }
+
+      .search-input:focus {
+        border-color: rgba(0, 212, 170, 0.3);
+        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.06);
+        background: var(--bg-0);
+      }
+      .search-input::placeholder {
+        color: var(--text-4);
+      }
+
+      /* ════════════════════════════════════════
+   FILTER PILLS — segmented, cleaner
+   ════════════════════════════════════════ */
+      .filters {
+        display: flex;
+        gap: 1px;
+        background: var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 20px;
+        width: fit-content;
+      }
+
+      .filt {
+        padding: 8px 18px;
+        font-size: 12.5px;
+        font-weight: 480;
+        color: var(--text-3);
+        background: var(--bg-1);
+        border: none;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.12s;
+      }
+
+      .filt:hover {
+        color: var(--text-1);
+        background: var(--bg-2);
+      }
+      .filt.on {
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+        font-weight: 600;
+      }
+
+      /* ════════════════════════════════════════
+   FORMS
+   ════════════════════════════════════════ */
+      .form-section {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 550;
+        color: var(--text-2);
+        margin-bottom: 6px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 10px 14px;
+        background: var(--bg-0);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-1);
+        font-size: 13.5px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.15s;
+      }
+
+      .form-input:focus {
+        border-color: rgba(0, 212, 170, 0.3);
+        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.06);
+      }
+      .form-input::placeholder {
+        color: var(--text-4);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .form-full {
+        grid-column: 1 / -1;
+      }
+      .form-hint {
+        font-size: 11.5px;
+        color: var(--text-4);
+        margin-top: 6px;
+      }
+
+      /* role picker — richer selection state */
+      .role-pick {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 28px;
+        max-width: 500px;
+      }
+
+      .role-opt {
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-1);
+        cursor: pointer;
+        transition: all 0.15s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .role-opt:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-1px);
+      }
+
+      .role-opt.picked {
+        border-color: rgba(0, 212, 170, 0.35);
+        background: rgba(0, 212, 170, 0.05);
+        box-shadow: 0 0 20px -6px var(--teal-glow);
+      }
+
+      /* checkmark on picked */
+      .role-opt.picked::after {
+        content: "✓";
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        width: 20px;
+        height: 20px;
+        background: var(--teal);
+        color: var(--bg-0);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .role-opt h4 {
+        font-size: 14px;
+        font-weight: 650;
+        margin-bottom: 3px;
+      }
+      .role-opt p {
+        font-size: 12.5px;
+        color: var(--text-3);
+      }
+
+      /* users layout */
+      .users-split {
+        display: grid;
+        grid-template-columns: 5fr 3fr;
+        gap: 18px;
+        max-width: 800px;
+      }
+
+      .perm-list {
+        list-style: none;
+      }
+      .perm-list li {
+        padding: 8px 0;
+        font-size: 13px;
+        color: var(--text-2);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .perm-list li:last-child {
+        border-bottom: none;
+      }
+      .perm-list li::before {
+        content: "→";
+        color: var(--teal);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      /* ════════════════════════════════════════
+   SETTINGS — richer rows
+   ════════════════════════════════════════ */
+      .settings-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        max-width: 800px;
+      }
+
+      .set-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 22px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        transition: background 0.1s;
+      }
+
+      .set-row:hover {
+        background: var(--bg-hover);
+      }
+      .set-row:last-child {
+        border-bottom: none;
+      }
+
+      .set-label {
+        font-size: 13.5px;
+        color: var(--text-2);
+        font-weight: 450;
+      }
+      .set-val {
+        font-size: 13.5px;
+        font-weight: 550;
+        color: var(--text-1);
+      }
+      .set-val.mono {
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 12px;
+        color: var(--text-3);
+        background: rgba(255, 255, 255, 0.03);
+        padding: 3px 8px;
+        border-radius: 4px;
+      }
+
+      /* ════════════════════════════════════════
+   LOGIN — immersive brand experience
+   ════════════════════════════════════════ */
+      .login-wrap {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: var(--bg-0);
+      }
+
+      .login-wrap.on {
+        display: flex;
+      }
+
+      /* ── left art panel: full visual identity ── */
+      .login-art {
+        width: 48%;
+        background: #060a0e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* animated hex grid background */
+      .login-art::before {
+        content: "";
+        position: absolute;
+        inset: -20%;
+        background-image: url("data:image/svg+xml,%3Csvg width='28' height='49' viewBox='0 0 28 49' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z' fill='rgba(45,212,171,0.03)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        pointer-events: none;
+        animation: loginGridDrift 30s linear infinite;
+      }
+
+      @keyframes loginGridDrift {
+        0% {
+          transform: translate(0, 0);
+        }
+        100% {
+          transform: translate(28px, 49px);
+        }
+      }
+
+      /* multiple glow orbs */
+      .login-glow-1 {
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(45, 212, 171, 0.12) 0%,
+          transparent 60%
+        );
+        top: 10%;
+        left: 5%;
+        pointer-events: none;
+        animation: glowPulse 8s ease-in-out infinite;
+      }
+
+      .login-glow-2 {
+        position: absolute;
+        width: 350px;
+        height: 350px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(45, 212, 171, 0.06) 0%,
+          transparent 60%
+        );
+        bottom: 15%;
+        right: 10%;
+        pointer-events: none;
+        animation: glowPulse 8s ease-in-out 4s infinite;
+      }
+
+      .login-glow-3 {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          rgba(224, 153, 32, 0.04) 0%,
+          transparent 60%
+        );
+        top: 50%;
+        left: 60%;
+        pointer-events: none;
+      }
+
+      @keyframes glowPulse {
+        0%,
+        100% {
+          opacity: 0.6;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.08);
+        }
+      }
+
+      /* noise grain */
+      .login-art::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+        background-size: 128px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* brand content */
+      .login-brand {
+        position: relative;
+        z-index: 2;
+        text-align: left;
+        max-width: 340px;
+        padding: 0 40px;
+      }
+
+      .login-hex-large {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 32px;
+        filter: drop-shadow(0 0 30px rgba(45, 212, 171, 0.2));
+      }
+
+      .login-brand h2 {
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 4px;
+        line-height: 1;
+        background: linear-gradient(135deg, #fff 40%, var(--teal-text));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .login-brand .tagline {
+        font-size: 13px;
+        color: var(--teal-text);
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 28px;
+      }
+
+      .login-brand p {
+        font-size: 14.5px;
+        color: var(--text-3);
+        line-height: 1.7;
+        margin-bottom: 36px;
+      }
+
+      /* feature pills on brand side */
+      .login-features {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .login-feat {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        font-size: 12px;
+        color: var(--text-2);
+        font-weight: 450;
+      }
+
+      .login-feat svg {
+        width: 13px;
+        height: 13px;
+        color: var(--teal);
+        opacity: 0.7;
+      }
+
+      /* powered by - bottom of art panel */
+      .login-powered {
+        position: absolute;
+        bottom: 32px;
+        left: 40px;
+        z-index: 2;
+        font-size: 11.5px;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .login-powered-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--teal);
+        opacity: 0.5;
+      }
+
+      /* ── right form side ── */
+      .login-form-side {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .login-box {
+        width: 100%;
+        max-width: 360px;
+        padding: 0 24px;
+      }
+
+      .login-box h3 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: 6px;
+      }
+
+      .login-box .sub {
+        font-size: 14px;
+        color: var(--text-3);
+        margin-bottom: 32px;
+      }
+
+      .login-box .form-section {
+        margin-bottom: 20px;
+      }
+
+      /* step indicator */
+      .step-ind {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 28px;
+      }
+
+      .step-bar {
+        height: 3px;
+        flex: 1;
+        border-radius: 2px;
+        background: var(--bg-3);
+        transition: all 0.3s;
+      }
+
+      .step-bar.on {
+        background: linear-gradient(90deg, var(--teal), #1aac95);
+        box-shadow: 0 0 8px rgba(45, 212, 171, 0.2);
+      }
+
+      /* form input — larger for login */
+      .login-input {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text-1);
+        font-size: 14.5px;
+        font-family: inherit;
+        outline: none;
+        transition: all 0.15s;
+      }
+
+      .login-input:focus {
+        border-color: rgba(45, 212, 171, 0.35);
+        box-shadow: 0 0 0 3px rgba(45, 212, 171, 0.08);
+      }
+
+      .login-input::placeholder {
+        color: var(--text-4);
+      }
+
+      /* login button — full brand treatment */
+      .login-btn {
+        width: 100%;
+        padding: 13px 24px;
+        font-size: 14.5px;
+        font-weight: 600;
+        font-family: inherit;
+        border: none;
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.15s;
+        background: linear-gradient(135deg, var(--teal), #1aac95);
+        color: #060a0e;
+        box-shadow: 0 0 20px -4px rgba(45, 212, 171, 0.3);
+        margin-top: 4px;
+      }
+
+      .login-btn:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 0 28px -4px rgba(45, 212, 171, 0.4);
+        transform: translateY(-1px);
+      }
+
+      /* OTP boxes */
+      .otp-grid {
+        display: flex;
+        gap: 10px;
+        margin: 20px 0;
+        justify-content: center;
+      }
+
+      .otp-cell {
+        width: 50px;
+        height: 60px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        background: var(--bg-1);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text-1);
+        font-family: inherit;
+        outline: none;
+        transition: all 0.15s;
+      }
+
+      .otp-cell:focus {
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px rgba(45, 212, 171, 0.1);
+        background: rgba(45, 212, 171, 0.03);
+      }
+
+      /* divider with text */
+      .login-divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 24px 0;
+        color: var(--text-4);
+        font-size: 12px;
+      }
+
+      .login-divider::before,
+      .login-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .login-footer {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-4);
+        margin-top: 28px;
+      }
+
+      .login-footer a {
+        color: var(--teal-text);
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      /* ════════════════════════════════════════
+   TAB ACTIONS (inline text buttons)
+   ════════════════════════════════════════ */
+      .tbl-act {
+        font-size: 12.5px;
+        font-weight: 520;
+        padding: 5px 12px;
+        border-radius: var(--radius-sm);
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.12s;
+      }
+
+      .tbl-act-pay {
+        color: var(--green);
+      }
+      .tbl-act-pay:hover {
+        background: var(--green-subtle);
+        transform: translateY(-1px);
+      }
+
+      .tbl-act-void {
+        color: var(--text-4);
+      }
+      .tbl-act-void:hover {
+        color: var(--red);
+        background: var(--red-subtle);
+      }
+
+      .tbl-act-view {
+        color: var(--text-3);
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+      }
+      .tbl-act-view:hover {
+        color: var(--teal-text);
+        border-color: rgba(0, 212, 170, 0.2);
+        background: var(--teal-subtle);
+      }
+
+      /* ════════════════════════════════════════
+   PAGES
+   ════════════════════════════════════════ */
+      .page {
+        display: none;
+      }
+      .page.on {
+        display: block;
+      }
+
+      /* ════════════════════════════════════════
+   BOTTOM SWITCHER — floating, frosted
+   ════════════════════════════════════════ */
+      .switcher {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 2px;
+        padding: 4px;
+        background: rgba(15, 17, 21, 0.85);
+        backdrop-filter: blur(16px) saturate(1.5);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        z-index: 300;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.5),
+          0 0 0 1px rgba(255, 255, 255, 0.04);
+      }
+
+      .sw-btn {
+        padding: 8px 16px;
+        font-size: 12px;
+        font-weight: 480;
+        color: var(--text-3);
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.12s;
+      }
+
+      .sw-btn:hover {
+        color: var(--text-1);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .sw-btn.on {
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ═══ LOGIN ═══ -->
+    <div class="login-wrap" id="pg-login">
+      <div class="login-art">
+        <!-- ambient glows -->
+        <div class="login-glow-1"></div>
+        <div class="login-glow-2"></div>
+        <div class="login-glow-3"></div>
+
+        <div class="login-brand">
+          <!-- large hex logo with glow -->
+          <svg class="login-hex-large" viewBox="0 0 48 48" fill="none">
+            <path
+              d="M24 4L42 14.5V33.5L24 44L6 33.5V14.5L24 4Z"
+              stroke="#2dd4ab"
+              stroke-width="1"
+              fill="#2dd4ab"
+              fill-opacity="0.04"
+            />
+            <path
+              d="M24 8L38 16V32L24 40L10 32V16L24 8Z"
+              fill="#2dd4ab"
+              fill-opacity="0.08"
+            />
+            <path
+              d="M24 12L34 18V30L24 36L14 30V18L24 12Z"
+              fill="#2dd4ab"
+              fill-opacity="0.15"
+            />
+            <circle cx="24" cy="24" r="7" fill="#2dd4ab" fill-opacity="0.35" />
+            <circle cx="24" cy="24" r="3.5" fill="#2dd4ab" fill-opacity="0.8" />
+          </svg>
+
+          <h2>Arena</h2>
+          <div class="tagline">The new way to play</div>
+          <p>
+            Admin portal for managing venues, bookings, and users across the
+            Arena SCR platform.
+          </p>
+
+          <!-- feature pills -->
+          <div class="login-features">
+            <span class="login-feat">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              Venue Management
+            </span>
+            <span class="login-feat">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+              </svg>
+              User Control
+            </span>
+            <span class="login-feat">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                />
+                <polyline points="14,2 14,8 20,8" />
+              </svg>
+              Invoicing
+            </span>
+            <span class="login-feat">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+              Analytics
+            </span>
+          </div>
+        </div>
+
+        <div class="login-powered">
+          <span class="login-powered-dot"></span>
+          Powered by Orayzen
+        </div>
+      </div>
+
+      <div class="login-form-side">
+        <div class="login-box">
+          <h3>Welcome back</h3>
+          <p class="sub">Sign in with your admin email to continue.</p>
+
+          <div class="step-ind">
+            <div class="step-bar on"></div>
+            <div class="step-bar"></div>
+          </div>
+
+          <div class="form-section">
+            <label class="form-label">Email address</label>
+            <input
+              class="login-input"
+              type="email"
+              placeholder="you@arena-scr.com"
+            />
+          </div>
+
+          <button class="login-btn">Continue with Email</button>
+
+          <div class="login-divider">or</div>
+
+          <div style="text-align: center">
+            <p
+              style="font-size: 12.5px; color: var(--text-4); line-height: 1.6"
+            >
+              We'll send a 6-digit verification code<br />to your email address.
+            </p>
+          </div>
+
+          <div class="login-footer">
+            Need help? <a href="#">Contact support</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar" id="sidebar">
+      <!-- brand header -->
+      <div class="sb-header">
+        <div class="sb-logo">
+          <svg class="sb-logo-hex" viewBox="0 0 48 48" fill="none">
+            <path
+              d="M24 4L42 14.5V33.5L24 44L6 33.5V14.5L24 4Z"
+              stroke="#2dd4ab"
+              stroke-width="1.2"
+              fill="#2dd4ab"
+              fill-opacity="0.06"
+            />
+            <path
+              d="M24 10L36 17V31L24 38L12 31V17L24 10Z"
+              fill="#2dd4ab"
+              fill-opacity="0.12"
+            />
+            <circle cx="24" cy="24" r="7" fill="#2dd4ab" fill-opacity="0.5" />
+            <circle cx="24" cy="24" r="3" fill="#2dd4ab" fill-opacity="0.9" />
+          </svg>
+        </div>
+        <div class="sb-header-text">
+          <div class="sb-wordmark">Arena</div>
+          <div class="sb-workspace-label">Admin</div>
+        </div>
+      </div>
+
+      <!-- search -->
+      <div class="sb-search">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <span class="sb-search-text">Search...</span>
+        <kbd class="sb-search-kbd">⌘K</kbd>
+      </div>
+
+      <!-- live stats -->
+      <div class="sb-stats">
+        <div class="sb-stat">
+          <div class="sb-stat-val">24</div>
+          <div class="sb-stat-label">Venues</div>
+        </div>
+        <div class="sb-stat">
+          <div class="sb-stat-val" style="color: var(--green)">21</div>
+          <div class="sb-stat-label">Active</div>
+        </div>
+        <div class="sb-stat">
+          <div class="sb-stat-val" style="color: var(--red)">3</div>
+          <div class="sb-stat-label">Overdue</div>
+        </div>
+      </div>
+
+      <nav class="sb-nav">
+        <div class="sb-section-label">Platform</div>
+
+        <a class="sb-item active" data-p="dashboard">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
+            <rect x="14" y="14" width="7" height="7" rx="1.5" />
+          </svg>
+          <span class="sb-item-label">Overview</span>
+          <span class="sb-kbd">1</span>
+        </a>
+
+        <a class="sb-item" data-p="venues">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          <span class="sb-item-label">Venues</span>
+          <span class="sb-item-count">24</span>
+        </a>
+
+        <a class="sb-item" data-p="invoices">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <polyline points="14,2 14,8 20,8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <span class="sb-item-label">Invoices</span>
+          <span class="sb-badge">3</span>
+        </a>
+
+        <div class="sb-sep"></div>
+        <div class="sb-section-label">Administration</div>
+
+        <a class="sb-item" data-p="users">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+            <path d="M16 3.13a4 4 0 010 7.75" />
+          </svg>
+          <span class="sb-item-label">Users</span>
+          <span class="sb-kbd">4</span>
+        </a>
+
+        <a class="sb-item" data-p="settings">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+            />
+          </svg>
+          <span class="sb-item-label">Settings</span>
+          <span class="sb-kbd">5</span>
+        </a>
+      </nav>
+
+      <div class="sb-footer">
+        <!-- notifications -->
+        <a class="sb-notif">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
+          </svg>
+          <span class="sb-notif-dot"></span>
+          Notifications
+        </a>
+
+        <!-- help -->
+        <a class="sb-help">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          Help & Docs
+        </a>
+
+        <div class="sb-sep" style="margin: 4px 8px"></div>
+
+        <!-- user -->
+        <div class="sb-user">
+          <div class="sb-avatar">AY</div>
+          <div class="sb-user-info">
+            <div class="sb-user-name">Ali Al Yaman</div>
+            <div class="sb-user-role">Administrator</div>
+          </div>
+          <button class="sb-logout" title="Sign out">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+              <polyline points="16,17 21,12 16,7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main class="main">
+      <div class="main-inner">
+        <!-- ─── DASHBOARD ─── -->
+        <div class="page on" id="pg-dashboard">
+          <div class="ph">
+            <div>
+              <h1>Overview</h1>
+              <div class="ph-sub">Arena platform at a glance</div>
+            </div>
+            <div class="ph-actions">
+              <button class="btn btn-ghost">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export
+              </button>
+              <button class="btn btn-primary">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                New Venue
+              </button>
+            </div>
+          </div>
+
+          <!-- metrics strip -->
+          <div class="metrics">
+            <div class="metric">
+              <div class="metric-label">Total Venues</div>
+              <div class="metric-value">24</div>
+              <span class="metric-delta up">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="18 15 12 9 6 15" />
+                </svg>
+                12%
+              </span>
+              <svg class="metric-spark" viewBox="0 0 100 40">
+                <path
+                  d="M0,35 Q15,30 25,25 T50,15 T75,20 T100,10"
+                  fill="none"
+                  stroke="rgba(45,212,171,0.35)"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Active</div>
+              <div class="metric-value">21</div>
+              <span class="metric-delta flat">87.5% of total</span>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Cities</div>
+              <div class="metric-value">8</div>
+              <span class="metric-delta up">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="18 15 12 9 6 15" />
+                </svg>
+                +2 new
+              </span>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Overdue Invoices</div>
+              <div class="metric-value" style="color: var(--red)">3</div>
+              <span class="metric-delta down">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+                needs attention
+              </span>
+            </div>
+          </div>
+
+          <div class="content-grid">
+            <!-- chart -->
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Bookings</span>
+                <div class="chart-header">
+                  <button class="chart-period">24h</button>
+                  <button class="chart-period on">7d</button>
+                  <button class="chart-period">30d</button>
+                  <button class="chart-period">90d</button>
+                </div>
+              </div>
+              <div class="chart-wrap">
+                <svg
+                  viewBox="0 0 560 150"
+                  width="100%"
+                  preserveAspectRatio="none"
+                  style="display: block"
+                >
+                  <defs>
+                    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="0%"
+                        stop-color="#2dd4ab"
+                        stop-opacity="0.15"
+                      />
+                      <stop
+                        offset="100%"
+                        stop-color="#2dd4ab"
+                        stop-opacity="0"
+                      />
+                    </linearGradient>
+                  </defs>
+                  <line
+                    x1="0"
+                    y1="37"
+                    x2="560"
+                    y2="37"
+                    stroke="rgba(255,255,255,0.03)"
+                  />
+                  <line
+                    x1="0"
+                    y1="75"
+                    x2="560"
+                    y2="75"
+                    stroke="rgba(255,255,255,0.03)"
+                  />
+                  <line
+                    x1="0"
+                    y1="112"
+                    x2="560"
+                    y2="112"
+                    stroke="rgba(255,255,255,0.03)"
+                  />
+                  <path
+                    d="M0,120 C40,115 60,80 100,72 C140,64 170,90 210,82 C250,74 280,35 330,28 C370,22 400,48 440,42 C480,36 520,50 560,44 L560,150 L0,150Z"
+                    fill="url(#cg)"
+                  />
+                  <path
+                    d="M0,120 C40,115 60,80 100,72 C140,64 170,90 210,82 C250,74 280,35 330,28 C370,22 400,48 440,42 C480,36 520,50 560,44"
+                    fill="none"
+                    stroke="#2dd4ab"
+                    stroke-width="1.5"
+                  />
+                  <circle cx="330" cy="28" r="3.5" fill="#2dd4ab" />
+                  <text
+                    x="14"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Mon
+                  </text>
+                  <text
+                    x="93"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Tue
+                  </text>
+                  <text
+                    x="186"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Wed
+                  </text>
+                  <text
+                    x="279"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Thu
+                  </text>
+                  <text
+                    x="372"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Fri
+                  </text>
+                  <text
+                    x="465"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Sat
+                  </text>
+                  <text
+                    x="535"
+                    y="147"
+                    fill="rgba(255,255,255,0.18)"
+                    font-size="10"
+                    font-family="Inter"
+                  >
+                    Sun
+                  </text>
+                </svg>
+              </div>
+            </div>
+
+            <!-- activity + actions -->
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Activity</span>
+                <a class="card-link">View all</a>
+              </div>
+              <ul class="feed">
+                <li class="feed-item">
+                  <div
+                    class="feed-av"
+                    style="background: var(--green-subtle); color: var(--green)"
+                  >
+                    AY
+                  </div>
+                  <div class="feed-body">
+                    <div class="feed-text">
+                      <b>You</b> created <b>Abha Mountain Club</b>
+                    </div>
+                    <div class="feed-time">2h ago</div>
+                  </div>
+                </li>
+                <li class="feed-item">
+                  <div
+                    class="feed-av"
+                    style="background: var(--blue-subtle); color: var(--blue)"
+                  >
+                    SY
+                  </div>
+                  <div class="feed-body">
+                    <div class="feed-text">
+                      <b>Sara Y.</b> assigned to <b>Jeddah Sports Hub</b>
+                    </div>
+                    <div class="feed-time">5h ago</div>
+                  </div>
+                </li>
+                <li class="feed-item">
+                  <div
+                    class="feed-av"
+                    style="background: var(--red-subtle); color: var(--red)"
+                  >
+                    !!
+                  </div>
+                  <div class="feed-body">
+                    <div class="feed-text">
+                      Invoice <b>#00312</b> is now <b>overdue</b>
+                    </div>
+                    <div class="feed-time">Yesterday</div>
+                  </div>
+                </li>
+                <li class="feed-item">
+                  <div
+                    class="feed-av"
+                    style="background: var(--amber-subtle); color: var(--amber)"
+                  >
+                    MK
+                  </div>
+                  <div class="feed-body">
+                    <div class="feed-text">
+                      <b>Mohammed K.</b> added 3 courts
+                    </div>
+                    <div class="feed-time">2d ago</div>
+                  </div>
+                </li>
+              </ul>
+              <div class="actions-row">
+                <button class="action-btn">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                  </svg>
+                  New Venue
+                </button>
+                <button class="action-btn">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                  </svg>
+                  Add Manager
+                </button>
+              </div>
+            </div>
+
+            <!-- recent venues table -->
+            <div class="card content-grid-full">
+              <div class="card-h">
+                <span class="card-t">Recent Venues</span>
+                <a class="card-link">View all →</a>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>City</th>
+                    <th>Status</th>
+                    <th>Rating</th>
+                    <th>Courts</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="cell-primary">Arena Riyadh Central</td>
+                    <td>Riyadh, SA</td>
+                    <td><span class="pill pill-green">Active</span></td>
+                    <td class="cell-number">4.8</td>
+                    <td>6</td>
+                    <td>
+                      <button class="tbl-act tbl-act-view">View →</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="cell-primary">Jeddah Sports Hub</td>
+                    <td>Jeddah, SA</td>
+                    <td><span class="pill pill-green">Active</span></td>
+                    <td class="cell-number">4.5</td>
+                    <td>4</td>
+                    <td>
+                      <button class="tbl-act tbl-act-view">View →</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="cell-primary">Dammam Courts</td>
+                    <td>Dammam, SA</td>
+                    <td><span class="pill pill-amber">Suspended</span></td>
+                    <td class="cell-number">3.9</td>
+                    <td>3</td>
+                    <td>
+                      <button class="tbl-act tbl-act-view">View →</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="cell-primary">KAUST Recreation</td>
+                    <td>Thuwal, SA</td>
+                    <td><span class="pill pill-green">Active</span></td>
+                    <td class="cell-number">4.7</td>
+                    <td>8</td>
+                    <td>
+                      <button class="tbl-act tbl-act-view">View →</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="cell-primary">Abha Mountain Club</td>
+                    <td>Abha, SA</td>
+                    <td><span class="pill pill-green">Active</span></td>
+                    <td class="cell-number">4.2</td>
+                    <td>2</td>
+                    <td>
+                      <button class="tbl-act tbl-act-view">View →</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── VENUES ─── -->
+        <div class="page" id="pg-venues">
+          <div class="ph">
+            <div>
+              <h1>Venues</h1>
+              <div class="ph-sub">Manage all onboarded venues</div>
+            </div>
+            <div class="ph-actions">
+              <button class="btn btn-ghost">Export</button>
+              <button class="btn btn-primary">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" /></svg
+                >Add Venue
+              </button>
+            </div>
+          </div>
+          <div class="search-wrap">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input class="search-input" placeholder="Search venues..." />
+          </div>
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>City</th>
+                  <th>Status</th>
+                  <th>Rating</th>
+                  <th>Courts</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-primary">Arena Riyadh Central</td>
+                  <td class="cell-mono">arena-riyadh-central</td>
+                  <td>Riyadh, SA</td>
+                  <td><span class="pill pill-green">Active</span></td>
+                  <td class="cell-number">4.8</td>
+                  <td>6</td>
+                  <td><button class="tbl-act tbl-act-view">View →</button></td>
+                </tr>
+                <tr>
+                  <td class="cell-primary">Jeddah Sports Hub</td>
+                  <td class="cell-mono">jeddah-sports-hub</td>
+                  <td>Jeddah, SA</td>
+                  <td><span class="pill pill-green">Active</span></td>
+                  <td class="cell-number">4.5</td>
+                  <td>4</td>
+                  <td><button class="tbl-act tbl-act-view">View →</button></td>
+                </tr>
+                <tr>
+                  <td class="cell-primary">Dammam Courts</td>
+                  <td class="cell-mono">dammam-courts</td>
+                  <td>Dammam, SA</td>
+                  <td><span class="pill pill-amber">Suspended</span></td>
+                  <td class="cell-number">3.9</td>
+                  <td>3</td>
+                  <td><button class="tbl-act tbl-act-view">View →</button></td>
+                </tr>
+                <tr>
+                  <td class="cell-primary">KAUST Recreation</td>
+                  <td class="cell-mono">kaust-recreation</td>
+                  <td>Thuwal, SA</td>
+                  <td><span class="pill pill-green">Active</span></td>
+                  <td class="cell-number">4.7</td>
+                  <td>8</td>
+                  <td><button class="tbl-act tbl-act-view">View →</button></td>
+                </tr>
+                <tr>
+                  <td class="cell-primary">Abha Mountain Club</td>
+                  <td class="cell-mono">abha-mountain-club</td>
+                  <td>Abha, SA</td>
+                  <td><span class="pill pill-green">Active</span></td>
+                  <td class="cell-number">4.2</td>
+                  <td>2</td>
+                  <td><button class="tbl-act tbl-act-view">View →</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── INVOICES ─── -->
+        <div class="page" id="pg-invoices">
+          <div class="ph">
+            <div>
+              <h1>Invoices</h1>
+              <div class="ph-sub">Billing and payment tracking</div>
+            </div>
+            <div class="ph-actions">
+              <button class="btn btn-ghost">Export CSV</button>
+              <button class="btn btn-ghost">Export PDF</button>
+            </div>
+          </div>
+
+          <div class="metrics" style="margin-bottom: 20px">
+            <div class="metric">
+              <div class="metric-label">Total</div>
+              <div class="metric-value">47</div>
+              <span class="metric-delta flat">all statuses</span>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Revenue</div>
+              <div class="metric-value">284K</div>
+              <span class="metric-delta flat">SAR excl. void</span>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Collected</div>
+              <div class="metric-value" style="color: var(--green)">38</div>
+              <span class="metric-delta up"
+                ><svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="18 15 12 9 6 15" /></svg
+                >SAR 231K</span
+              >
+            </div>
+            <div class="metric">
+              <div class="metric-label">Overdue</div>
+              <div class="metric-value" style="color: var(--red)">3</div>
+              <span class="metric-delta down"
+                ><svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <polyline points="6 9 12 15 18 9" /></svg
+                >action needed</span
+              >
+            </div>
+          </div>
+
+          <div class="filters">
+            <button class="filt on">All</button>
+            <button class="filt">Generated</button>
+            <button class="filt">Paid</button>
+            <button class="filt">Overdue</button>
+            <button class="filt">Void</button>
+          </div>
+
+          <div class="card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Venue</th>
+                  <th>Period</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Due</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-mono">#00347</td>
+                  <td>Arena Riyadh Central</td>
+                  <td style="color: var(--text-4)">Mar 1 – 31</td>
+                  <td class="cell-number">SAR 12,400</td>
+                  <td><span class="pill pill-green">Paid</span></td>
+                  <td>Apr 15</td>
+                  <td style="color: var(--text-4); font-size: 12px">Settled</td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">#00346</td>
+                  <td>Jeddah Sports Hub</td>
+                  <td style="color: var(--text-4)">Mar 1 – 31</td>
+                  <td class="cell-number">SAR 8,750</td>
+                  <td><span class="pill pill-red">Overdue</span></td>
+                  <td style="color: var(--red)">Apr 10</td>
+                  <td>
+                    <button class="tbl-act tbl-act-pay">Pay</button
+                    ><button class="tbl-act tbl-act-void">Void</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">#00345</td>
+                  <td>KAUST Recreation</td>
+                  <td style="color: var(--text-4)">Mar 1 – 31</td>
+                  <td class="cell-number">SAR 15,200</td>
+                  <td><span class="pill pill-blue">Generated</span></td>
+                  <td>Apr 20</td>
+                  <td>
+                    <button class="tbl-act tbl-act-pay">Pay</button
+                    ><button class="tbl-act tbl-act-void">Void</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">#00312</td>
+                  <td>Dammam Courts</td>
+                  <td style="color: var(--text-4)">Feb 1 – 28</td>
+                  <td class="cell-number">SAR 5,300</td>
+                  <td><span class="pill pill-red">Overdue</span></td>
+                  <td style="color: var(--red)">Mar 15</td>
+                  <td>
+                    <button class="tbl-act tbl-act-pay">Pay</button
+                    ><button class="tbl-act tbl-act-void">Void</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-mono">#00298</td>
+                  <td>Abha Mountain Club</td>
+                  <td style="color: var(--text-4)">Feb 1 – 28</td>
+                  <td class="cell-number">SAR 3,900</td>
+                  <td><span class="pill pill-gray">Void</span></td>
+                  <td style="color: var(--text-4)">Mar 10</td>
+                  <td style="color: var(--text-4); font-size: 12px">Voided</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── USERS ─── -->
+        <div class="page" id="pg-users">
+          <div class="ph">
+            <div>
+              <h1>Users</h1>
+              <div class="ph-sub">Create admin and venue manager accounts</div>
+            </div>
+          </div>
+
+          <div class="role-pick">
+            <div class="role-opt picked">
+              <h4>Admin</h4>
+              <p>Full platform access</p>
+            </div>
+            <div class="role-opt">
+              <h4>Venue Manager</h4>
+              <p>Manage assigned venues</p>
+            </div>
+          </div>
+
+          <div class="users-split">
+            <div class="card">
+              <div class="card-h"><span class="card-t">Create Admin</span></div>
+              <div style="padding: 4px 20px 20px">
+                <div class="form-grid">
+                  <div class="form-section">
+                    <label class="form-label">First name</label
+                    ><input class="form-input" placeholder="Ali" />
+                  </div>
+                  <div class="form-section">
+                    <label class="form-label">Last name</label
+                    ><input class="form-input" placeholder="Al Yaman" />
+                  </div>
+                  <div class="form-section form-full">
+                    <label class="form-label">Email</label
+                    ><input
+                      class="form-input"
+                      type="email"
+                      placeholder="admin@arena-scr.com"
+                    />
+                  </div>
+                </div>
+                <button
+                  class="btn btn-primary"
+                  style="width: 100%; margin-top: 8px"
+                >
+                  Create Admin
+                </button>
+                <div
+                  class="form-hint"
+                  style="margin-top: 8px; text-align: center"
+                >
+                  New admin receives an OTP login email.
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><span class="card-t">Permissions</span></div>
+              <div style="padding: 4px 20px 20px">
+                <ul class="perm-list">
+                  <li>Full access to all features</li>
+                  <li>Create and manage venues</li>
+                  <li>Manage invoices and billing</li>
+                  <li>Create other admin accounts</li>
+                  <li>OTP email login</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── SETTINGS ─── -->
+        <div class="page" id="pg-settings">
+          <div class="ph">
+            <div>
+              <h1>Settings</h1>
+              <div class="ph-sub">Account and platform configuration</div>
+            </div>
+          </div>
+
+          <div class="settings-split">
+            <div class="card">
+              <div class="card-h"><span class="card-t">Account</span></div>
+              <div>
+                <div class="set-row">
+                  <span class="set-label">Role</span
+                  ><span class="pill pill-green" style="font-size: 11px"
+                    >Admin</span
+                  >
+                </div>
+                <div class="set-row">
+                  <span class="set-label">User ID</span
+                  ><span class="set-val mono">a1b2c3d4e5f6</span>
+                </div>
+                <div class="set-row">
+                  <span class="set-label">Status</span
+                  ><span class="pill pill-green" style="font-size: 11px"
+                    >Active</span
+                  >
+                </div>
+                <div class="set-row">
+                  <span class="set-label">Email</span
+                  ><span class="set-val">aliyaman750@gmail.com</span>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-h"><span class="card-t">Platform</span></div>
+              <div>
+                <div class="set-row">
+                  <span class="set-label">API</span
+                  ><span class="set-val mono">localhost:8080</span>
+                </div>
+                <div class="set-row">
+                  <span class="set-label">Version</span
+                  ><span class="set-val mono">1.0.0</span>
+                </div>
+                <div class="set-row">
+                  <span class="set-label">Environment</span
+                  ><span class="set-val">Development</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ═══ PAGE SWITCHER ═══ -->
+    <div class="switcher">
+      <button class="sw-btn" data-t="login">Login</button>
+      <button class="sw-btn on" data-t="dashboard">Dashboard</button>
+      <button class="sw-btn" data-t="venues">Venues</button>
+      <button class="sw-btn" data-t="invoices">Invoices</button>
+      <button class="sw-btn" data-t="users">Users</button>
+      <button class="sw-btn" data-t="settings">Settings</button>
+    </div>
+
+    <script>
+      function go(target) {
+        // switcher
+        document
+          .querySelectorAll(".sw-btn")
+          .forEach((b) => b.classList.toggle("on", b.dataset.t === target));
+        // sidebar
+        document
+          .querySelectorAll(".sb-item")
+          .forEach((n) => n.classList.toggle("active", n.dataset.p === target));
+        // login
+        const lw = document.getElementById("pg-login");
+        const sb = document.getElementById("sidebar");
+        const mn = document.querySelector(".main");
+        if (target === "login") {
+          lw.classList.add("on");
+          sb.style.display = "none";
+          mn.style.display = "none";
+        } else {
+          lw.classList.remove("on");
+          sb.style.display = "flex";
+          mn.style.display = "block";
+          document
+            .querySelectorAll(".page")
+            .forEach((p) => p.classList.toggle("on", p.id === "pg-" + target));
+        }
+      }
+
+      document
+        .querySelectorAll(".sw-btn")
+        .forEach((b) => b.addEventListener("click", () => go(b.dataset.t)));
+      document
+        .querySelectorAll(".sb-item")
+        .forEach((n) => n.addEventListener("click", () => go(n.dataset.p)));
+
+      // role picker
+      document.querySelectorAll(".role-opt").forEach((r) =>
+        r.addEventListener("click", () => {
+          document
+            .querySelectorAll(".role-opt")
+            .forEach((o) => o.classList.remove("picked"));
+          r.classList.add("picked");
+        }),
+      );
+
+      // filters
+      document.querySelectorAll(".filt").forEach((f) =>
+        f.addEventListener("click", () => {
+          document
+            .querySelectorAll(".filt")
+            .forEach((x) => x.classList.remove("on"));
+          f.classList.add("on");
+        }),
+      );
+
+      // chart periods
+      document.querySelectorAll(".chart-period").forEach((p) =>
+        p.addEventListener("click", () => {
+          document
+            .querySelectorAll(".chart-period")
+            .forEach((x) => x.classList.remove("on"));
+          p.classList.add("on");
+        }),
+      );
+    </script>
+  </body>
+</html>

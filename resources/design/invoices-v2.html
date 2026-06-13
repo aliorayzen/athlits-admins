@@ -1,0 +1,2384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arena Invoices v2 — Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;450;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+    />
+    <style>
+      :root {
+        --bg-0: #0a0d14;
+        --bg-1: #0f131b;
+        --bg-2: #14181f;
+        --bg-hover: rgba(255, 255, 255, 0.025);
+        --bg-row-hover: rgba(255, 255, 255, 0.015);
+        --border: rgba(255, 255, 255, 0.06);
+        --border-strong: rgba(255, 255, 255, 0.1);
+        --border-teal: rgba(0, 212, 170, 0.18);
+        --text-1: #f2f3f5;
+        --text-2: #a8aebb;
+        --text-3: #737986;
+        --text-4: #545967;
+        --teal: #00d4aa;
+        --teal-text: #39e0bb;
+        --teal-subtle: rgba(0, 212, 170, 0.1);
+        --teal-glow: rgba(0, 212, 170, 0.2);
+        --green: #10b981;
+        --green-text: #34d399;
+        --amber: #f59e0b;
+        --amber-text: #fbbf24;
+        --red: #f43f5e;
+        --red-text: #fb7185;
+        --blue: #6366f1;
+        --blue-text: #818cf8;
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background:
+          radial-gradient(
+            ellipse at 20% -10%,
+            rgba(0, 212, 170, 0.04),
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse at 90% 90%,
+            rgba(99, 102, 241, 0.025),
+            transparent 60%
+          ),
+          #0a0d14;
+        color: var(--text-1);
+        font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+        font-feature-settings:
+          "ss01",
+          "cv11",
+          "tnum" off;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+
+      /* Numeric surfaces — systematic tabular */
+      .amount,
+      .kpi-value,
+      .delta,
+      .due-date,
+      .invoice-id,
+      .count-pill,
+      .chip-count,
+      .aging-value,
+      .page-btn,
+      .search-kbd,
+      .period,
+      .collection-days,
+      .results-info {
+        font-feature-settings: "tnum" 1;
+      }
+
+      .page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 40px 32px 80px;
+      }
+
+      /* ════════════════ Header ════════════════ */
+      .header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .h1 {
+        font-size: 26px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        color: var(--text-1);
+        margin: 0;
+      }
+
+      .count-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2px 8px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg-1);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-3);
+      }
+
+      .count-pill::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--teal);
+        box-shadow: 0 0 5px var(--teal-glow);
+      }
+
+      .subtitle {
+        font-size: 13px;
+        color: var(--text-3);
+        font-weight: 400;
+        letter-spacing: -0.003em;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .urgency-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: var(--radius-sm);
+        background: rgba(244, 63, 94, 0.1);
+        border: 1px solid rgba(244, 63, 94, 0.22);
+        color: var(--red-text);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .urgency-chip svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .urgency-chip .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+        animation: pulseDot 1.8s var(--ease-out) infinite;
+      }
+
+      @keyframes pulseDot {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.55;
+          transform: scale(1.15);
+        }
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-2);
+        transition: all 0.15s var(--ease-out);
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        border-color: var(--border-strong);
+        color: var(--text-1);
+        background: var(--bg-2);
+      }
+
+      .btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* ════════════════ KPI strip ════════════════ */
+      .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        margin-bottom: 14px;
+        border: 1px solid var(--border);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.01) 0%,
+            transparent 50%
+          ),
+          var(--bg-1);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+
+      .kpi {
+        padding: 16px 20px;
+        position: relative;
+        animation: kpiEnter 0.5s var(--ease-out) both;
+      }
+
+      .kpi:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .kpi:nth-child(2) {
+        animation-delay: 0.06s;
+      }
+      .kpi:nth-child(3) {
+        animation-delay: 0.12s;
+      }
+      .kpi:nth-child(4) {
+        animation-delay: 0.18s;
+      }
+
+      @keyframes kpiEnter {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Outstanding hero — subtle teal glow on hover (microinteraction) */
+      .kpi.hero {
+        cursor: default;
+        transition: background 0.2s var(--ease-out);
+      }
+      .kpi.hero:hover {
+        background: radial-gradient(
+          ellipse at center,
+          rgba(0, 212, 170, 0.04),
+          transparent 70%
+        );
+      }
+
+      .kpi + .kpi::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 20%;
+        bottom: 20%;
+        width: 1px;
+        background: var(--border);
+      }
+
+      .kpi-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .kpi-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--text-4);
+      }
+      .kpi-dot.ok {
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+      }
+      .kpi-dot.warn {
+        background: var(--amber);
+        box-shadow: 0 0 5px var(--amber);
+      }
+      .kpi-dot.alert {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+      }
+      .kpi-dot.teal {
+        background: var(--teal);
+        box-shadow: 0 0 5px var(--teal);
+      }
+
+      .kpi-value {
+        margin-top: 8px;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.035em;
+        line-height: 1;
+        color: var(--text-1);
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+      }
+
+      .kpi-value .currency {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0;
+      }
+
+      .kpi-value.ok {
+        color: var(--green-text);
+      }
+      .kpi-value.alert {
+        color: var(--red-text);
+      }
+
+      .kpi-sub {
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-3);
+      }
+
+      .delta {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--green-text);
+      }
+      .delta.negative {
+        color: var(--red-text);
+      }
+
+      /* ════════════════ Aging breakdown (Upflow DNA) ════════════════ */
+      .aging-strip {
+        display: grid;
+        grid-template-columns: auto 1fr 1fr 1fr 1fr;
+        gap: 16px;
+        padding: 12px 20px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(244, 63, 94, 0.12);
+        background: linear-gradient(
+          180deg,
+          rgba(244, 63, 94, 0.04),
+          rgba(244, 63, 94, 0.01)
+        );
+        border-radius: var(--radius-md);
+        align-items: center;
+      }
+
+      .aging-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--red-text);
+      }
+
+      .aging-bucket {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .aging-bucket-label {
+        font-size: 9.5px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-4);
+      }
+
+      .aging-value-row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+      }
+
+      .aging-value {
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .aging-amount {
+        font-size: 11px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        color: var(--text-3);
+      }
+
+      .aging-bar {
+        height: 3px;
+        margin-top: 2px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.04);
+        overflow: hidden;
+      }
+
+      /* Aging bars grow-in from 0 on mount (top-design signature) */
+      .aging-bar > span {
+        display: block;
+        height: 100%;
+        border-radius: 2px;
+        transform-origin: left;
+        animation: agingBarGrow 0.9s cubic-bezier(0.25, 1, 0.5, 1) 0.3s both;
+      }
+
+      @keyframes agingBarGrow {
+        from {
+          transform: scaleX(0);
+        }
+        to {
+          transform: scaleX(1);
+        }
+      }
+
+      .aging-bucket.mild .aging-value {
+        color: var(--amber-text);
+      }
+      .aging-bucket.mild .aging-bar > span {
+        background: var(--amber);
+      }
+      .aging-bucket.moderate .aging-value {
+        color: #fb923c;
+      }
+      .aging-bucket.moderate .aging-bar > span {
+        background: #fb923c;
+      }
+      .aging-bucket.severe .aging-value {
+        color: var(--red-text);
+      }
+      .aging-bucket.severe .aging-bar > span {
+        background: var(--red);
+      }
+      .aging-bucket.critical .aging-value {
+        color: #be123c;
+      }
+      .aging-bucket.critical .aging-bar > span {
+        background: #be123c;
+      }
+
+      /* ════════════════ Bulk selection bar (ux-heuristics clarity) ════════════════ */
+      .bulk-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+        padding: 8px 14px 8px 10px;
+        border: 1px solid var(--border-teal);
+        background:
+          linear-gradient(
+            180deg,
+            rgba(0, 212, 170, 0.08),
+            rgba(0, 212, 170, 0.02)
+          ),
+          var(--bg-1);
+        border-radius: var(--radius-sm);
+        animation: bulkBarEnter 0.3s var(--ease-out);
+      }
+
+      @keyframes bulkBarEnter {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .bulk-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--text-1);
+      }
+
+      .bulk-count {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+        border-radius: 999px;
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .bulk-total {
+        color: var(--text-3);
+        font-size: 12px;
+      }
+
+      .bulk-total .mono {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        color: var(--text-2);
+        font-weight: 500;
+      }
+
+      .bulk-clear {
+        background: none;
+        border: none;
+        color: var(--text-3);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 0;
+        transition: color 0.12s var(--ease-out);
+      }
+
+      .bulk-clear:hover {
+        color: var(--text-1);
+      }
+
+      .bulk-actions {
+        display: inline-flex;
+        gap: 6px;
+      }
+
+      .bulk-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 11px;
+        border-radius: 5px;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-2);
+        color: var(--text-2);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s var(--ease-out);
+      }
+
+      .bulk-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+
+      .bulk-btn.success:hover {
+        border-color: rgba(16, 185, 129, 0.3);
+        color: var(--green-text);
+        background: rgba(16, 185, 129, 0.08);
+        box-shadow: 0 4px 14px -6px rgba(16, 185, 129, 0.4);
+      }
+
+      .bulk-btn.danger:hover {
+        border-color: rgba(244, 63, 94, 0.3);
+        color: var(--red-text);
+        background: rgba(244, 63, 94, 0.08);
+      }
+
+      .bulk-btn svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      /* ════════════════ Filter bar ════════════════ */
+      .filter-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 0 0 14px;
+      }
+
+      .chips {
+        position: relative;
+        display: inline-flex;
+        padding: 2px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        background: var(--bg-1);
+        gap: 2px;
+      }
+
+      .chip-indicator {
+        position: absolute;
+        top: 2px;
+        bottom: 2px;
+        left: 2px;
+        border-radius: 4px;
+        background: var(--bg-2);
+        box-shadow:
+          0 1px 0 rgba(255, 255, 255, 0.04) inset,
+          0 1px 2px rgba(0, 0, 0, 0.25);
+        transition:
+          transform 0.28s var(--ease-out),
+          width 0.28s var(--ease-out);
+        pointer-events: none;
+      }
+
+      .chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-3);
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        transition: color 0.18s var(--ease-out);
+        z-index: 1;
+      }
+
+      .chip:hover {
+        color: var(--text-1);
+      }
+      .chip.active {
+        color: var(--text-1);
+      }
+
+      .chip-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+      .chip-dot.all {
+        background: var(--text-4);
+      }
+      .chip-dot.generated {
+        background: var(--blue);
+        box-shadow: 0 0 4px var(--blue);
+      }
+      .chip-dot.paid {
+        background: var(--green);
+        box-shadow: 0 0 4px var(--green);
+      }
+      .chip-dot.overdue {
+        background: var(--red);
+        box-shadow: 0 0 4px var(--red);
+      }
+      .chip-dot.void {
+        background: var(--text-4);
+      }
+
+      .chip-count {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10.5px;
+        color: var(--text-4);
+        padding-left: 2px;
+      }
+
+      .chip.active .chip-count {
+        color: var(--text-2);
+      }
+
+      .search {
+        position: relative;
+        width: 300px;
+      }
+
+      .search input {
+        width: 100%;
+        height: 32px;
+        padding: 0 32px 0 34px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--bg-1);
+        color: var(--text-1);
+        font: inherit;
+        font-size: 12.5px;
+        transition: all 0.15s var(--ease-out);
+      }
+
+      .search input::placeholder {
+        color: var(--text-4);
+      }
+
+      .search input:focus {
+        outline: none;
+        border-color: var(--teal);
+        box-shadow: 0 0 0 3px var(--teal-subtle);
+      }
+
+      .search svg {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 13px;
+        height: 13px;
+        color: var(--text-4);
+        pointer-events: none;
+      }
+
+      .search-kbd {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 10px;
+        color: var(--text-4);
+        padding: 2px 5px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        line-height: 1;
+        opacity: 0.7;
+      }
+
+      /* ════════════════ Table ════════════════ */
+      .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        background: var(--bg-1);
+        overflow: hidden;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+      }
+
+      thead {
+        background: rgba(255, 255, 255, 0.012);
+      }
+
+      th {
+        text-align: left;
+        padding: 10px 16px;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-4);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      th.right {
+        text-align: right;
+      }
+      th.checkbox,
+      td.checkbox {
+        width: 40px;
+        padding-left: 16px;
+        padding-right: 0;
+      }
+
+      /* Row stagger fade-up */
+      tbody tr {
+        transition: background 0.12s var(--ease-out);
+        animation: rowEnter 0.5s var(--ease-out) both;
+        position: relative;
+      }
+
+      tbody tr:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      tbody tr:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      tbody tr:nth-child(3) {
+        animation-delay: 0.15s;
+      }
+      tbody tr:nth-child(4) {
+        animation-delay: 0.2s;
+      }
+      tbody tr:nth-child(5) {
+        animation-delay: 0.25s;
+      }
+      tbody tr:nth-child(6) {
+        animation-delay: 0.3s;
+      }
+      tbody tr:nth-child(7) {
+        animation-delay: 0.35s;
+      }
+      tbody tr:nth-child(8) {
+        animation-delay: 0.4s;
+      }
+      tbody tr:nth-child(9) {
+        animation-delay: 0.45s;
+      }
+
+      @keyframes rowEnter {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      tbody tr + tr td {
+        border-top: 1px solid rgba(255, 255, 255, 0.035);
+      }
+
+      tbody tr:hover {
+        background: var(--bg-row-hover);
+      }
+
+      tbody tr:hover .row-actions .appears {
+        opacity: 1;
+      }
+
+      tbody tr.selected {
+        background: rgba(0, 212, 170, 0.04);
+      }
+
+      /* Urgency accent — overdue rows get a red inner-left bar (Lemon Squeezy DNA) */
+      tbody tr.urgency-overdue td:first-child {
+        box-shadow: inset 3px 0 0 var(--red);
+      }
+
+      tbody tr.urgency-due-soon td:first-child {
+        box-shadow: inset 3px 0 0 var(--amber);
+      }
+
+      td {
+        padding: 12px 16px;
+        font-size: 13px;
+        color: var(--text-2);
+        vertical-align: middle;
+      }
+
+      td.right {
+        text-align: right;
+      }
+
+      /* Checkbox */
+      .checkbox-ui {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1.3px solid var(--border-strong);
+        background: transparent;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.12s var(--ease-out);
+      }
+
+      .checkbox-ui:hover {
+        border-color: var(--teal);
+      }
+      .checkbox-ui:active {
+        transform: scale(0.88);
+      }
+
+      .checkbox-ui.checked {
+        border-color: var(--teal);
+        background: var(--teal);
+      }
+      .checkbox-ui.checked::after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: 0;
+        width: 4px;
+        height: 8px;
+        border-right: 1.5px solid #032921;
+        border-bottom: 1.5px solid #032921;
+        transform: rotate(45deg);
+      }
+
+      /* Invoice ID */
+      .invoice-id {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--text-2);
+        background: var(--bg-2);
+        padding: 2px 7px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        display: inline-block;
+      }
+
+      /* Venue cell — matches venues page aesthetic */
+      .venue-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 200px;
+      }
+
+      .venue-thumb {
+        position: relative;
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        border-radius: 5px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background-size: cover;
+        background-position: center;
+      }
+
+      .venue-thumb-fallback {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: -0.01em;
+      }
+
+      .venue-thumb-fallback.g1 {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 212, 170, 0.25),
+          rgba(0, 212, 170, 0.06)
+        );
+        color: var(--teal-text);
+      }
+      .venue-thumb-fallback.g2 {
+        background: linear-gradient(
+          135deg,
+          rgba(99, 102, 241, 0.22),
+          rgba(99, 102, 241, 0.04)
+        );
+        color: #a5b4fc;
+      }
+      .venue-thumb-fallback.g3 {
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.2),
+          rgba(245, 158, 11, 0.04)
+        );
+        color: #fcd34d;
+      }
+      .venue-thumb-fallback.g4 {
+        background: linear-gradient(
+          135deg,
+          rgba(244, 63, 94, 0.2),
+          rgba(244, 63, 94, 0.04)
+        );
+        color: #fda4af;
+      }
+
+      .venue-name-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+
+      .venue-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-1);
+        letter-spacing: -0.005em;
+        line-height: 1.25;
+      }
+
+      .venue-location {
+        font-size: 10.5px;
+        color: var(--text-4);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .venue-location .flag {
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      /* Period cell */
+      .period {
+        font-size: 12px;
+        color: var(--text-3);
+        white-space: nowrap;
+      }
+
+      /* Amount cell — color-coded by status (Mercury DNA) */
+      .amount {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 13.5px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+
+      .amount.paid {
+        color: var(--green-text);
+      }
+      .amount.overdue {
+        color: var(--red-text);
+      }
+      .amount.generated {
+        color: var(--text-1);
+      }
+      .amount.void {
+        color: var(--text-4);
+        text-decoration: line-through;
+        text-decoration-color: rgba(255, 255, 255, 0.15);
+      }
+
+      .amount-currency {
+        font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-4);
+        margin-right: 2px;
+      }
+
+      /* Status pill — status-forward (Lemon Squeezy DNA) */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 9px 3px 7px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+
+      .status svg {
+        width: 11px;
+        height: 11px;
+      }
+
+      .status.generated {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--blue-text);
+      }
+
+      .status.paid {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--green-text);
+      }
+
+      .status.overdue {
+        background: rgba(244, 63, 94, 0.1);
+        color: var(--red-text);
+        border: 1px solid rgba(244, 63, 94, 0.2);
+      }
+
+      .status.void {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text-4);
+      }
+
+      .status-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+      }
+
+      .status.generated .status-dot {
+        background: var(--blue);
+        box-shadow: 0 0 5px var(--blue);
+      }
+      .status.paid .status-dot {
+        background: var(--green);
+        box-shadow: 0 0 5px var(--green);
+      }
+      .status.overdue .status-dot {
+        background: var(--red);
+        box-shadow: 0 0 6px var(--red);
+        animation: pulseDot 1.6s var(--ease-out) infinite;
+      }
+      .status.void .status-dot {
+        background: var(--text-4);
+      }
+
+      /* Due date with urgency — Upflow DNA */
+      .due-date {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        white-space: nowrap;
+      }
+
+      .due-primary {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-2);
+      }
+
+      .due-primary.overdue {
+        color: var(--red-text);
+      }
+      .due-primary.soon {
+        color: var(--amber-text);
+      }
+      .due-primary.paid {
+        color: var(--text-4);
+        text-decoration: line-through;
+        text-decoration-color: rgba(255, 255, 255, 0.15);
+      }
+
+      .due-secondary {
+        font-size: 10px;
+        color: var(--text-4);
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .due-secondary.overdue {
+        color: var(--red-text);
+        font-weight: 500;
+      }
+      .due-secondary.soon {
+        color: var(--amber-text);
+        font-weight: 500;
+      }
+
+      /* Row actions */
+      .row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        justify-content: flex-end;
+      }
+
+      .row-actions .appears {
+        opacity: 0.6;
+        transition: opacity 0.15s var(--ease-out);
+      }
+
+      /* Row action buttons — with pre-action affordance (microinteractions) */
+      .icon-btn {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-2);
+        color: var(--text-3);
+        cursor: pointer;
+        transition: all 0.15s var(--ease-out);
+        position: relative;
+      }
+
+      .icon-btn:hover {
+        border-color: var(--border-teal);
+        color: var(--teal-text);
+        background: var(--teal-subtle);
+      }
+
+      .icon-btn:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--teal);
+      }
+
+      .icon-btn:active {
+        transform: scale(0.94);
+      }
+
+      /* Mark Paid — success affordance + lift */
+      .icon-btn.primary:hover {
+        border-color: rgba(16, 185, 129, 0.35);
+        color: var(--green-text);
+        background: rgba(16, 185, 129, 0.1);
+        box-shadow: 0 4px 14px -6px rgba(16, 185, 129, 0.5);
+        transform: translateY(-1px);
+      }
+
+      .icon-btn.primary:active {
+        transform: translateY(0) scale(0.94);
+      }
+
+      /* Void — danger affordance */
+      .icon-btn.danger:hover {
+        border-color: rgba(244, 63, 94, 0.35);
+        color: var(--red-text);
+        background: rgba(244, 63, 94, 0.1);
+      }
+
+      .icon-btn svg {
+        width: 13px;
+        height: 13px;
+        transition: transform 0.15s var(--ease-out);
+      }
+
+      /* PDF download nudge — arrow dips down on hover */
+      .icon-btn[data-action="pdf"]:hover svg {
+        transform: translateY(1.5px);
+      }
+
+      .settled-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.05);
+        color: var(--green-text);
+        font-size: 10.5px;
+        font-weight: 500;
+        border: 1px solid rgba(16, 185, 129, 0.1);
+      }
+
+      .settled-chip.voided {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text-4);
+        border-color: var(--border);
+      }
+
+      .settled-chip svg {
+        width: 10px;
+        height: 10px;
+      }
+
+      /* Table footer */
+      .table-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-top: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.008);
+      }
+
+      .results-info {
+        font-size: 12px;
+        color: var(--text-4);
+      }
+
+      .results-info .teal {
+        color: var(--teal-text);
+        margin-left: 8px;
+      }
+
+      .pagination {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      .page-btn {
+        min-width: 28px;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 5px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-3);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.12s var(--ease-out);
+        font-family: "Geist Mono", ui-monospace, monospace;
+      }
+
+      .page-btn:hover {
+        background: var(--bg-2);
+        color: var(--text-1);
+      }
+
+      .page-btn.active {
+        border-color: var(--border-teal);
+        background: var(--teal-subtle);
+        color: var(--teal-text);
+      }
+
+      .page-btn.ghost {
+        color: var(--text-4);
+      }
+      .page-btn.ghost:hover {
+        color: var(--text-2);
+      }
+
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0s !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- ════════════════ Header ════════════════ -->
+      <div class="header">
+        <div class="title-wrap">
+          <div class="title-row">
+            <h1 class="h1">Invoices</h1>
+            <span class="count-pill">47</span>
+          </div>
+          <div class="subtitle">Billing, payments, and collection tracking</div>
+        </div>
+        <div class="actions">
+          <span class="urgency-chip">
+            <span class="pulse-dot"></span>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"
+              />
+            </svg>
+            3 overdue
+          </span>
+          <button class="btn" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+            CSV
+          </button>
+          <button class="btn" type="button">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"
+              />
+              <path d="M14 2v5h5M10 13h4M10 17h4" />
+            </svg>
+            PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════ KPI strip ════════════════ -->
+      <div class="kpi-strip">
+        <div class="kpi hero">
+          <div class="kpi-label">
+            <span class="kpi-dot teal"></span>Outstanding balance
+          </div>
+          <div class="kpi-value">
+            <span class="currency">USD</span>
+            32,450<span
+              style="font-size: 14px; color: var(--text-4); font-weight: 500"
+              >.00</span
+            >
+          </div>
+          <div class="kpi-sub">
+            <span>Across 23 unpaid invoices</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">
+            <span class="kpi-dot ok"></span>Collected (MTD)
+          </div>
+          <div class="kpi-value ok">
+            <span class="currency">USD</span>
+            18,720<span
+              style="font-size: 14px; color: var(--text-4); font-weight: 500"
+              >.00</span
+            >
+          </div>
+          <div class="kpi-sub">
+            <span class="delta">+12.4%</span>
+            <span>vs last month</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">
+            <span class="kpi-dot alert"></span>Overdue
+          </div>
+          <div class="kpi-value alert">
+            <span class="currency">USD</span>
+            4,820
+          </div>
+          <div class="kpi-sub">
+            <span class="delta negative">3 invoices</span>
+            <span>needs collection</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">
+            <span class="kpi-dot"></span>Avg collection time
+          </div>
+          <div class="kpi-value collection-days">
+            8.3<span
+              style="font-size: 14px; color: var(--text-4); font-weight: 500"
+            >
+              days</span
+            >
+          </div>
+          <div class="kpi-sub">
+            <span class="delta">−2.1d</span>
+            <span>vs last month</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ Aging breakdown (Upflow DNA, shown when overdue > 0) ════════════════ -->
+      <div class="aging-strip">
+        <div class="aging-label">
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+          Aging
+        </div>
+        <div class="aging-bucket mild">
+          <div class="aging-bucket-label">1-30 days</div>
+          <div class="aging-value-row">
+            <span class="aging-value">2</span>
+            <span class="aging-amount">USD 1,920</span>
+          </div>
+          <div class="aging-bar"><span style="width: 40%"></span></div>
+        </div>
+        <div class="aging-bucket moderate">
+          <div class="aging-bucket-label">31-60 days</div>
+          <div class="aging-value-row">
+            <span class="aging-value">1</span>
+            <span class="aging-amount">USD 2,100</span>
+          </div>
+          <div class="aging-bar"><span style="width: 44%"></span></div>
+        </div>
+        <div class="aging-bucket severe">
+          <div class="aging-bucket-label">61-90 days</div>
+          <div class="aging-value-row">
+            <span class="aging-value">0</span>
+            <span class="aging-amount">—</span>
+          </div>
+          <div class="aging-bar"><span style="width: 0%"></span></div>
+        </div>
+        <div class="aging-bucket critical">
+          <div class="aging-bucket-label">90+ days</div>
+          <div class="aging-value-row">
+            <span class="aging-value">0</span>
+            <span class="aging-amount">—</span>
+          </div>
+          <div class="aging-bar"><span style="width: 0%"></span></div>
+        </div>
+      </div>
+
+      <!-- ════════════════ Bulk selection bar (shown when rows selected) ════════════════ -->
+      <div class="bulk-bar" role="region" aria-label="Bulk actions">
+        <div class="bulk-meta">
+          <span class="bulk-count">2 selected</span>
+          <button class="bulk-clear" type="button">Clear</button>
+          <span class="bulk-total">
+            <span class="mono">USD 3,580.00</span> total
+          </span>
+        </div>
+        <div class="bulk-actions">
+          <button
+            class="bulk-btn success"
+            type="button"
+            title="Mark selected as paid"
+            aria-label="Mark selected invoices as paid"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+            Mark paid
+          </button>
+          <button
+            class="bulk-btn"
+            type="button"
+            title="Send payment reminder"
+            aria-label="Send payment reminder to selected"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+              />
+              <path d="M22 6L12 13 2 6" />
+            </svg>
+            Remind
+          </button>
+          <button
+            class="bulk-btn"
+            type="button"
+            title="Export selected as CSV"
+            aria-label="Export selected invoices"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+            Export
+          </button>
+          <button
+            class="bulk-btn danger"
+            type="button"
+            title="Void selected"
+            aria-label="Void selected invoices"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M4.9 4.9l14.2 14.2" />
+            </svg>
+            Void
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════ Filter bar ════════════════ -->
+      <div class="filter-bar">
+        <div class="chips" role="tablist">
+          <span
+            class="chip-indicator"
+            style="transform: translateX(0); width: 56px"
+          ></span>
+          <button class="chip active" role="tab" aria-selected="true">
+            <span class="chip-dot all"></span>All
+            <span class="chip-count">47</span>
+          </button>
+          <button class="chip" role="tab">
+            <span class="chip-dot generated"></span>Generated
+            <span class="chip-count">12</span>
+          </button>
+          <button class="chip" role="tab">
+            <span class="chip-dot paid"></span>Paid
+            <span class="chip-count">29</span>
+          </button>
+          <button class="chip" role="tab">
+            <span class="chip-dot overdue"></span>Overdue
+            <span class="chip-count">3</span>
+          </button>
+          <button class="chip" role="tab">
+            <span class="chip-dot void"></span>Void
+            <span class="chip-count">3</span>
+          </button>
+        </div>
+        <div class="search">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3-3" />
+          </svg>
+          <input type="search" placeholder="Search by invoice ID or venue…" />
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <!-- ════════════════ Table ════════════════ -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="checkbox"><div class="checkbox-ui"></div></th>
+              <th>Invoice</th>
+              <th>Venue</th>
+              <th>Period</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Due</th>
+              <th class="right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Row 1 — Overdue (signature urgency row) -->
+            <tr class="urgency-overdue selected">
+              <td class="checkbox"><div class="checkbox-ui checked"></div></td>
+              <td><span class="invoice-id">#A1B2C3D4</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-fallback g4">EF</div>
+                  </div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Elite Football Hub</div>
+                    <div class="venue-location">
+                      <span class="flag">🇸🇦</span>Riyadh
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Feb 1 – Feb 28</span></td>
+              <td>
+                <span class="amount overdue"
+                  ><span class="amount-currency">USD</span>2,100.00</span
+                >
+              </td>
+              <td>
+                <span class="status overdue">
+                  <span class="status-dot"></span>
+                  Overdue
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary overdue">Overdue by 45 days</span>
+                  <span class="due-secondary overdue">was Mar 5, 2026</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn primary"
+                    type="button"
+                    title="Mark as paid"
+                    aria-label="Mark invoice as paid"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn danger appears"
+                    type="button"
+                    title="Void invoice"
+                    aria-label="Void this invoice"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M4.9 4.9l14.2 14.2" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 2 — Overdue, more recent -->
+            <tr class="urgency-overdue selected">
+              <td class="checkbox"><div class="checkbox-ui checked"></div></td>
+              <td><span class="invoice-id">#B2C3D4E5</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-fallback g3">DV</div>
+                  </div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Downtown Volleyball Center</div>
+                    <div class="venue-location">
+                      <span class="flag">🇦🇪</span>Dubai
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Mar 1 – Mar 31</span></td>
+              <td>
+                <span class="amount overdue"
+                  ><span class="amount-currency">USD</span>1,480.00</span
+                >
+              </td>
+              <td>
+                <span class="status overdue">
+                  <span class="status-dot"></span>
+                  Overdue
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary overdue">Overdue by 12 days</span>
+                  <span class="due-secondary overdue">was Apr 9, 2026</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn primary"
+                    type="button"
+                    title="Mark as paid"
+                    aria-label="Mark invoice as paid"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn danger appears"
+                    type="button"
+                    title="Void invoice"
+                    aria-label="Void this invoice"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M4.9 4.9l14.2 14.2" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 3 — Generated due soon (amber) -->
+            <tr class="urgency-due-soon">
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#C3D4E5F6</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1534787238916-9ba6764efd4f?w=60&h=60&fit=crop&auto=format&quot;);
+                    "
+                  ></div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Arena Sports City</div>
+                    <div class="venue-location">
+                      <span class="flag">🇦🇪</span>Dubai
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Apr 1 – Apr 30</span></td>
+              <td>
+                <span class="amount generated"
+                  ><span class="amount-currency">USD</span>3,240.00</span
+                >
+              </td>
+              <td>
+                <span class="status generated">
+                  <span class="status-dot"></span>
+                  Generated
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary soon">Due in 2 days</span>
+                  <span class="due-secondary soon">Apr 23, 2026</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn primary"
+                    type="button"
+                    title="Mark as paid"
+                    aria-label="Mark invoice as paid"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn danger appears"
+                    type="button"
+                    title="Void invoice"
+                    aria-label="Void this invoice"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M4.9 4.9l14.2 14.2" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 4 — Generated (neutral) -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#D4E5F6G7</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-fallback g2">PP</div>
+                  </div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Padel Pro Marina</div>
+                    <div class="venue-location">
+                      <span class="flag">🇦🇪</span>Abu Dhabi
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Apr 1 – Apr 30</span></td>
+              <td>
+                <span class="amount generated"
+                  ><span class="amount-currency">USD</span>1,860.00</span
+                >
+              </td>
+              <td>
+                <span class="status generated">
+                  <span class="status-dot"></span>
+                  Generated
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary">Due in 9 days</span>
+                  <span class="due-secondary">Apr 30, 2026</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn primary"
+                    type="button"
+                    title="Mark as paid"
+                    aria-label="Mark invoice as paid"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </button>
+                  <button
+                    class="icon-btn danger appears"
+                    type="button"
+                    title="Void invoice"
+                    aria-label="Void this invoice"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M4.9 4.9l14.2 14.2" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 5 — Paid -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#E5F6G7H8</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-fallback g3">CK</div>
+                  </div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Champions Kingdom</div>
+                    <div class="venue-location">
+                      <span class="flag">🇶🇦</span>Doha
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Mar 1 – Mar 31</span></td>
+              <td>
+                <span class="amount paid"
+                  ><span class="amount-currency">USD</span>2,840.00</span
+                >
+              </td>
+              <td>
+                <span class="status paid">
+                  <span class="status-dot"></span>
+                  Paid
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary paid">Apr 5, 2026</span>
+                  <span class="due-secondary">Paid Apr 3</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <span class="settled-chip">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Settled
+                  </span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 6 — Paid -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#F6G7H8I9</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1459865264687-595d652de67e?w=60&h=60&fit=crop&auto=format&quot;);
+                    "
+                  ></div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">Oasis Tennis Academy</div>
+                    <div class="venue-location">
+                      <span class="flag">🇦🇪</span>Sharjah
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Mar 1 – Mar 31</span></td>
+              <td>
+                <span class="amount paid"
+                  ><span class="amount-currency">USD</span>1,520.00</span
+                >
+              </td>
+              <td>
+                <span class="status paid">
+                  <span class="status-dot"></span>
+                  Paid
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary paid">Apr 5, 2026</span>
+                  <span class="due-secondary">Paid Apr 4</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <span class="settled-chip">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Settled
+                  </span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 7 — Paid -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#G7H8I9J0</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div class="venue-thumb">
+                    <div class="venue-thumb-fallback g1">NC</div>
+                  </div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name">North Cricket Ground</div>
+                    <div class="venue-location">
+                      <span class="flag">🇴🇲</span>Muscat
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Feb 1 – Feb 28</span></td>
+              <td>
+                <span class="amount paid"
+                  ><span class="amount-currency">USD</span>960.00</span
+                >
+              </td>
+              <td>
+                <span class="status paid">
+                  <span class="status-dot"></span>
+                  Paid
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary paid">Mar 5, 2026</span>
+                  <span class="due-secondary">Paid Mar 1</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <span class="settled-chip">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.4"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                    Settled
+                  </span>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Row 8 — Void -->
+            <tr>
+              <td class="checkbox"><div class="checkbox-ui"></div></td>
+              <td><span class="invoice-id">#H8I9J0K1</span></td>
+              <td>
+                <div class="venue-cell">
+                  <div
+                    class="venue-thumb"
+                    style="
+                      background-image: url(&quot;https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=60&h=60&fit=crop&auto=format&quot;);
+                      filter: grayscale(1);
+                      opacity: 0.6;
+                    "
+                  ></div>
+                  <div class="venue-name-wrap">
+                    <div class="venue-name" style="color: var(--text-3)">
+                      Elite Football Hub
+                    </div>
+                    <div class="venue-location">
+                      <span class="flag">🇸🇦</span>Riyadh
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="period">Jan 1 – Jan 31</span></td>
+              <td>
+                <span class="amount void"
+                  ><span class="amount-currency">USD</span>1,750.00</span
+                >
+              </td>
+              <td>
+                <span class="status void">
+                  <span class="status-dot"></span>
+                  Void
+                </span>
+              </td>
+              <td>
+                <div class="due-date">
+                  <span class="due-primary" style="color: var(--text-4)"
+                    >—</span
+                  >
+                  <span class="due-secondary">Voided Feb 12</span>
+                </div>
+              </td>
+              <td class="right">
+                <div class="row-actions">
+                  <button
+                    class="icon-btn appears"
+                    type="button"
+                    data-action="pdf"
+                    title="Download PDF"
+                    aria-label="Download invoice PDF"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"
+                      />
+                    </svg>
+                  </button>
+                  <span class="settled-chip voided">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M4.9 4.9l14.2 14.2" />
+                    </svg>
+                    Voided
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Table footer -->
+        <div class="table-footer">
+          <span class="results-info">
+            1–8 of 47 invoices
+            <span class="teal">Total outstanding: USD 32,450</span>
+          </span>
+          <div class="pagination">
+            <button class="page-btn ghost">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">4</button>
+            <button class="page-btn">5</button>
+            <button class="page-btn">6</button>
+            <button class="page-btn ghost">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
