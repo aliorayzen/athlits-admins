@@ -1,0 +1,12 @@
+# Dev-only tooling & agent context — never needed at build or runtime.
+# Keeps the deploy lean and ensures these never reach Vercel's build container.
+.claude
+.codex
+.agents
+.playwright-mcp
+
+# Agent/design context docs (pure local docs, not used by the app)
+CLAUDE.md
+AGENTS.md
+PRODUCT.md
+DESIGN.md
