@@ -55,7 +55,42 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-// Single in-flight refresh shared across concurrent 401/403 responses.
+// Thrown ONLY when the backend definitively rejects the refresh token (i.e. it
+// answered with 400/401/403, or there is no refresh token to send). This is the
+// single signal that means "the session is truly dead, clear it and bounce to
+// login". Every other failure (network down, timeout, 5xx, cold start) is
+// transient and MUST NOT end the session — see the interceptor catch below.
+export class SessionExpiredError extends Error {
+  constructor(message = "Session expired") {
+    super(message);
+    this.name = "SessionExpiredError";
+  }
+}
+
+// A definitive auth rejection is one where the server actually responded with a
+// client-auth status. A 5xx or a missing response (network/CORS/cold start) is
+// NOT definitive — the refresh token may still be perfectly valid.
+function isDefinitiveAuthRejection(err: unknown): boolean {
+  if (!axios.isAxiosError(err)) return false;
+  const status = err.response?.status;
+  return status === 400 || status === 401 || status === 403;
+}
+
+// Backoff schedule for transient refresh failures. Four total attempts
+// (immediate + 3 retries) over ~7s — comfortably inside the proactive refresh
+// lead time, so a flaky/cold-starting backend gets several chances before we
+// give up, and giving up does NOT log the user out (it just fails the request).
+const TRANSIENT_RETRY_DELAYS_MS = [1000, 2000, 4000];
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Single in-flight refresh shared across EVERY caller (the 401/403 interceptor,
+// the proactive scheduler, and the auth-context boot). Deduping here — rather
+// than per-caller — guarantees we never fire two concurrent refreshes with the
+// same (single-use) refresh token, which a rotating backend could treat as
+// token reuse and revoke the whole session.
 let refreshPromise: Promise<string> | null = null;
 
 // Per request: paths under `/auth/` are themselves part of the auth flow
@@ -99,52 +134,105 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Dedupe concurrent refreshes. Clearing the promise in `finally` (not in
-    // the .then/.catch branches) prevents a race where one waiter clears it
-    // while a sibling is still awaiting the same in-flight refresh.
-    if (!refreshPromise) {
-      refreshPromise = refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-    }
-
     try {
-      const newToken = await refreshPromise;
+      const newToken = await refreshAccessToken();
       originalRequest._authRetried = true;
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
       }
       return apiClient(originalRequest);
-    } catch {
-      // Refresh failed → session is dead. Clear everything and bounce to login.
-      clearTokens();
-      redirectToLogin();
+    } catch (refreshError) {
+      // ONLY a definitive rejection ends the session. A transient failure
+      // (network/timeout/5xx/cold start) leaves the tokens intact so the very
+      // next request — or the proactive scheduler — can recover. We reject the
+      // ORIGINAL error either way so the caller can surface/retry it.
+      if (refreshError instanceof SessionExpiredError) {
+        clearTokens();
+        redirectToLogin();
+      }
       return Promise.reject(error);
     }
   },
 );
 
-// Exported so auth-context can call it during boot when the access token is
-// expired but a refresh token is still present.
-export async function refreshAccessToken(): Promise<string> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) {
-    throw new Error("No refresh token");
+// Exported so the interceptor, the proactive scheduler, and the auth-context
+// boot can all request a refresh. Deduped: concurrent callers share one
+// in-flight request. Clearing the promise in `finally` (not in then/catch)
+// prevents a sibling waiter from clearing it mid-flight.
+export function refreshAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = performRefresh().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
+// One refresh attempt with transient-failure retries. Throws SessionExpiredError
+// ONLY when the session is genuinely dead (no refresh token, or the backend
+// answered with a 4xx auth rejection). Transient failures are retried with
+// backoff and, if still failing, surface as a generic Error so the caller keeps
+// the session alive.
+async function performRefresh(): Promise<string> {
+  if (!getRefreshToken()) {
+    throw new SessionExpiredError("No refresh token");
   }
 
-  // Use plain axios (not apiClient) so this call doesn't go through the
-  // 401/403 refresh interceptor — refreshing the refresh is a bug, not a feature.
-  // We pay the cost of unwrapping the envelope manually here for the same reason.
-  const { data: body } = await axios.post<
-    ApiEnvelope<AuthResponse> | AuthResponse
-  >(`${API_BASE_URL}/api/admin/v1/auth/refresh`, { refreshToken });
+  let lastError: unknown;
+  for (
+    let attempt = 0;
+    attempt <= TRANSIENT_RETRY_DELAYS_MS.length;
+    attempt++
+  ) {
+    try {
+      // Re-read the refresh token each attempt: a prior attempt could have
+      // rotated it before failing on a later step.
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) throw new SessionExpiredError("No refresh token");
 
-  const auth = isEnvelope(body) ? (body.data as AuthResponse) : body;
+      // Plain axios (not apiClient) so this call skips the 401/403 refresh
+      // interceptor — refreshing the refresh is a bug, not a feature. A 15s
+      // timeout bounds cold-start hangs so retries actually get to run.
+      const { data: body } = await axios.post<
+        ApiEnvelope<AuthResponse> | AuthResponse
+      >(
+        `${API_BASE_URL}/api/admin/v1/auth/refresh`,
+        { refreshToken },
+        { timeout: 15000 },
+      );
 
-  if (!auth?.accessToken || !auth?.refreshToken) {
-    throw new Error("Refresh response missing tokens");
+      const auth = isEnvelope(body) ? (body.data as AuthResponse) : body;
+      if (!auth?.accessToken) {
+        // Malformed-but-2xx: don't trust it, but don't nuke the session either.
+        throw new Error("Refresh response missing access token");
+      }
+
+      // Tolerate a backend that does NOT rotate the refresh token: keep the
+      // existing one when the response omits it, instead of failing the refresh.
+      const nextRefresh =
+        auth.refreshToken && auth.refreshToken.length > 0
+          ? auth.refreshToken
+          : getRefreshToken();
+      if (!nextRefresh) {
+        throw new SessionExpiredError("No refresh token after refresh");
+      }
+
+      setTokens(auth.accessToken, nextRefresh);
+      return auth.accessToken;
+    } catch (err) {
+      if (err instanceof SessionExpiredError) throw err;
+      if (isDefinitiveAuthRejection(err)) {
+        throw new SessionExpiredError("Refresh token rejected");
+      }
+      // Transient (network / timeout / 5xx): retry if attempts remain.
+      lastError = err;
+      const delay = TRANSIENT_RETRY_DELAYS_MS[attempt];
+      if (delay === undefined) break;
+      await sleep(delay);
+    }
   }
 
-  setTokens(auth.accessToken, auth.refreshToken);
-  return auth.accessToken;
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Refresh failed after retries");
 }

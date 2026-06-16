@@ -6,13 +6,14 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
 import type { UserDto } from "@/types/api";
 import { adminLogout, adminVerifyOtp, getCurrentUser } from "@/lib/api";
-import { refreshAccessToken } from "@/lib/api-client";
+import { refreshAccessToken, SessionExpiredError } from "@/lib/api-client";
 import {
   clearTokens,
   getAccessToken,
@@ -67,6 +68,28 @@ function isTokenExpired(payload: Record<string, unknown> | null): boolean {
   return payload.exp * 1000 < Date.now();
 }
 
+// Refresh proactively, this far before the access token's `exp`, so a refresh
+// never has to ride on the critical path of a user click (where the backend's
+// worst-case latency would surface as a logout). The lead time also leaves room
+// for the refresh's own transient-failure retries to complete before expiry.
+const REFRESH_LEAD_MS = 30 * 1000;
+// Never schedule a zero/negative timer; if we're already inside the lead window
+// (e.g. just hydrated a nearly-expired token), refresh almost immediately.
+const MIN_REFRESH_DELAY_MS = 1 * 1000;
+// After a transient proactive-refresh failure, retry on this cadence. The
+// session is still alive; we just couldn't reach the backend this instant.
+const TRANSIENT_REFRESH_RETRY_MS = 10 * 1000;
+
+// ms from now until we should proactively refresh the given access token, or
+// null if the token has no usable `exp` (then we fall back to reactive refresh).
+function computeRefreshDelayMs(token: string | null): number | null {
+  if (!token) return null;
+  const payload = parseJwtPayload(token);
+  if (!payload || typeof payload.exp !== "number") return null;
+  const fireAt = payload.exp * 1000 - REFRESH_LEAD_MS;
+  return Math.max(MIN_REFRESH_DELAY_MS, fireAt - Date.now());
+}
+
 // Always returns loading on first render (SSR + client agree), hydration happens in useEffect
 const INITIAL_STATE: AuthState = {
   user: null,
@@ -77,6 +100,64 @@ const INITIAL_STATE: AuthState = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<AuthState>(INITIAL_STATE);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Holds the latest scheduler so the self-rescheduling timer callbacks always
+  // call the current closure without referencing it before initialization.
+  const scheduleRef = useRef<() => void>(() => {});
+
+  const clearRefreshTimer = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  }, []);
+
+  // Proactively refresh shortly before the access token expires, then reschedule
+  // off the freshly-issued token. The shared dedupe in `refreshAccessToken`
+  // means this never races the reactive 401 path. We only end the session on a
+  // definitive rejection (SessionExpiredError); a transient failure just retries
+  // soon, leaving the user logged in.
+  const scheduleProactiveRefresh = useCallback(() => {
+    clearRefreshTimer();
+    const delay = computeRefreshDelayMs(getAccessToken());
+    if (delay === null) return;
+
+    refreshTimerRef.current = setTimeout(() => {
+      void refreshAccessToken()
+        .then(() => scheduleRef.current())
+        .catch((err: unknown) => {
+          if (err instanceof SessionExpiredError) {
+            clearRefreshTimer();
+            clearTokens();
+            setState({ user: null, isLoading: false, isAuthenticated: false });
+            router.push("/login");
+            return;
+          }
+          // Transient: keep the session, try again shortly.
+          refreshTimerRef.current = setTimeout(
+            () => scheduleRef.current(),
+            TRANSIENT_REFRESH_RETRY_MS,
+          );
+        });
+    }, delay);
+  }, [clearRefreshTimer, router]);
+
+  // Keep the recursion ref pointed at the latest scheduler closure.
+  useEffect(() => {
+    scheduleRef.current = scheduleProactiveRefresh;
+  }, [scheduleProactiveRefresh]);
+
+  // Arm the scheduler whenever we hold a session, disarm it otherwise. The
+  // scheduler re-arms itself off each new token; this effect handles the
+  // login/logout edges and unmount cleanup.
+  useEffect(() => {
+    if (state.isAuthenticated) {
+      scheduleProactiveRefresh();
+    } else {
+      clearRefreshTimer();
+    }
+    return clearRefreshTimer;
+  }, [state.isAuthenticated, scheduleProactiveRefresh, clearRefreshTimer]);
 
   // Hydrate auth state after mount. The flow:
   //   1. No access token AND no refresh token  → unauthenticated.
