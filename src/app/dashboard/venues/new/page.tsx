@@ -21,6 +21,8 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationPicker } from "@/components/venue-location-picker";
+import type { ResolvedPlace } from "@/components/venue-location-picker";
+import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import {
   DEFAULT_COUNTRY_CODE,
   normalizePhoneForSubmit,
@@ -77,6 +79,7 @@ type ManagersState = "loading" | "ready" | "error";
 export default function NewVenuePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [coverImageBroken, setCoverImageBroken] = useState(false);
 
   const [managers, setManagers] = useState<UserDto[]>([]);
   const [managersState, setManagersState] = useState<ManagersState>("loading");
@@ -87,15 +90,18 @@ export default function NewVenuePage() {
     description: "",
     addressLine: "",
     city: "",
+    timeZoneId: browserTimeZone(),
     countryCode: DEFAULT_COUNTRY_CODE,
     latitude: 0,
     longitude: 0,
     contactPhone: "",
     contactEmail: "",
-    coverImage: null,
+    coverImage: "",
     currencyCode: "SAR",
     paymentMode: "CASH",
     allowRecurringBookings: false,
+    // Required by the backend; left blank until the operator enters a value.
+    courtLimit: undefined,
     maxAdvanceBookingDays: 30,
     facilities: [],
     availability: { days: defaultAvailabilityDays() },
@@ -142,11 +148,36 @@ export default function NewVenuePage() {
     });
   }
 
+  // Autofill address + city from the resolved map pin, but only when those
+  // fields are still empty so we never clobber what the operator typed.
+  function handleResolvedAddress(place: ResolvedPlace) {
+    setForm((prev) => ({
+      ...prev,
+      addressLine:
+        prev.addressLine.trim() || !place.addressLine
+          ? prev.addressLine
+          : place.addressLine,
+      city: prev.city.trim() || !place.city ? prev.city : place.city,
+    }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
     if (!form.managerId) {
       setSubmitError("Select a venue manager to own this venue.");
+      return;
+    }
+    if (!form.timeZoneId) {
+      setSubmitError("Select the time zone the venue operates in.");
+      return;
+    }
+    if (
+      form.courtLimit === undefined ||
+      !Number.isFinite(form.courtLimit) ||
+      form.courtLimit < 1
+    ) {
+      setSubmitError("Enter the court limit (at least 1).");
       return;
     }
     if (availabilityDaysWithErrors(form.availability?.days ?? []).length > 0) {
@@ -183,6 +214,11 @@ export default function NewVenuePage() {
   }
 
   const noManagers = managersState === "ready" && managers.length === 0;
+  const coverImageUrl = form.coverImage?.trim() ?? "";
+  const coverImagePreview =
+    !coverImageBroken && /^https?:\/\//i.test(coverImageUrl)
+      ? coverImageUrl
+      : null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -355,23 +391,43 @@ export default function NewVenuePage() {
               <Label htmlFor="coverImage" className={LABEL_CLASS}>
                 <span className="inline-flex items-center gap-1.5">
                   <ImageIcon className="h-3.5 w-3.5" />
-                  Cover Image
+                  Cover Image URL
                 </span>
               </Label>
-              <Input
-                id="coverImage"
-                type="file"
-                accept="image/*"
-                onChange={(e) =>
-                  updateField("coverImage", e.target.files?.[0] ?? null)
-                }
-                className={`${INPUT_CLASS} file:mr-3 file:rounded file:border-0 file:bg-[var(--teal-subtle)] file:px-2 file:py-1 file:text-[12px] file:font-medium file:text-[var(--teal-text)]`}
-              />
-              {form.coverImage && (
-                <p className="text-xs text-[var(--text-4)]">
-                  Selected: {form.coverImage.name}
-                </p>
-              )}
+              <div className="flex items-start gap-3">
+                <div className="grid h-16 w-24 shrink-0 place-items-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-hover)]">
+                  {coverImagePreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={coverImagePreview}
+                      alt="Cover preview"
+                      className="h-full w-full object-cover"
+                      onError={() => setCoverImageBroken(true)}
+                    />
+                  ) : (
+                    <ImageIcon className="h-5 w-5 text-[var(--text-4)]" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <Input
+                    id="coverImage"
+                    type="url"
+                    inputMode="url"
+                    value={form.coverImage ?? ""}
+                    onChange={(e) => {
+                      setCoverImageBroken(false);
+                      updateField("coverImage", e.target.value);
+                    }}
+                    placeholder="https://cdn.example.com/venue.jpg"
+                    className={INPUT_CLASS}
+                  />
+                  <p className="text-xs text-[var(--text-4)]">
+                    {coverImageBroken
+                      ? "That image didn't load. Check the URL is public and direct."
+                      : "Paste a direct, public link to the venue's cover image."}
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -438,6 +494,7 @@ export default function NewVenuePage() {
               onChange={({ latitude, longitude }) =>
                 setForm((prev) => ({ ...prev, latitude, longitude }))
               }
+              onResolveAddress={handleResolvedAddress}
               inputClassName={INPUT_CLASS}
               labelClassName={LABEL_CLASS}
             />
@@ -461,6 +518,20 @@ export default function NewVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
+            <div className="space-y-2">
+              <Label htmlFor="timeZoneId" className={LABEL_CLASS}>
+                Time Zone *
+              </Label>
+              <TimezoneSelect
+                id="timeZoneId"
+                value={form.timeZoneId}
+                onChange={(timeZoneId) => updateField("timeZoneId", timeZoneId)}
+                triggerClassName={INPUT_CLASS}
+              />
+              <p className="text-xs text-[var(--text-4)]">
+                Opening hours below are interpreted in this zone.
+              </p>
+            </div>
             <VenueAvailabilityEditor
               days={form.availability?.days ?? []}
               onChange={(days) => updateField("availability", { days })}
@@ -527,6 +598,31 @@ export default function NewVenuePage() {
                   }
                   className={INPUT_CLASS}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="courtLimit" className={LABEL_CLASS}>
+                  Court Limit *
+                </Label>
+                <Input
+                  id="courtLimit"
+                  type="number"
+                  min={1}
+                  max={1000}
+                  required
+                  value={form.courtLimit ?? ""}
+                  onChange={(e) => {
+                    const parsed = parseInt(e.target.value, 10);
+                    updateField(
+                      "courtLimit",
+                      Number.isFinite(parsed) ? parsed : undefined,
+                    );
+                  }}
+                  placeholder="e.g. 8"
+                  className={INPUT_CLASS}
+                />
+                <p className="text-xs text-[var(--text-4)]">
+                  Maximum courts this venue can host.
+                </p>
               </div>
             </div>
 

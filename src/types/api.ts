@@ -102,6 +102,7 @@ export interface VenueDetailResponse {
   description?: string;
   addressLine: string;
   city: string;
+  timeZoneId?: string;
   countryCode: string;
   latitude: number;
   longitude: number;
@@ -114,6 +115,7 @@ export interface VenueDetailResponse {
   autoConfirmation: boolean;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
+  courtLimit?: number;
   facilities: string[];
   managerId?: string;
   createdByAdminId?: string;
@@ -159,23 +161,30 @@ export interface VenueAvailabilitySchedule {
   days: VenueAvailabilityDay[];
 }
 
-// POST /api/admin/v1/venues is multipart/form-data. `managerId` and
-// `paymentMode` are required by the backend; `coverImage` is an uploaded file.
+// POST /api/admin/v1/venues is application/json. `managerId`, `paymentMode`,
+// `timeZoneId`, and `courtLimit` are required by the backend; `coverImage` is a
+// URL string (the backend stores the image elsewhere and keeps only the link).
 export interface CreateVenueRequest {
   managerId: string;
   name: string;
   description?: string;
   addressLine: string;
   city: string;
+  // IANA time-zone id the venue operates in, e.g. "Asia/Riyadh". Availability
+  // hours are interpreted against it.
+  timeZoneId: string;
   countryCode: string;
   latitude: number;
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
-  coverImage?: File | null;
+  // Public URL of the cover image, not a file upload.
+  coverImage?: string;
   currencyCode: string;
   paymentMode: PaymentMode;
   allowRecurringBookings?: boolean;
+  // Max number of courts the venue may host. Required by the backend.
+  courtLimit?: number;
   maxAdvanceBookingDays?: number;
   facilities?: Facility[];
   availability?: VenueAvailabilitySchedule;
@@ -213,6 +222,7 @@ export interface VenueResponse {
   description?: string;
   addressLine: string;
   city: string;
+  timeZoneId?: string;
   countryCode: string;
   latitude: number;
   longitude: number;
@@ -224,6 +234,7 @@ export interface VenueResponse {
   paymentMode?: PaymentMode;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
+  courtLimit?: number;
   facilities: Facility[];
   availability?: VenueAvailabilitySchedule;
 }

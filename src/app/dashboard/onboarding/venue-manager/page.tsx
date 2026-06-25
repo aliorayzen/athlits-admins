@@ -20,6 +20,7 @@ import {
   Check,
   CheckCircle2,
   ClipboardCheck,
+  ImageIcon,
   Loader2,
   Search,
   Sparkles,
@@ -57,6 +58,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationPicker } from "@/components/venue-location-picker";
+import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -132,10 +134,12 @@ const emptyVenue = (): CreateVenueRequest => ({
   longitude: 0,
   contactPhone: "",
   contactEmail: "",
-  coverImage: null,
+  coverImage: "",
+  timeZoneId: browserTimeZone(),
   currencyCode: "SAR",
   paymentMode: "BOTH",
   allowRecurringBookings: false,
+  courtLimit: undefined,
   maxAdvanceBookingDays: 30,
   facilities: [],
   availability: { days: defaultAvailabilityDays() },
@@ -252,7 +256,11 @@ export default function OnboardingVenueManagerPage() {
     venue.addressLine.trim() &&
     venue.city.trim() &&
     venue.countryCode.trim().length === 2 &&
+    venue.timeZoneId &&
     venue.currencyCode.trim().length === 3 &&
+    venue.courtLimit !== undefined &&
+    Number.isFinite(venue.courtLimit) &&
+    venue.courtLimit >= 1 &&
     venue.maxAdvanceBookingDays !== undefined &&
     venue.maxAdvanceBookingDays >= 1 &&
     venue.maxAdvanceBookingDays <= 365 &&
@@ -761,6 +769,12 @@ function VenueStep({
   const recurringBookingsId = useId();
   const recurringBookingsHelpId = useId();
   const facilitiesLabelId = useId();
+  const timeZoneId = useId();
+  const [coverBroken, setCoverBroken] = useState(false);
+
+  const coverImageUrl = venue.coverImage?.trim() ?? "";
+  const coverImagePreview =
+    !coverBroken && /^https?:\/\//i.test(coverImageUrl) ? coverImageUrl : null;
 
   return (
     <section className="space-y-5 p-5">
@@ -823,6 +837,41 @@ function VenueStep({
             className={fieldClass}
           />
         </Field>
+        <Field label="Cover image URL" className="sm:col-span-2">
+          <div className="flex items-start gap-3">
+            <div className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)]">
+              {coverImagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={coverImagePreview}
+                  alt="Cover preview"
+                  className="h-full w-full object-cover"
+                  onError={() => setCoverBroken(true)}
+                />
+              ) : (
+                <ImageIcon className="h-4 w-4 text-[var(--text-4)]" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <Input
+                type="url"
+                inputMode="url"
+                value={venue.coverImage ?? ""}
+                onChange={(e) => {
+                  setCoverBroken(false);
+                  onUpdateVenue("coverImage", e.target.value);
+                }}
+                placeholder="https://cdn.example.com/venue.jpg"
+                className={fieldClass}
+              />
+              <p className="text-[12px] text-[var(--text-4)]">
+                {coverBroken
+                  ? "That image didn't load. Check the URL is public and direct."
+                  : "Paste a direct, public link to the cover image."}
+              </p>
+            </div>
+          </div>
+        </Field>
         <Field label="Address" required className="sm:col-span-2">
           <Input
             value={venue.addressLine}
@@ -861,6 +910,14 @@ function VenueStep({
           onChange={({ latitude, longitude }) => {
             onUpdateVenue("latitude", latitude);
             onUpdateVenue("longitude", longitude);
+          }}
+          onResolveAddress={(place) => {
+            if (!venue.addressLine.trim() && place.addressLine) {
+              onUpdateVenue("addressLine", place.addressLine);
+            }
+            if (!venue.city.trim() && place.city) {
+              onUpdateVenue("city", place.city);
+            }
           }}
           inputClassName={fieldClass}
           labelClassName={labelClass}
@@ -903,6 +960,22 @@ function VenueStep({
           </div>
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor={timeZoneId} className={labelClass}>
+            Time zone
+            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+          </Label>
+          <TimezoneSelect
+            id={timeZoneId}
+            value={venue.timeZoneId}
+            onChange={(value) => onUpdateVenue("timeZoneId", value)}
+            triggerClassName={fieldClass}
+          />
+          <p className="text-[12px] text-[var(--text-4)]">
+            Operating hours below are interpreted in this zone.
+          </p>
+        </div>
+
         <VenueAvailabilityEditor
           days={venue.availability?.days ?? []}
           onChange={(days) => onUpdateVenue("availability", { days })}
@@ -933,6 +1006,23 @@ function VenueStep({
                   parseInt(e.target.value) || 30,
                 )
               }
+              className={fieldClass}
+            />
+          </Field>
+          <Field label="Court limit" required>
+            <Input
+              type="number"
+              min={1}
+              max={1000}
+              value={venue.courtLimit ?? ""}
+              onChange={(e) => {
+                const parsed = parseInt(e.target.value, 10);
+                onUpdateVenue(
+                  "courtLimit",
+                  Number.isFinite(parsed) ? parsed : undefined,
+                );
+              }}
+              placeholder="e.g. 8"
               className={fieldClass}
             />
           </Field>
@@ -1038,7 +1128,14 @@ function ReviewStep({
             ["Name", venue?.name ?? "Not available"],
             ["City", venue?.city ?? "Not available"],
             ["Country", venue?.countryCode ?? "Not available"],
+            ["Time zone", venue?.timeZoneId ?? "Not available"],
             ["Currency", venue?.currencyCode ?? "Not available"],
+            [
+              "Court limit",
+              venue?.courtLimit != null
+                ? String(venue.courtLimit)
+                : "Not available",
+            ],
             ["Status", venue?.status ?? "Not available"],
           ]}
         />

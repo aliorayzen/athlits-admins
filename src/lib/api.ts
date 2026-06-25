@@ -68,11 +68,41 @@ export function getApiFieldErrors(err: unknown): ApiFieldError[] {
   return parseFieldErrors(body.errors);
 }
 
+// When the backend gives us no usable message, map the HTTP status to copy that
+// tells the operator what to do next instead of a generic "went wrong". Network
+// failures (no response) get their own line.
+function statusFallback(status: number | null, fallback: string): string {
+  switch (status) {
+    case 400:
+      return "The request was rejected. Check the highlighted fields and try again.";
+    case 401:
+      return "Your session expired. Sign in again to continue.";
+    case 403:
+      return "You don't have permission to do this.";
+    case 404:
+      return "That record no longer exists. It may have been removed.";
+    case 409:
+      return "This conflicts with an existing record. A venue with these details may already exist.";
+    case 422:
+      return "Some values couldn't be processed. Review the fields and try again.";
+    case 429:
+      return "Too many requests. Wait a moment, then try again.";
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return "The server ran into a problem. Try again shortly.";
+    default:
+      return fallback;
+  }
+}
+
 export function getApiErrorMessage(
   err: unknown,
   fallback = "Something went wrong. Please try again.",
 ): string {
   if (axios.isAxiosError(err)) {
+    const status = err.response?.status ?? null;
     const body = err.response?.data as ApiErrorBody | string | undefined;
     if (typeof body === "string" && body.trim().length > 0) return body;
     if (body && typeof body === "object") {
@@ -90,7 +120,11 @@ export function getApiErrorMessage(
       }
       if (typeof msg === "string" && msg.trim().length > 0) return msg;
     }
-    if (err.message && err.code !== "ERR_BAD_REQUEST") return err.message;
+    // No response at all → the request never reached the server.
+    if (!err.response) {
+      return "Couldn't reach the server. Check your connection and try again.";
+    }
+    return statusFallback(status, fallback);
   }
   if (err instanceof Error && err.message) return err.message;
   return fallback;
@@ -209,49 +243,41 @@ export async function getVenue(venueId: string): Promise<VenueDetailResponse> {
 export async function createVenue(
   payload: CreateVenueRequest,
 ): Promise<VenueDetailResponse> {
-  // Endpoint is multipart/form-data (cover image is an uploaded file). Axios v1
-  // detects the FormData body and sets the multipart Content-Type + boundary
-  // itself, overriding the instance's default application/json.
-  const fd = new FormData();
-  fd.append("managerId", payload.managerId);
-  fd.append("name", payload.name);
-  if (payload.description) fd.append("description", payload.description);
-  fd.append("addressLine", payload.addressLine);
-  fd.append("city", payload.city);
-  fd.append("countryCode", payload.countryCode);
-  fd.append("latitude", String(payload.latitude));
-  fd.append("longitude", String(payload.longitude));
-  if (payload.contactPhone) fd.append("contactPhone", payload.contactPhone);
-  if (payload.contactEmail) fd.append("contactEmail", payload.contactEmail);
-  fd.append("currencyCode", payload.currencyCode);
-  fd.append("paymentMode", payload.paymentMode);
-  if (payload.allowRecurringBookings !== undefined) {
-    fd.append("allowRecurringBookings", String(payload.allowRecurringBookings));
-  }
-  if (payload.maxAdvanceBookingDays !== undefined) {
-    fd.append("maxAdvanceBookingDays", String(payload.maxAdvanceBookingDays));
-  }
-  for (const facility of payload.facilities ?? []) {
-    fd.append("facilities", facility);
-  }
-  // Spring binds the nested AvailabilityScheduleRequest from indexed property
-  // paths (availability.days[0].weekday=MONDAY), not a JSON blob.
-  (payload.availability?.days ?? []).forEach((day, index) => {
-    fd.append(`availability.days[${index}].weekday`, day.weekday);
-    fd.append(
-      `availability.days[${index}].openMinutes`,
-      String(day.openMinutes),
-    );
-    fd.append(
-      `availability.days[${index}].closeMinutes`,
-      String(day.closeMinutes),
-    );
-  });
-  if (payload.coverImage) fd.append("coverImage", payload.coverImage);
+  // Endpoint is application/json. Trim optional string fields and drop empties
+  // so we never send blank strings the backend would reject; coverImage is a
+  // plain URL, not an uploaded file.
+  const trimmedDescription = payload.description?.trim();
+  const trimmedContactPhone = payload.contactPhone?.trim();
+  const trimmedContactEmail = payload.contactEmail?.trim();
+  const trimmedCoverImage = payload.coverImage?.trim();
+
+  const body = {
+    managerId: payload.managerId,
+    name: payload.name.trim(),
+    addressLine: payload.addressLine.trim(),
+    city: payload.city.trim(),
+    timeZoneId: payload.timeZoneId,
+    countryCode: payload.countryCode,
+    latitude: payload.latitude,
+    longitude: payload.longitude,
+    currencyCode: payload.currencyCode,
+    paymentMode: payload.paymentMode,
+    courtLimit: payload.courtLimit,
+    maxAdvanceBookingDays: payload.maxAdvanceBookingDays,
+    allowRecurringBookings: payload.allowRecurringBookings,
+    facilities: payload.facilities ?? [],
+    ...(trimmedDescription ? { description: trimmedDescription } : {}),
+    ...(trimmedContactPhone ? { contactPhone: trimmedContactPhone } : {}),
+    ...(trimmedContactEmail ? { contactEmail: trimmedContactEmail } : {}),
+    ...(trimmedCoverImage ? { coverImage: trimmedCoverImage } : {}),
+    // Backend rejects an availability object with zero days; the caller already
+    // omits `availability` in that case.
+    ...(payload.availability ? { availability: payload.availability } : {}),
+  };
 
   const { data } = await apiClient.post<VenueDetailResponse>(
     "/api/admin/v1/venues",
-    fd,
+    body,
   );
   return normalizeVenueDetail(data);
 }

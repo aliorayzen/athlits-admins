@@ -21,6 +21,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationPicker } from "@/components/venue-location-picker";
+import type { ResolvedPlace } from "@/components/venue-location-picker";
 import {
   DEFAULT_COUNTRY_CODE,
   normalizePhoneForSubmit,
@@ -145,6 +146,22 @@ export default function EditVenuePage() {
           }
         : prev,
     );
+  }
+
+  // Fill address + city from a resolved map pin only when empty, so editing the
+  // location never wipes the existing address text.
+  function handleResolvedAddress(place: ResolvedPlace) {
+    setForm((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        addressLine:
+          prev.addressLine.trim() || !place.addressLine
+            ? prev.addressLine
+            : place.addressLine,
+        city: prev.city.trim() || !place.city ? prev.city : place.city,
+      };
+    });
   }
 
   function toggleFacility(facility: Facility) {
@@ -402,6 +419,7 @@ export default function EditVenuePage() {
                   prev ? { ...prev, latitude, longitude } : prev,
                 )
               }
+              onResolveAddress={handleResolvedAddress}
               inputClassName={INPUT_CLASS}
               labelClassName={LABEL_CLASS}
             />

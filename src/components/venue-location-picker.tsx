@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useId, useMemo, useState, type KeyboardEvent } from "react";
-import { LocateFixed, Loader2, MapPin, Search } from "lucide-react";
+import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { Check, LocateFixed, Loader2, MapPin, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +21,38 @@ type NominatimSearchResult = {
   lon: string;
   type?: string;
   class?: string;
+  address?: NominatimAddress;
 };
+
+type NominatimAddress = {
+  house_number?: string;
+  road?: string;
+  neighbourhood?: string;
+  suburb?: string;
+  city?: string;
+  town?: string;
+  village?: string;
+  county?: string;
+  state?: string;
+  country_code?: string;
+};
+
+// What the picker hands back when it resolves a human-readable place for the
+// current pin. The parent decides whether to apply it (non-destructively).
+export interface ResolvedPlace {
+  displayName: string;
+  addressLine?: string;
+  city?: string;
+  countryCode?: string;
+}
 
 interface VenueLocationPickerProps {
   latitude: number;
   longitude: number;
   onChange: (location: { latitude: number; longitude: number }) => void;
+  // Called after the pin resolves to a named place (map click, drag, search, or
+  // current location). The parent chooses whether to autofill address fields.
+  onResolveAddress?: (resolved: ResolvedPlace) => void;
   inputClassName?: string;
   labelClassName?: string;
   className?: string;
@@ -68,10 +94,47 @@ function resultType(result: NominatimSearchResult): string {
   return [result.class, result.type].filter(Boolean).join(" / ") || "location";
 }
 
+// Collapse a Nominatim address object into our flat venue fields.
+function toResolvedPlace(
+  displayName: string,
+  address: NominatimAddress | undefined,
+): ResolvedPlace {
+  if (!address) return { displayName };
+  const street = [address.house_number, address.road].filter(Boolean).join(" ");
+  const addressLine =
+    street || address.neighbourhood || address.suburb || undefined;
+  const city =
+    address.city || address.town || address.village || address.county;
+  return {
+    displayName,
+    addressLine,
+    city: city || undefined,
+    countryCode: address.country_code
+      ? address.country_code.toUpperCase()
+      : undefined,
+  };
+}
+
+// Translate a GeolocationPositionError into operator-facing copy. Codes:
+// 1 PERMISSION_DENIED, 2 POSITION_UNAVAILABLE, 3 TIMEOUT.
+function geolocationErrorMessage(error: GeolocationPositionError): string {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      return "Location permission was blocked. Allow it in your browser's site settings, then try again.";
+    case error.POSITION_UNAVAILABLE:
+      return "Your location couldn't be determined right now. Search for the address instead.";
+    case error.TIMEOUT:
+      return "Finding your location took too long. Try again, or search for the address.";
+    default:
+      return "Couldn't read your current location. Search for the address instead.";
+  }
+}
+
 export function VenueLocationPicker({
   latitude,
   longitude,
   onChange,
+  onResolveAddress,
   inputClassName,
   labelClassName,
   className,
@@ -87,6 +150,11 @@ export function VenueLocationPicker({
   );
   const [locateState, setLocateState] = useState<LocateState>("idle");
   const [locateError, setLocateError] = useState("");
+  const [accuracyMeters, setAccuracyMeters] = useState<number | null>(null);
+  const [resolvedPlace, setResolvedPlace] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
+  // Guards against a slow reverse-geocode overwriting a newer pin's result.
+  const reverseSeq = useRef(0);
 
   const pinnedLocation = useMemo<LatLngLiteral | null>(
     () =>
@@ -96,11 +164,51 @@ export function VenueLocationPicker({
     [latitude, longitude],
   );
 
-  function updateLocation(position: LatLngLiteral) {
+  function applyResolved(place: ResolvedPlace) {
+    setResolvedPlace(place.displayName);
+    onResolveAddress?.(place);
+  }
+
+  async function reverseGeocode(position: LatLngLiteral) {
+    const seq = ++reverseSeq.current;
+    setResolving(true);
+    try {
+      const params = new URLSearchParams({
+        lat: String(position.lat),
+        lon: String(position.lng),
+        format: "jsonv2",
+        addressdetails: "1",
+      });
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?${params.toString()}`,
+        { headers: { Accept: "application/json" } },
+      );
+      if (!response.ok) throw new Error("reverse geocode failed");
+      const data = (await response.json()) as {
+        display_name?: string;
+        address?: NominatimAddress;
+      };
+      if (seq !== reverseSeq.current) return;
+      if (data.display_name) {
+        applyResolved(toResolvedPlace(data.display_name, data.address));
+      }
+    } catch {
+      // Reverse geocoding is a convenience; the pin still stands on failure.
+      if (seq === reverseSeq.current) setResolvedPlace(null);
+    } finally {
+      if (seq === reverseSeq.current) setResolving(false);
+    }
+  }
+
+  function updateLocation(
+    position: LatLngLiteral,
+    options: { reverse?: boolean } = {},
+  ) {
     onChange({
       latitude: normalizeCoordinate(position.lat),
       longitude: normalizeCoordinate(position.lng),
     });
+    if (options.reverse !== false) void reverseGeocode(position);
   }
 
   async function runSearch() {
@@ -118,6 +226,7 @@ export function VenueLocationPicker({
       const params = new URLSearchParams({
         q: query,
         format: "jsonv2",
+        addressdetails: "1",
         limit: "5",
       });
       const response = await fetch(
@@ -146,9 +255,18 @@ export function VenueLocationPicker({
   }
 
   function useCurrentLocation() {
-    if (!navigator.geolocation) {
+    if (typeof window !== "undefined" && !window.isSecureContext) {
       setLocateState("error");
-      setLocateError("Current location is not available in this browser.");
+      setLocateError(
+        "Current location needs a secure (https) connection. Search for the address instead.",
+      );
+      return;
+    }
+    if (!("geolocation" in navigator)) {
+      setLocateState("error");
+      setLocateError(
+        "This browser can't share a location. Search for the address instead.",
+      );
       return;
     }
 
@@ -156,27 +274,34 @@ export function VenueLocationPicker({
     setLocateError("");
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        setAccuracyMeters(
+          Number.isFinite(position.coords.accuracy)
+            ? position.coords.accuracy
+            : null,
+        );
         updateLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
         setLocateState("idle");
       },
-      () => {
+      (error) => {
         setLocateState("error");
-        setLocateError(
-          "Could not read current location. Check browser permission.",
-        );
+        setLocateError(geolocationErrorMessage(error));
       },
-      { enableHighAccuracy: true, maximumAge: 30000, timeout: 10000 },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 12000 },
     );
   }
 
   function selectResult(result: NominatimSearchResult) {
-    updateLocation({
-      lat: parseFloat(result.lat),
-      lng: parseFloat(result.lon),
-    });
+    setAccuracyMeters(null);
+    // The search result already carries address details, so skip a second
+    // network round-trip and resolve from it directly.
+    updateLocation(
+      { lat: parseFloat(result.lat), lng: parseFloat(result.lon) },
+      { reverse: false },
+    );
+    applyResolved(toResolvedPlace(result.display_name, result.address));
     setSearchQuery(result.display_name);
     setSearchResults([]);
     setSearchState("idle");
@@ -279,9 +404,29 @@ export function VenueLocationPicker({
         <VenueLocationMap
           fallbackCenter={DEFAULT_CENTER}
           position={pinnedLocation}
-          onChange={updateLocation}
+          onChange={(position) => updateLocation(position)}
+          accuracyMeters={accuracyMeters}
         />
       </div>
+
+      {(resolving || resolvedPlace) && (
+        <div className="flex items-start gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3 py-2.5 text-[12.5px] leading-5">
+          {resolving ? (
+            <>
+              <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-[var(--text-4)]" />
+              <span className="text-[var(--text-3)]">Resolving address…</span>
+            </>
+          ) : (
+            <>
+              <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--teal-text)]" />
+              <span className="min-w-0 text-[var(--text-2)]">
+                <span className="text-[var(--text-4)]">Pinned at </span>
+                {resolvedPlace}
+              </span>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-2">
@@ -322,8 +467,8 @@ export function VenueLocationPicker({
         </div>
       </div>
       <p className="text-[11.5px] leading-5 text-[var(--text-4)]">
-        Map data from OpenStreetMap. Search runs only when submitted to keep
-        usage moderate.
+        Map data from OpenStreetMap and CARTO. Search and address lookup run
+        only on action to keep usage moderate.
       </p>
     </div>
   );
