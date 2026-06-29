@@ -7,11 +7,7 @@
  */
 
 export type BookingStatus =
-  | "PENDING"
-  | "CONFIRMED"
-  | "CANCELLED"
-  | "NO_SHOW"
-  | "COMPLETED";
+  "PENDING" | "CONFIRMED" | "CANCELLED" | "NO_SHOW" | "COMPLETED";
 
 export interface BookingStatsResponse {
   totalBookings: number;

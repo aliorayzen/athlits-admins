@@ -18,11 +18,11 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   // Don't leak full URLs (which can carry the ?from= path) to other origins.
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // Disable powerful features we don't use. geolocation=(self) is KEPT on
-  // purpose — the venue location picker calls navigator.geolocation.
+  // Disable powerful features we don't use. Venue coordinates are now entered
+  // manually, so geolocation is fully disabled too.
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(self), browsing-topics=()",
+    value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
   },
 ];
 

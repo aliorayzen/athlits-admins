@@ -11,6 +11,16 @@ import {
 } from "./token-store";
 import type { ApiEnvelope, AuthResponse } from "@/types/api";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    preserveEnvelope?: boolean;
+  }
+
+  export interface InternalAxiosRequestConfig {
+    preserveEnvelope?: boolean;
+  }
+}
+
 // The backend wraps every successful response as
 //   { data: T, message: string | null, errors: unknown | null }
 // We unwrap it once at the interceptor so call sites can keep using
@@ -25,6 +35,9 @@ function isEnvelope(body: unknown): body is ApiEnvelope<unknown> {
 }
 
 function unwrapEnvelope<T>(response: AxiosResponse<unknown>): AxiosResponse<T> {
+  if (response.config.preserveEnvelope) {
+    return response as AxiosResponse<T>;
+  }
   if (isEnvelope(response.data)) {
     (response as AxiosResponse<unknown>).data = response.data.data;
   }

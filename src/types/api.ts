@@ -51,10 +51,10 @@ export interface UserDto {
   profilePictureUrl?: string | null;
   role: UserRole;
   status: UserStatus;
-  // Present on full user fetches; the login response omits these and the api
-  // wrapper fills them with sentinel values so consumers never see `undefined`.
-  createdAt: string;
-  updatedAt: string;
+  // Backend user DTOs for admin user-management endpoints currently omit
+  // timestamps. Consumers must tolerate them being absent.
+  createdAt?: string;
+  updatedAt?: string;
   // Extended profile fields, all nullable from the backend.
   languagePreference?: LanguagePreference;
   phoneVerified?: boolean;
@@ -83,8 +83,16 @@ export interface CreateVmUserRequest {
 // Venues
 export type VenueStatus = "ACTIVE" | "SUSPENDED";
 
+// NOTE: every venue-returning backend endpoint now carries bilingual names
+// (`nameEn` / `nameAr`) — there is no single `name` on the wire. `name` below
+// is a CLIENT-DERIVED display field set at the api.ts normalize boundary
+// (English-primary, Arabic fallback) so display-only consumers can keep
+// reading `.name` unchanged.
 export interface VenueSummaryResponse {
   id: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). Not sent by the backend. */
   name: string;
   slug: string;
   city: string;
@@ -92,11 +100,17 @@ export interface VenueSummaryResponse {
   coverImageUrl?: string;
   status: VenueStatus;
   venueRating?: number;
+  // Number of courts registered to the venue — lets the list render a Courts
+  // column without a per-row fetch.
+  courtCount?: number;
   createdAt: string;
 }
 
 export interface VenueDetailResponse {
   id: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). Not sent by the backend. */
   name: string;
   slug: string;
   description?: string;
@@ -116,6 +130,7 @@ export interface VenueDetailResponse {
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
   courtLimit?: number;
+  courtCount?: number;
   facilities: string[];
   managerId?: string;
   createdByAdminId?: string;
@@ -162,11 +177,12 @@ export interface VenueAvailabilitySchedule {
 }
 
 // POST /api/admin/v1/venues is application/json. `managerId`, `paymentMode`,
-// `timeZoneId`, and `courtLimit` are required by the backend; `coverImage` is a
-// URL string (the backend stores the image elsewhere and keeps only the link).
+// and `courtLimit` are required by the backend. Cover images are not accepted
+// as URL strings in this DTO; they require a separate multipart upload flow.
 export interface CreateVenueRequest {
   managerId: string;
-  name: string;
+  nameEn: string;
+  nameAr: string;
   description?: string;
   addressLine: string;
   city: string;
@@ -178,7 +194,8 @@ export interface CreateVenueRequest {
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
-  // Public URL of the cover image, not a file upload.
+  // UI draft only for screens that still collect a URL; createVenue strips it
+  // from JSON because the backend create DTO does not accept it.
   coverImage?: string;
   currencyCode: string;
   paymentMode: PaymentMode;
@@ -196,7 +213,8 @@ export interface CreateVenueRequest {
 // currency, payment mode, manager, and cover image are NOT editable here (the
 // backend manages those via create / separate endpoints).
 export interface UpdateVenueRequest {
-  name?: string;
+  nameEn?: string;
+  nameAr?: string;
   description?: string;
   addressLine?: string;
   city?: string;
@@ -217,6 +235,9 @@ export interface UpdateVenueRequest {
 export interface VenueResponse {
   id: string;
   managerId?: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). Not sent by the backend. */
   name: string;
   slug: string;
   description?: string;
@@ -249,62 +270,89 @@ export interface AssignManagerRequest {
 
 // Courts
 export type SurfaceType =
-  | "GRASS"
-  | "CLAY"
-  | "HARD"
-  | "SYNTHETIC"
-  | "WOOD"
-  | "RUBBER"
-  | "SAND"
-  | "TURF";
+  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF";
 export type CourtEnvironment = "INDOOR" | "OUTDOOR";
 
 export interface CourtResponse {
   id: string;
+  venueId: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). Not sent by the backend. */
   name: string;
   surfaceType: SurfaceType;
   environment: CourtEnvironment;
   active: boolean;
-  sports: CourtSportResponse[];
-}
-
-export interface CourtSportResponse {
-  id: string;
-  sportType: string;
-  capacity: number;
-  sessionDurationMinutes: number;
-  active: boolean;
+  // Backend returns sport identifiers as plain strings (e.g. "FOOTBALL").
+  sports: string[];
 }
 
 // Invoices
 export type InvoiceStatus = "GENERATED" | "PAID" | "OVERDUE" | "VOID";
 
+// Invoice fee model is a DIFFERENT enum from the contract fee model: invoices
+// bill either a fixed monthly fee or per reservation. (Contracts use
+// COMMISSION | FIXED_MONTHLY — see `FeeModel` below.)
+export type InvoiceFeeModel = "FIXED_MONTHLY" | "PER_RESERVATION";
+
 export interface InvoiceResponse {
   id: string;
   venueId: string;
-  contractId?: string;
+  // Backend now sends bilingual venue names; `venueName` is a client-derived
+  // display field (nameEn ?? nameAr) set at the api.ts normalize boundary.
+  venueNameEn?: string | null;
+  venueNameAr?: string | null;
+  venueName?: string;
+  contractId?: string | null;
   billingPeriodStart?: string;
   billingPeriodEnd?: string;
   totalBookings?: number;
   totalRevenue?: number;
-  feeModel?: FeeModel;
-  commissionRate?: number;
-  fixedMonthlyFee?: number;
+  feeModel?: InvoiceFeeModel;
+  fixedMonthlyFee?: number | null;
+  perReservationFee?: number | null;
+  // `amountDue` is the canonical amount on the wire. `amount` is kept as a
+  // normalized alias so existing UI (which reads `.amount`) stays compatible.
   amountDue?: number;
-  venueName?: string;
   amount: number;
   currencyCode: string;
   status: InvoiceStatus;
   periodStart: string;
   periodEnd: string;
   dueDate: string;
-  paidAt?: string;
-  paymentReference?: string;
+  paidAt?: string | null;
+  paymentReference?: string | null;
   createdAt: string;
 }
 
 export interface MarkPaidRequest {
   paymentReference: string;
+}
+
+// Bulk invoice operations support partial success: each id either lands in
+// `succeeded` (with the updated invoice) or `failed` (with a reason).
+export interface BulkMarkPaidRequest {
+  ids: string[];
+  paymentReference: string;
+}
+
+export interface BulkVoidRequest {
+  ids: string[];
+  reason?: string;
+}
+
+export interface BulkRemindRequest {
+  ids: string[];
+}
+
+export interface BulkInvoiceFailure {
+  id: string;
+  reason: string;
+}
+
+export interface BulkInvoiceResult {
+  succeeded: InvoiceResponse[];
+  failed: BulkInvoiceFailure[];
 }
 
 export interface DuePaymentsResponse {
@@ -321,7 +369,7 @@ export interface InvoiceKpiSummary {
   overdueAmount: number;
   overdueCount: number;
   avgCollectionDays: number | null;
-  currencyCode: string;
+  currencyCode: string | null;
 }
 
 export interface InvoiceKpisResponse {

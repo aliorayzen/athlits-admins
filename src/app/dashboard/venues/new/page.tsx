@@ -20,11 +20,12 @@ import {
   defaultAvailabilityDays,
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
-import { VenueLocationPicker } from "@/components/venue-location-picker";
-import type { ResolvedPlace } from "@/components/venue-location-picker";
+import { VenueLocationFields } from "@/components/venue-location-fields";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
+import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
 import {
   DEFAULT_COUNTRY_CODE,
+  isValidPhoneForCountry,
   normalizePhoneForSubmit,
   phoneValueForCountry,
 } from "@/lib/phone";
@@ -86,7 +87,8 @@ export default function NewVenuePage() {
 
   const [form, setForm] = useState<CreateVenueRequest>({
     managerId: "",
-    name: "",
+    nameEn: "",
+    nameAr: "",
     description: "",
     addressLine: "",
     city: "",
@@ -97,7 +99,7 @@ export default function NewVenuePage() {
     contactPhone: "",
     contactEmail: "",
     coverImage: "",
-    currencyCode: "SAR",
+    currencyCode: DEFAULT_CURRENCY,
     paymentMode: "CASH",
     allowRecurringBookings: false,
     // Required by the backend; left blank until the operator enters a value.
@@ -148,19 +150,6 @@ export default function NewVenuePage() {
     });
   }
 
-  // Autofill address + city from the resolved map pin, but only when those
-  // fields are still empty so we never clobber what the operator typed.
-  function handleResolvedAddress(place: ResolvedPlace) {
-    setForm((prev) => ({
-      ...prev,
-      addressLine:
-        prev.addressLine.trim() || !place.addressLine
-          ? prev.addressLine
-          : place.addressLine,
-      city: prev.city.trim() || !place.city ? prev.city : place.city,
-    }));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitError(null);
@@ -168,8 +157,24 @@ export default function NewVenuePage() {
       setSubmitError("Select a venue manager to own this venue.");
       return;
     }
+    if (!form.nameEn.trim()) {
+      setSubmitError("Enter the venue's English name.");
+      return;
+    }
+    if (!form.nameAr.trim()) {
+      setSubmitError("Enter the venue's Arabic name.");
+      return;
+    }
     if (!form.timeZoneId) {
       setSubmitError("Select the time zone the venue operates in.");
+      return;
+    }
+    if (!form.contactEmail?.trim()) {
+      setSubmitError("Enter a contact email for the venue.");
+      return;
+    }
+    if (!isValidPhoneForCountry(form.contactPhone ?? "", form.countryCode)) {
+      setSubmitError("Enter a valid contact phone number for the venue.");
       return;
     }
     if (
@@ -346,18 +351,35 @@ export default function NewVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
-            <div className="space-y-2">
-              <Label htmlFor="name" className={LABEL_CLASS}>
-                Venue Name *
-              </Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                placeholder="e.g. Arena Sports Complex"
-                required
-                className={INPUT_CLASS}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nameEn" className={LABEL_CLASS}>
+                  Venue Name (English) *
+                </Label>
+                <Input
+                  id="nameEn"
+                  value={form.nameEn}
+                  onChange={(e) => updateField("nameEn", e.target.value)}
+                  placeholder="e.g. Arena Sports Complex"
+                  required
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nameAr" className={LABEL_CLASS}>
+                  Venue Name (Arabic) *
+                </Label>
+                <Input
+                  id="nameAr"
+                  dir="rtl"
+                  lang="ar"
+                  value={form.nameAr}
+                  onChange={(e) => updateField("nameAr", e.target.value)}
+                  placeholder="مثال: مجمّع الأرينا الرياضي"
+                  required
+                  className={INPUT_CLASS}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className={LABEL_CLASS}>
@@ -375,7 +397,7 @@ export default function NewVenuePage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="contactEmail" className={LABEL_CLASS}>
-                  Contact Email
+                  Contact Email *
                 </Label>
                 <Input
                   id="contactEmail"
@@ -383,6 +405,7 @@ export default function NewVenuePage() {
                   value={form.contactEmail ?? ""}
                   onChange={(e) => updateField("contactEmail", e.target.value)}
                   placeholder="venue@example.com"
+                  required
                   className={INPUT_CLASS}
                 />
               </div>
@@ -462,20 +485,18 @@ export default function NewVenuePage() {
                 className={INPUT_CLASS}
               />
             </div>
+            <VenueLocationFields
+              city={form.city}
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onCityChange={(city) => updateField("city", city)}
+              onCoordinatesChange={({ latitude, longitude }) =>
+                setForm((prev) => ({ ...prev, latitude, longitude }))
+              }
+              inputClassName={INPUT_CLASS}
+              labelClassName={LABEL_CLASS}
+            />
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city" className={LABEL_CLASS}>
-                  City *
-                </Label>
-                <Input
-                  id="city"
-                  value={form.city}
-                  onChange={(e) => updateField("city", e.target.value)}
-                  placeholder="e.g. Beirut"
-                  required
-                  className={INPUT_CLASS}
-                />
-              </div>
               <PhoneNumberField
                 countryCode={form.countryCode}
                 phoneNumber={form.contactPhone ?? ""}
@@ -484,20 +505,11 @@ export default function NewVenuePage() {
                   updateField("contactPhone", value)
                 }
                 phoneLabel="Contact phone"
+                required
                 inputClassName={INPUT_CLASS}
                 labelClassName={LABEL_CLASS}
               />
             </div>
-            <VenueLocationPicker
-              latitude={form.latitude}
-              longitude={form.longitude}
-              onChange={({ latitude, longitude }) =>
-                setForm((prev) => ({ ...prev, latitude, longitude }))
-              }
-              onResolveAddress={handleResolvedAddress}
-              inputClassName={INPUT_CLASS}
-              labelClassName={LABEL_CLASS}
-            />
           </CardContent>
         </Card>
 
@@ -564,20 +576,19 @@ export default function NewVenuePage() {
                 <Label htmlFor="currencyCode" className={LABEL_CLASS}>
                   Currency *
                 </Label>
-                <Input
+                <select
                   id="currencyCode"
-                  value={form.currencyCode}
-                  onChange={(e) =>
-                    updateField("currencyCode", e.target.value.toUpperCase())
-                  }
-                  placeholder="SAR"
-                  maxLength={3}
-                  minLength={3}
                   required
-                  pattern="[A-Z]{3}"
-                  title="Three-letter currency code, e.g. SAR"
-                  className={INPUT_CLASS}
-                />
+                  value={form.currencyCode}
+                  onChange={(e) => updateField("currencyCode", e.target.value)}
+                  className={`h-9 w-full rounded-md border px-3 text-sm outline-none transition-all ${INPUT_CLASS}`}
+                >
+                  {CURRENCY_OPTIONS.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.code} — {c.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="maxAdvanceBookingDays" className={LABEL_CLASS}>

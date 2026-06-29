@@ -20,8 +20,7 @@ import {
   availabilityDaysWithErrors,
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
-import { VenueLocationPicker } from "@/components/venue-location-picker";
-import type { ResolvedPlace } from "@/components/venue-location-picker";
+import { VenueLocationFields } from "@/components/venue-location-fields";
 import {
   DEFAULT_COUNTRY_CODE,
   normalizePhoneForSubmit,
@@ -68,7 +67,8 @@ const LABEL_CLASS =
 // Local form shape: the subset of UpdateVenueRequest the form edits, with
 // non-optional working values so inputs stay controlled.
 interface EditForm {
-  name: string;
+  nameEn: string;
+  nameAr: string;
   description: string;
   addressLine: string;
   city: string;
@@ -103,7 +103,8 @@ export default function EditVenuePage() {
         if (cancelled) return;
         setVenueName(venue.name);
         setForm({
-          name: venue.name,
+          nameEn: venue.nameEn ?? "",
+          nameAr: venue.nameAr ?? "",
           description: venue.description ?? "",
           addressLine: venue.addressLine,
           city: venue.city,
@@ -148,22 +149,6 @@ export default function EditVenuePage() {
     );
   }
 
-  // Fill address + city from a resolved map pin only when empty, so editing the
-  // location never wipes the existing address text.
-  function handleResolvedAddress(place: ResolvedPlace) {
-    setForm((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        addressLine:
-          prev.addressLine.trim() || !place.addressLine
-            ? prev.addressLine
-            : place.addressLine,
-        city: prev.city.trim() || !place.city ? prev.city : place.city,
-      };
-    });
-  }
-
   function toggleFacility(facility: Facility) {
     setForm((prev) => {
       if (!prev) return prev;
@@ -182,6 +167,15 @@ export default function EditVenuePage() {
     if (!form) return;
     setSubmitError(null);
 
+    if (!form.nameEn.trim()) {
+      setSubmitError("Enter the venue's English name.");
+      return;
+    }
+    if (!form.nameAr.trim()) {
+      setSubmitError("Enter the venue's Arabic name.");
+      return;
+    }
+
     if (availabilityDaysWithErrors(form.availabilityDays).length > 0) {
       setSubmitError(
         "Fix the operating hours: every open day needs a closing time after its opening time.",
@@ -192,7 +186,8 @@ export default function EditVenuePage() {
     setIsSaving(true);
     try {
       const payload: UpdateVenueRequest = {
-        name: form.name.trim(),
+        nameEn: form.nameEn.trim(),
+        nameAr: form.nameAr.trim(),
         description: form.description.trim() || undefined,
         addressLine: form.addressLine.trim(),
         city: form.city.trim(),
@@ -313,18 +308,35 @@ export default function EditVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
-            <div className="space-y-2">
-              <Label htmlFor="name" className={LABEL_CLASS}>
-                Venue Name *
-              </Label>
-              <Input
-                id="name"
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                placeholder="e.g. Arena Sports Complex"
-                required
-                className={INPUT_CLASS}
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nameEn" className={LABEL_CLASS}>
+                  Venue Name (English) *
+                </Label>
+                <Input
+                  id="nameEn"
+                  value={form.nameEn}
+                  onChange={(e) => updateField("nameEn", e.target.value)}
+                  placeholder="e.g. Arena Sports Complex"
+                  required
+                  className={INPUT_CLASS}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nameAr" className={LABEL_CLASS}>
+                  Venue Name (Arabic) *
+                </Label>
+                <Input
+                  id="nameAr"
+                  dir="rtl"
+                  lang="ar"
+                  value={form.nameAr}
+                  onChange={(e) => updateField("nameAr", e.target.value)}
+                  placeholder="مثال: مجمّع الأرينا الرياضي"
+                  required
+                  className={INPUT_CLASS}
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className={LABEL_CLASS}>
@@ -385,20 +397,20 @@ export default function EditVenuePage() {
                 className={INPUT_CLASS}
               />
             </div>
+            <VenueLocationFields
+              city={form.city}
+              latitude={form.latitude}
+              longitude={form.longitude}
+              onCityChange={(city) => updateField("city", city)}
+              onCoordinatesChange={({ latitude, longitude }) =>
+                setForm((prev) =>
+                  prev ? { ...prev, latitude, longitude } : prev,
+                )
+              }
+              inputClassName={INPUT_CLASS}
+              labelClassName={LABEL_CLASS}
+            />
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="city" className={LABEL_CLASS}>
-                  City *
-                </Label>
-                <Input
-                  id="city"
-                  value={form.city}
-                  onChange={(e) => updateField("city", e.target.value)}
-                  placeholder="e.g. Beirut"
-                  required
-                  className={INPUT_CLASS}
-                />
-              </div>
               <PhoneNumberField
                 countryCode={form.countryCode}
                 phoneNumber={form.contactPhone}
@@ -411,18 +423,6 @@ export default function EditVenuePage() {
                 labelClassName={LABEL_CLASS}
               />
             </div>
-            <VenueLocationPicker
-              latitude={form.latitude}
-              longitude={form.longitude}
-              onChange={({ latitude, longitude }) =>
-                setForm((prev) =>
-                  prev ? { ...prev, latitude, longitude } : prev,
-                )
-              }
-              onResolveAddress={handleResolvedAddress}
-              inputClassName={INPUT_CLASS}
-              labelClassName={LABEL_CLASS}
-            />
           </CardContent>
         </Card>
 

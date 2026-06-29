@@ -1,11 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Info, Mail, Shield, User } from "lucide-react";
 import { toast } from "sonner";
 
-import { createAdmin, getApiErrorMessage } from "@/lib/api";
+import {
+  createAdmin,
+  getApiErrorMessage,
+  getApiErrorStatus,
+  getApiFieldErrors,
+} from "@/lib/api";
 import { BackLink } from "../_components/back-link";
 import {
   FormFooter,
@@ -18,48 +23,120 @@ import { useSubmitShortcut } from "../_components/use-submit-shortcut";
 
 const ACCENT = "teal" as const;
 const FORM_ID = "create-admin-form";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const FIELD_NAMES = ["firstName", "lastName", "email"] as const;
+
+type FieldName = (typeof FIELD_NAMES)[number];
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+function isFieldName(field: string): field is FieldName {
+  return FIELD_NAMES.includes(field as FieldName);
+}
+
+function validateFields(values: {
+  firstName: string;
+  lastName: string;
+  email: string;
+}): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!values.firstName.trim()) errors.firstName = "First name is required.";
+  if (!values.lastName.trim()) errors.lastName = "Last name is required.";
+
+  const email = values.email.trim();
+  if (!email) {
+    errors.email = "Email is required.";
+  } else if (!EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a valid email address.";
+  }
+
+  return errors;
+}
 
 export default function CreateAdminPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // Synchronous in-flight guard: closes the double-submit window that ⌘/Ctrl+
-  // Enter (form.requestSubmit) can open faster than an isSubmitting re-render.
   const inFlight = useRef(false);
 
   useSubmitShortcut(FORM_ID);
 
-  const canSubmit = useMemo(
-    () => Boolean(firstName.trim() && lastName.trim() && email.trim()),
-    [firstName, lastName, email],
-  );
+  const canSubmit = !isSubmitting;
+
+  const clearFieldError = useCallback((field: FieldName) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }, []);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!canSubmit || inFlight.current) return;
+      if (inFlight.current) return;
+
+      const nextFieldErrors = validateFields({ firstName, lastName, email });
+      setFieldErrors(nextFieldErrors);
+      if (Object.keys(nextFieldErrors).length > 0) {
+        toast.error("Check the highlighted fields and try again.");
+        return;
+      }
+
       inFlight.current = true;
       setIsSubmitting(true);
       try {
-        await createAdmin({
+        const created = await createAdmin({
           email: email.trim(),
           firstName: firstName.trim(),
           lastName: lastName.trim(),
         });
-        toast.success(
-          `Admin ${firstName.trim()} ${lastName.trim()} created — OTP sent`,
-        );
+        const adminName =
+          `${created.user.firstName} ${created.user.lastName}`.trim() ||
+          created.user.email;
+        toast.success(created.message, {
+          description: `${adminName} - ${created.user.email}`,
+        });
         router.push("/dashboard/users/admins");
       } catch (err: unknown) {
-        toast.error(getApiErrorMessage(err, "Failed to create admin"));
+        const status = getApiErrorStatus(err);
+        const message =
+          status === 409
+            ? "Email already in use"
+            : getApiErrorMessage(err, "Failed to create admin");
+        const mappedErrors = getApiFieldErrors(err).reduce<FieldErrors>(
+          (acc, fieldError) => {
+            if (isFieldName(fieldError.field)) {
+              acc[fieldError.field] = fieldError.message;
+            }
+            return acc;
+          },
+          {},
+        );
+
+        if (status === 409) {
+          mappedErrors.email = message;
+        }
+
+        if (Object.keys(mappedErrors).length > 0) {
+          setFieldErrors(mappedErrors);
+          toast.error(
+            status === 409
+              ? message
+              : "Check the highlighted fields and try again.",
+          );
+        } else {
+          toast.error(message);
+        }
       } finally {
         inFlight.current = false;
         setIsSubmitting(false);
       }
     },
-    [canSubmit, email, firstName, lastName, router],
+    [email, firstName, lastName, router],
   );
 
   const preview = {
@@ -78,11 +155,11 @@ export default function CreateAdminPage() {
         </h1>
         <p className="text-[13.5px] tracking-[-0.003em] text-[var(--text-3)]">
           Admins have platform-wide access. They log in with a one-time code
-          emailed to them — no password to set.
+          emailed to them - no password to set.
         </p>
       </div>
 
-      <form id={FORM_ID} onSubmit={handleSubmit}>
+      <form id={FORM_ID} onSubmit={handleSubmit} noValidate>
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <div className="uv2c-card overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
             <FormSection
@@ -99,8 +176,12 @@ export default function CreateAdminPage() {
                   icon={User}
                   accent={ACCENT}
                   value={firstName}
-                  onChange={setFirstName}
+                  onChange={(value) => {
+                    setFirstName(value);
+                    clearFieldError("firstName");
+                  }}
                   placeholder="John"
+                  error={fieldErrors.firstName}
                 />
                 <TextField
                   label="Last name"
@@ -108,8 +189,12 @@ export default function CreateAdminPage() {
                   icon={User}
                   accent={ACCENT}
                   value={lastName}
-                  onChange={setLastName}
+                  onChange={(value) => {
+                    setLastName(value);
+                    clearFieldError("lastName");
+                  }}
                   placeholder="Doe"
+                  error={fieldErrors.lastName}
                 />
               </div>
             </FormSection>
@@ -128,8 +213,12 @@ export default function CreateAdminPage() {
                 type="email"
                 accent={ACCENT}
                 value={email}
-                onChange={setEmail}
+                onChange={(value) => {
+                  setEmail(value);
+                  clearFieldError("email");
+                }}
                 placeholder="admin@orayzen.com"
+                error={fieldErrors.email}
                 hint={{
                   tone: "info",
                   icon: Info,
@@ -161,7 +250,7 @@ export default function CreateAdminPage() {
               <PreviewRow label="Login method" value="OTP via email" />
               <PreviewRow
                 label="Initial status"
-                value="Pending · first login"
+                value="Pending - first login"
               />
             </div>
             <div className="mt-3.5 flex gap-2 rounded-md border border-[rgba(99,102,241,0.14)] bg-[rgba(99,102,241,0.08)] px-3 py-2.5">

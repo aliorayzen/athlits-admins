@@ -6,7 +6,12 @@ import { Mail, Table as TableIcon, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { PhoneNumberField } from "@/components/phone-number-field";
-import { createVenueManager, getApiErrorMessage } from "@/lib/api";
+import {
+  createVenueManager,
+  getApiErrorMessage,
+  getApiErrorStatus,
+  getApiFieldErrorMap,
+} from "@/lib/api";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -32,6 +37,28 @@ const FORM_ID = "create-vm-form";
 const MIN_PASSWORD_LENGTH = 8;
 const MIN_PASSWORD_STRENGTH = 2;
 
+type VmCreateFieldErrors = Partial<
+  Record<
+    "firstName" | "lastName" | "email" | "phoneNumber" | "tempPassword",
+    string
+  >
+>;
+
+function venueManagerFieldErrors(err: unknown): VmCreateFieldErrors {
+  const fieldErrors = getApiFieldErrorMap(err);
+  const message = getApiErrorMessage(err, "");
+  const status = getApiErrorStatus(err);
+
+  if (status === 409 && /email/i.test(message)) {
+    fieldErrors.email = message;
+  }
+  if (status === 400 && /phone/i.test(message)) {
+    fieldErrors.phoneNumber = message;
+  }
+
+  return fieldErrors;
+}
+
 export default function CreateVenueManagerPage() {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
@@ -42,6 +69,7 @@ export default function CreateVenueManagerPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [tempPassword, setTempPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<VmCreateFieldErrors>({});
   // Synchronous in-flight guard: closes the double-submit window that ⌘/Ctrl+
   // Enter (form.requestSubmit) can open faster than an isSubmitting re-render.
   const inFlight = useRef(false);
@@ -82,6 +110,7 @@ export default function CreateVenueManagerPage() {
       if (!canSubmit || inFlight.current) return;
       inFlight.current = true;
       setIsSubmitting(true);
+      setFieldErrors({});
       try {
         await createVenueManager({
           email: email.trim(),
@@ -97,6 +126,7 @@ export default function CreateVenueManagerPage() {
         );
         router.push("/dashboard/users/venue-managers");
       } catch (err: unknown) {
+        setFieldErrors(venueManagerFieldErrors(err));
         toast.error(getApiErrorMessage(err, "Failed to create venue manager"));
       } finally {
         inFlight.current = false;
@@ -114,6 +144,15 @@ export default function CreateVenueManagerPage() {
       router,
     ],
   );
+
+  const clearFieldError = useCallback((field: keyof VmCreateFieldErrors) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }, []);
 
   const preview = {
     initials: `${firstName[0] ?? "J"}${lastName[0] ?? "S"}`.toUpperCase(),
@@ -153,8 +192,12 @@ export default function CreateVenueManagerPage() {
                   icon={User}
                   accent={ACCENT}
                   value={firstName}
-                  onChange={setFirstName}
+                  onChange={(value) => {
+                    clearFieldError("firstName");
+                    setFirstName(value);
+                  }}
                   placeholder="Jane"
+                  error={fieldErrors.firstName}
                 />
                 <TextField
                   label="Last name"
@@ -162,8 +205,12 @@ export default function CreateVenueManagerPage() {
                   icon={User}
                   accent={ACCENT}
                   value={lastName}
-                  onChange={setLastName}
+                  onChange={(value) => {
+                    clearFieldError("lastName");
+                    setLastName(value);
+                  }}
                   placeholder="Smith"
+                  error={fieldErrors.lastName}
                 />
               </div>
             </FormSection>
@@ -183,17 +230,37 @@ export default function CreateVenueManagerPage() {
                   type="email"
                   accent={ACCENT}
                   value={email}
-                  onChange={setEmail}
+                  onChange={(value) => {
+                    clearFieldError("email");
+                    setEmail(value);
+                  }}
                   placeholder="manager@venue.com"
+                  error={fieldErrors.email}
                 />
-                <PhoneNumberField
-                  required
-                  countryCode={phoneCountryCode}
-                  phoneNumber={phoneNumber}
-                  onCountryCodeChange={setPhoneCountryCode}
-                  onPhoneNumberChange={setPhoneNumber}
-                  inputClassName="border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)]"
-                />
+                <div className="space-y-1.5">
+                  <PhoneNumberField
+                    required
+                    countryCode={phoneCountryCode}
+                    phoneNumber={phoneNumber}
+                    onCountryCodeChange={(value) => {
+                      clearFieldError("phoneNumber");
+                      setPhoneCountryCode(value);
+                    }}
+                    onPhoneNumberChange={(value) => {
+                      clearFieldError("phoneNumber");
+                      setPhoneNumber(value);
+                    }}
+                    inputClassName="border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)]"
+                  />
+                  {fieldErrors.phoneNumber && (
+                    <p
+                      role="alert"
+                      className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                    >
+                      {fieldErrors.phoneNumber}
+                    </p>
+                  )}
+                </div>
               </div>
             </FormSection>
 
@@ -206,9 +273,20 @@ export default function CreateVenueManagerPage() {
             >
               <TempPasswordField
                 value={tempPassword}
-                onChange={setTempPassword}
+                onChange={(value) => {
+                  clearFieldError("tempPassword");
+                  setTempPassword(value);
+                }}
                 strength={strength}
               />
+              {fieldErrors.tempPassword && (
+                <p
+                  role="alert"
+                  className="mt-2 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                >
+                  {fieldErrors.tempPassword}
+                </p>
+              )}
             </FormSection>
 
             <FormFooter
@@ -235,7 +313,7 @@ export default function CreateVenueManagerPage() {
               <PreviewRow label="Phone" value={preview.phone} mono />
               <PreviewRow
                 label="Initial status"
-                value="Pending · first login"
+                value="Active after creation"
               />
             </div>
             <div className="mt-3.5 flex gap-2 rounded-md border border-[rgba(245,158,11,0.14)] bg-[rgba(245,158,11,0.08)] px-3 py-2.5">

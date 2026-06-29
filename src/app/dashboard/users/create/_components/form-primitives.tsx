@@ -129,6 +129,7 @@ export function TextField({
   placeholder,
   accent = "teal",
   hint,
+  error,
 }: {
   label: string;
   required?: boolean;
@@ -139,9 +140,12 @@ export function TextField({
   placeholder?: string;
   accent?: Accent;
   hint?: FieldHint;
+  error?: string;
 }) {
   const HintIcon = hint?.icon;
   const inputId = useId();
+  const errorId = `${inputId}-error`;
+  const hintId = `${inputId}-hint`;
   return (
     <div className="flex flex-col gap-1.5">
       <label
@@ -166,14 +170,27 @@ export function TextField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={error ? errorId : hint ? hintId : undefined}
           className={cn(
             "h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)]",
-            ACCENT[accent].inputFocus,
+            error
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
+              : ACCENT[accent].inputFocus,
           )}
         />
       </div>
-      {hint && HintIcon && (
+      {error ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+        >
+          {error}
+        </p>
+      ) : hint && HintIcon ? (
         <div
+          id={hintId}
           className={cn(
             "mt-0.5 flex items-start gap-1.5 text-[11px] leading-[1.4]",
             hint.tone === "info"
@@ -184,7 +201,7 @@ export function TextField({
           <HintIcon className="mt-0.5 h-[11px] w-[11px] flex-shrink-0" />
           <span>{hint.text}</span>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -885,7 +885,16 @@ function VenueRow({
         )}
       </td>
       <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
-        <span className="font-mono text-[12px] text-[var(--text-4)]">—</span>
+        {typeof venue.courtCount === "number" ? (
+          <span className="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums text-[var(--text-2)]">
+            {venue.courtCount}
+            <span className="text-[var(--text-4)]">
+              {venue.courtCount === 1 ? "court" : "courts"}
+            </span>
+          </span>
+        ) : (
+          <span className="font-mono text-[12px] text-[var(--text-4)]">—</span>
+        )}
       </td>
       <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
         <span className="text-[12px] tabular-nums text-[var(--text-3)]">

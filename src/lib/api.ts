@@ -3,6 +3,7 @@ import { apiClient } from "./api-client";
 import type {
   AdminLoginRequest,
   AdminVerifyOtpRequest,
+  ApiEnvelope,
   AuthResponse,
   CreateAdminRequest,
   CreateVenueRequest,
@@ -20,6 +21,7 @@ import type {
   InvoiceResponse,
   InvoiceStatus,
   MarkPaidRequest,
+  BulkInvoiceResult,
   PageResponse,
   PageQuery,
   ContractResponse,
@@ -39,7 +41,7 @@ interface ApiErrorBody {
   errors?: unknown;
 }
 
-interface ApiFieldError {
+export interface ApiFieldError {
   field: string;
   message: string;
 }
@@ -66,6 +68,20 @@ export function getApiFieldErrors(err: unknown): ApiFieldError[] {
   const body = err.response?.data as ApiErrorBody | string | undefined;
   if (!body || typeof body !== "object") return [];
   return parseFieldErrors(body.errors);
+}
+
+export function getApiFieldErrorMap(
+  err: unknown,
+  aliases: Record<string, string> = {},
+): Record<string, string> {
+  return getApiFieldErrors(err).reduce<Record<string, string>>(
+    (acc, fieldError) => {
+      const key = aliases[fieldError.field] ?? fieldError.field;
+      if (key && !acc[key]) acc[key] = fieldError.message;
+      return acc;
+    },
+    {},
+  );
 }
 
 // When the backend gives us no usable message, map the HTTP status to copy that
@@ -143,29 +159,47 @@ function ensureStringId(id: unknown): string {
   return String(id);
 }
 
+// Backend venues/courts/invoices ship bilingual names (nameEn/nameAr) with no
+// single `name`. We derive an English-primary display string at this boundary
+// so display-only consumers can keep reading `.name` / `.venueName`.
+function displayName(nameEn?: string | null, nameAr?: string | null): string {
+  const en = nameEn?.trim();
+  if (en) return en;
+  const ar = nameAr?.trim();
+  if (ar) return ar;
+  return "";
+}
+
 function normalizeUser(user: UserDto): UserDto {
-  const now = new Date().toISOString();
   return {
     ...user,
     id: ensureStringId(user.id),
-    createdAt: user.createdAt ?? now,
-    updatedAt: user.updatedAt ?? now,
   };
 }
 
 function normalizeVenueSummary(v: VenueSummaryResponse): VenueSummaryResponse {
-  return { ...v, id: ensureStringId(v.id) };
+  return {
+    ...v,
+    id: ensureStringId(v.id),
+    name: displayName(v.nameEn, v.nameAr),
+  };
 }
 
 function normalizeVenueDetail(v: VenueDetailResponse): VenueDetailResponse {
   return {
     ...v,
     id: ensureStringId(v.id),
+    name: displayName(v.nameEn, v.nameAr),
     managerId: v.managerId ? ensureStringId(v.managerId) : v.managerId,
     createdByAdminId: v.createdByAdminId
       ? ensureStringId(v.createdByAdminId)
       : v.createdByAdminId,
-    courts: (v.courts ?? []).map((c) => ({ ...c, id: ensureStringId(c.id) })),
+    courts: (v.courts ?? []).map((c) => ({
+      ...c,
+      id: ensureStringId(c.id),
+      venueId: c.venueId ? ensureStringId(c.venueId) : c.venueId,
+      name: displayName(c.nameEn, c.nameAr),
+    })),
   };
 }
 
@@ -174,6 +208,7 @@ function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
   const id = ensureStringId(i.id);
   const venueId = ensureStringId(i.venueId);
   const contractId = i.contractId ? ensureStringId(i.contractId) : i.contractId;
+  const venueName = i.venueName?.trim();
   const billingPeriodStart = i.billingPeriodStart ?? i.periodStart;
   const billingPeriodEnd = i.billingPeriodEnd ?? i.periodEnd;
   const amountDue = i.amountDue ?? i.amount ?? 0;
@@ -185,6 +220,10 @@ function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
     id,
     venueId,
     contractId,
+    // Prefer bilingual fields, but preserve a plain backend `venueName` when
+    // invoices don't include `venueNameEn` / `venueNameAr`.
+    venueName:
+      displayName(i.venueNameEn, i.venueNameAr) || venueName || undefined,
     billingPeriodStart: billingPeriodStart ?? periodStart,
     billingPeriodEnd: billingPeriodEnd ?? periodEnd,
     amountDue,
@@ -244,16 +283,20 @@ export async function createVenue(
   payload: CreateVenueRequest,
 ): Promise<VenueDetailResponse> {
   // Endpoint is application/json. Trim optional string fields and drop empties
-  // so we never send blank strings the backend would reject; coverImage is a
-  // plain URL, not an uploaded file.
+  // so we never send blank strings the backend would reject. Cover images are
+  // not part of the JSON create DTO; they require a multipart upload flow.
   const trimmedDescription = payload.description?.trim();
   const trimmedContactPhone = payload.contactPhone?.trim();
   const trimmedContactEmail = payload.contactEmail?.trim();
-  const trimmedCoverImage = payload.coverImage?.trim();
 
   const body = {
     managerId: payload.managerId,
-    name: payload.name.trim(),
+    nameEn: payload.nameEn.trim(),
+    nameAr: payload.nameAr.trim(),
+    // Compatibility mirror: also send a single `name` (English-primary) so the
+    // backend accepts the create whether its DTO expects `nameEn`/`nameAr` or a
+    // legacy single `name`. Harmless if the backend ignores unknown fields.
+    name: payload.nameEn.trim(),
     addressLine: payload.addressLine.trim(),
     city: payload.city.trim(),
     timeZoneId: payload.timeZoneId,
@@ -269,7 +312,6 @@ export async function createVenue(
     ...(trimmedDescription ? { description: trimmedDescription } : {}),
     ...(trimmedContactPhone ? { contactPhone: trimmedContactPhone } : {}),
     ...(trimmedContactEmail ? { contactEmail: trimmedContactEmail } : {}),
-    ...(trimmedCoverImage ? { coverImage: trimmedCoverImage } : {}),
     // Backend rejects an availability object with zero days; the caller already
     // omits `availability` in that case.
     ...(payload.availability ? { availability: payload.availability } : {}),
@@ -294,6 +336,7 @@ export async function getEditableVenue(
   return {
     ...data,
     id: ensureStringId(data.id),
+    name: displayName(data.nameEn, data.nameAr),
     managerId: data.managerId ? ensureStringId(data.managerId) : data.managerId,
   };
 }
@@ -303,11 +346,22 @@ export async function updateVenue(
   venueId: string,
   payload: UpdateVenueRequest,
 ): Promise<VenueResponse> {
+  const body = {
+    ...payload,
+    // Compatibility mirror: when an English name is being sent, also send a
+    // single `name` so the update works whether the backend DTO expects
+    // `nameEn`/`nameAr` or a legacy single `name`.
+    ...(payload.nameEn !== undefined ? { name: payload.nameEn } : {}),
+  };
   const { data } = await apiClient.put<VenueResponse>(
     `/api/admin/v1/venues/${venueId}`,
-    payload,
+    body,
   );
-  return { ...data, id: ensureStringId(data.id) };
+  return {
+    ...data,
+    id: ensureStringId(data.id),
+    name: displayName(data.nameEn, data.nameAr),
+  };
 }
 
 export async function setVenueStatus(
@@ -335,12 +389,16 @@ export async function assignManager(
 // ── Users ─────────────────────────────────────
 export async function createAdmin(
   payload: CreateAdminRequest,
-): Promise<UserDto> {
-  const { data } = await apiClient.post<UserDto>(
+): Promise<{ user: UserDto; message: string }> {
+  const { data } = await apiClient.post<ApiEnvelope<UserDto>>(
     "/api/admin/v1/users/admin",
     payload,
+    { preserveEnvelope: true },
   );
-  return normalizeUser(data);
+  return {
+    user: normalizeUser(data.data),
+    message: data.message ?? "Admin account created",
+  };
 }
 
 export async function createVenueManager(
@@ -409,8 +467,11 @@ export async function deactivateVenueManager(
 
 // ── Invoices ─────────────────────────────────
 export async function getInvoices(params?: {
-  venueName?: string;
-  invoiceId?: string;
+  // Backend filters venue names separately by language. The admin search box is
+  // English-primary, so callers pass `venueNameEn`; `venueNameAr` is available
+  // for completeness. Both apply together when sent.
+  venueNameEn?: string;
+  venueNameAr?: string;
   status?: InvoiceStatus;
   page?: number;
   size?: number;
@@ -483,6 +544,58 @@ export async function markInvoicePaid(
     payload,
   );
   return normalizeInvoice(data);
+}
+
+// Bulk operations support partial success. We normalize the venue names on the
+// returned (succeeded) invoices so the caller can render them consistently.
+function normalizeBulkResult(result: BulkInvoiceResult): BulkInvoiceResult {
+  return {
+    succeeded: (result?.succeeded ?? []).map(normalizeInvoice),
+    failed: result?.failed ?? [],
+  };
+}
+
+export async function bulkMarkInvoicesPaid(
+  ids: string[],
+  paymentReference: string,
+): Promise<BulkInvoiceResult> {
+  const { data } = await apiClient.post<BulkInvoiceResult>(
+    "/api/admin/v1/invoices/bulk-mark-paid",
+    { ids, paymentReference },
+  );
+  return normalizeBulkResult(data);
+}
+
+export async function bulkVoidInvoices(
+  ids: string[],
+  reason?: string,
+): Promise<BulkInvoiceResult> {
+  const { data } = await apiClient.post<BulkInvoiceResult>(
+    "/api/admin/v1/invoices/bulk-void",
+    { ids, ...(reason ? { reason } : {}) },
+  );
+  return normalizeBulkResult(data);
+}
+
+export async function bulkRemindInvoices(
+  ids: string[],
+): Promise<BulkInvoiceResult> {
+  const { data } = await apiClient.post<BulkInvoiceResult>(
+    "/api/admin/v1/invoices/bulk-remind",
+    { ids },
+  );
+  return normalizeBulkResult(data);
+}
+
+// Returns the backend-rendered invoice PDF as a Blob (raw application/pdf — NOT
+// the JSON envelope, so we skip envelope unwrapping). The PDF uses the venue's
+// EN/AR names.
+export async function getInvoicePdf(id: string): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(
+    `/api/admin/v1/invoices/${id}/pdf`,
+    { responseType: "blob", preserveEnvelope: true },
+  );
+  return data;
 }
 
 // ── Contracts ────────────────────────────────

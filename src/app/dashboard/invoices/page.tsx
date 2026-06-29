@@ -28,6 +28,9 @@ import {
 } from "lucide-react";
 
 import {
+  bulkMarkInvoicesPaid,
+  bulkRemindInvoices,
+  bulkVoidInvoices,
   getApiErrorMessage,
   getInvoiceKpis,
   getInvoices,
@@ -35,6 +38,7 @@ import {
   voidInvoice,
 } from "@/lib/api";
 import type {
+  BulkInvoiceResult,
   InvoiceKpiSummary,
   InvoiceResponse,
   InvoiceStatus,
@@ -42,6 +46,7 @@ import type {
 } from "@/types/api";
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { cn } from "@/lib/utils";
+import { InvoicePdfDialog } from "./_components/invoice-pdf-dialog";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -147,6 +152,19 @@ function computeUrgency(inv: InvoiceResponse): Urgency {
 type Phase = "loading" | "error" | "ready";
 const INVOICE_PAGE_SIZE = 20;
 
+// Surface partial-success outcomes from a bulk operation as a single toast.
+function reportBulkResult(result: BulkInvoiceResult, verbPast: string): void {
+  const ok = result.succeeded.length;
+  const failed = result.failed.length;
+  if (ok > 0 && failed === 0) {
+    toast.success(`${ok} ${ok === 1 ? "invoice" : "invoices"} ${verbPast}`);
+  } else if (ok > 0) {
+    toast.warning(`${ok} ${verbPast}, ${failed} failed`);
+  } else {
+    toast.error(`No invoices ${verbPast} — ${failed} failed`);
+  }
+}
+
 function parseStatusFilter(value: string | null): StatusFilter {
   return value === "GENERATED" ||
     value === "PAID" ||
@@ -190,6 +208,14 @@ function InvoicesContent() {
     useState<StatusFilter>(urlStatusFilter);
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkPaidOpen, setBulkPaidOpen] = useState(false);
+  const [bulkPaidRef, setBulkPaidRef] = useState("");
+  const [bulkVoidOpen, setBulkVoidOpen] = useState(false);
+  const [bulkVoidReason, setBulkVoidReason] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [pdfInvoice, setPdfInvoice] = useState<InvoiceResponse | null>(null);
+  const bulkPaidRefId = useId();
+  const bulkVoidReasonId = useId();
 
   const isLoading = phase === "loading";
   const isKpiLoading = kpisLoading && kpis === null;
@@ -214,7 +240,7 @@ function InvoicesContent() {
       const pageResp = await getInvoices({
         page,
         size: INVOICE_PAGE_SIZE,
-        venueName: query || undefined,
+        venueNameEn: query || undefined,
         status: statusFilter === "all" ? undefined : statusFilter,
       });
 
@@ -392,6 +418,60 @@ function InvoicesContent() {
       await loadKpis();
     } catch {
       toast.error("Failed to void invoice");
+    }
+  }
+
+  /* ─── Bulk handlers (partial success supported) ─── */
+  async function handleBulkMarkPaid() {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const result = await bulkMarkInvoicesPaid(ids, bulkPaidRef.trim());
+      reportBulkResult(result, "marked paid");
+      setBulkPaidOpen(false);
+      setBulkPaidRef("");
+      clearSelection();
+      await reload();
+      await loadKpis();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to mark invoices paid"));
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function handleBulkVoid() {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const result = await bulkVoidInvoices(ids, bulkVoidReason.trim());
+      reportBulkResult(result, "voided");
+      setBulkVoidOpen(false);
+      setBulkVoidReason("");
+      clearSelection();
+      await reload();
+      await loadKpis();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to void invoices"));
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
+  async function handleBulkRemind() {
+    const ids = [...selectedIds];
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const result = await bulkRemindInvoices(ids);
+      reportBulkResult(result, "reminded");
+      clearSelection();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to send reminders"));
+    } finally {
+      setBulkBusy(false);
     }
   }
 
@@ -708,14 +788,14 @@ function InvoicesContent() {
           <div className="flex gap-1.5">
             <BulkBtn
               variant="success"
-              onClick={() => toast.info("Bulk mark paid — coming soon")}
+              onClick={() => setBulkPaidOpen(true)}
               title="Mark selected as paid"
             >
               <CheckCircle className="h-3 w-3" />
               Mark paid
             </BulkBtn>
             <BulkBtn
-              onClick={() => toast.info("Send reminder — coming soon")}
+              onClick={() => void handleBulkRemind()}
               title="Send payment reminder"
             >
               <Mail className="h-3 w-3" />
@@ -730,7 +810,7 @@ function InvoicesContent() {
             </BulkBtn>
             <BulkBtn
               variant="danger"
-              onClick={() => toast.info("Bulk void — coming soon")}
+              onClick={() => setBulkVoidOpen(true)}
               title="Void selected"
             >
               <XCircle className="h-3 w-3" />
@@ -854,9 +934,7 @@ function InvoicesContent() {
                           void reload();
                           void loadKpis();
                         }}
-                        onPdf={() =>
-                          exportPDF([inv], `invoice-${inv.id.slice(0, 8)}`)
-                        }
+                        onPdf={() => setPdfInvoice(inv)}
                       />
                     ))}
                   </tbody>
@@ -879,6 +957,112 @@ function InvoicesContent() {
           )}
         </div>
       )}
+
+      {/* ═══════════ Bulk: mark paid ═══════════ */}
+      <Dialog open={bulkPaidOpen} onOpenChange={setBulkPaidOpen}>
+        <DialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+          <DialogHeader>
+            <DialogTitle>
+              Mark {selectedIds.size}{" "}
+              {selectedIds.size === 1 ? "invoice" : "invoices"} as paid
+            </DialogTitle>
+            <DialogDescription className="text-[var(--text-3)]">
+              Records the same payment reference against every selected invoice.
+              Already-settled invoices are skipped.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            <Label
+              htmlFor={bulkPaidRefId}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-3)]"
+            >
+              Payment Reference
+            </Label>
+            <Input
+              id={bulkPaidRefId}
+              value={bulkPaidRef}
+              onChange={(e) => setBulkPaidRef(e.target.value)}
+              placeholder="e.g. batch transfer ref"
+              className="border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--teal)] focus:ring-[3px] focus:ring-[var(--teal-subtle)]"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBulkPaidOpen(false)}
+              className="border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-2)]"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleBulkMarkPaid()}
+              disabled={!bulkPaidRef.trim() || bulkBusy}
+              className="gap-2 bg-[linear-gradient(135deg,var(--semantic-green)_0%,#059669_100%)] font-medium text-white shadow-[0_0_20px_-4px_rgba(16,185,129,0.35)] hover:brightness-110"
+            >
+              {bulkBusy ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4" />
+              )}
+              Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══════════ Bulk: void ═══════════ */}
+      <AlertDialog open={bulkVoidOpen} onOpenChange={setBulkVoidOpen}>
+        <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Void {selectedIds.size}{" "}
+              {selectedIds.size === 1 ? "invoice" : "invoices"}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[var(--text-3)]">
+              This cannot be undone. Paid invoices are skipped. You can record
+              an optional reason for the audit trail.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-1">
+            <Label
+              htmlFor={bulkVoidReasonId}
+              className="text-xs font-medium uppercase tracking-wider text-[var(--text-3)]"
+            >
+              Reason (optional)
+            </Label>
+            <Input
+              id={bulkVoidReasonId}
+              value={bulkVoidReason}
+              onChange={(e) => setBulkVoidReason(e.target.value)}
+              placeholder="e.g. duplicate invoices"
+              className="border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--teal)] focus:ring-[3px] focus:ring-[var(--teal-subtle)]"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-2)]">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                void handleBulkVoid();
+              }}
+              disabled={bulkBusy}
+              className="bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)] hover:bg-[var(--semantic-red-subtle)] hover:brightness-125"
+            >
+              {bulkBusy ? "Voiding…" : "Void Invoices"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ═══════════ Invoice PDF viewer ═══════════ */}
+      <InvoicePdfDialog
+        invoice={pdfInvoice}
+        onOpenChange={(open) => {
+          if (!open) setPdfInvoice(null);
+        }}
+      />
     </div>
   );
 }
@@ -1502,11 +1686,11 @@ function RowActions({
       <button
         type="button"
         onClick={onPdf}
-        title="Download PDF"
-        aria-label={`Download invoice ${invoice.id.slice(0, 8)} as PDF`}
+        title="View PDF"
+        aria-label={`View invoice ${invoice.id.slice(0, 8)} PDF`}
         className="iv2-btn-pdf grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
       >
-        <Download className="h-[13px] w-[13px]" />
+        <FileText className="h-[13px] w-[13px]" />
       </button>
       {isTerminal ? (
         <SettledChip status={invoice.status} />

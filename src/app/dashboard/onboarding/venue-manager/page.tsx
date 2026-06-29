@@ -20,7 +20,6 @@ import {
   Check,
   CheckCircle2,
   ClipboardCheck,
-  ImageIcon,
   Loader2,
   Search,
   Sparkles,
@@ -35,6 +34,7 @@ import {
   createVenueManager,
   getApiErrorMessage,
   getApiErrorStatus,
+  getApiFieldErrorMap,
   getVenueManagers,
 } from "@/lib/api";
 import type {
@@ -52,13 +52,13 @@ import { PhoneNumberField } from "@/components/phone-number-field";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  availabilityDaysToUtc,
   availabilityDaysWithErrors,
   defaultAvailabilityDays,
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
-import { VenueLocationPicker } from "@/components/venue-location-picker";
+import { VenueLocationFields } from "@/components/venue-location-fields";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
+import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -74,6 +74,12 @@ import {
 type StepKey = "manager" | "venue" | "review";
 type ManagerMode = "existing" | "new";
 type ManagersState = "loading" | "ready" | "error";
+type ManagerFieldErrors = Partial<
+  Record<
+    "firstName" | "lastName" | "email" | "phoneNumber" | "tempPassword",
+    string
+  >
+>;
 
 const STEPS: Array<{
   key: StepKey;
@@ -125,7 +131,8 @@ const labelClass =
 
 const emptyVenue = (): CreateVenueRequest => ({
   managerId: "",
-  name: "",
+  nameEn: "",
+  nameAr: "",
   description: "",
   addressLine: "",
   city: "",
@@ -134,9 +141,8 @@ const emptyVenue = (): CreateVenueRequest => ({
   longitude: 0,
   contactPhone: "",
   contactEmail: "",
-  coverImage: "",
   timeZoneId: browserTimeZone(),
-  currencyCode: "SAR",
+  currencyCode: DEFAULT_CURRENCY,
   paymentMode: "BOTH",
   allowRecurringBookings: false,
   courtLimit: undefined,
@@ -162,6 +168,27 @@ function isServerError(err: unknown): boolean {
   return status !== null && status >= 500;
 }
 
+function venueManagerFieldErrors(err: unknown): ManagerFieldErrors {
+  const fieldErrors = getApiFieldErrorMap(err);
+  const message = getApiErrorMessage(err, "");
+  const status = getApiErrorStatus(err);
+
+  if (status === 409 && /email/i.test(message)) {
+    fieldErrors.email = message;
+  }
+  if (status === 400 && /phone/i.test(message)) {
+    fieldErrors.phoneNumber = message;
+  }
+
+  return fieldErrors;
+}
+
+// The backend requires a non-blank, well-formed contact email on create.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(value: string | undefined): boolean {
+  return Boolean(value && EMAIL_PATTERN.test(value.trim()));
+}
+
 export default function OnboardingVenueManagerPage() {
   const router = useRouter();
   const inFlight = useRef(false);
@@ -176,6 +203,8 @@ export default function OnboardingVenueManagerPage() {
   const [stepErrors, setStepErrors] = useState<
     Partial<Record<StepKey, string>>
   >({});
+  const [managerFieldErrors, setManagerFieldErrors] =
+    useState<ManagerFieldErrors>({});
   const [createdManager, setCreatedManager] = useState<UserDto | null>(null);
   const [createdVenue, setCreatedVenue] = useState<VenueDetailResponse | null>(
     null,
@@ -252,9 +281,12 @@ export default function OnboardingVenueManagerPage() {
 
   const venueValid = Boolean(
     activeManagerId &&
-    venue.name.trim() &&
+    venue.nameEn.trim() &&
+    venue.nameAr.trim() &&
     venue.addressLine.trim() &&
     venue.city.trim() &&
+    isValidEmail(venue.contactEmail) &&
+    isValidPhoneForCountry(venue.contactPhone ?? "", venue.countryCode) &&
     venue.countryCode.trim().length === 2 &&
     venue.timeZoneId &&
     venue.currencyCode.trim().length === 3 &&
@@ -286,6 +318,16 @@ export default function OnboardingVenueManagerPage() {
     value: (typeof managerDraft)[K],
   ) {
     setStepErrors((prev) => ({ ...prev, manager: undefined }));
+    const errorKey: keyof ManagerFieldErrors =
+      key === "phoneCountryCode"
+        ? "phoneNumber"
+        : (key as keyof ManagerFieldErrors);
+    setManagerFieldErrors((current) => {
+      if (!current[errorKey]) return current;
+      const next = { ...current };
+      delete next[errorKey];
+      return next;
+    });
     setCreatedManager(null);
     setCreatedVenue(null);
     setManagerDraft((prev) => ({ ...prev, [key]: value }));
@@ -324,6 +366,7 @@ export default function OnboardingVenueManagerPage() {
 
     inFlight.current = true;
     setIsSubmitting(true);
+    setManagerFieldErrors({});
     try {
       const created = await createVenueManager({
         firstName: managerDraft.firstName.trim(),
@@ -342,6 +385,8 @@ export default function OnboardingVenueManagerPage() {
       setStep("venue");
     } catch (err: unknown) {
       const message = getApiErrorMessage(err, "Failed to create venue manager");
+      const nextFieldErrors = venueManagerFieldErrors(err);
+      setManagerFieldErrors(nextFieldErrors);
       if (isServerError(err)) toast.error(message);
       else setStepErrors((prev) => ({ ...prev, manager: message }));
     } finally {
@@ -367,12 +412,11 @@ export default function OnboardingVenueManagerPage() {
         ...venue,
         managerId: activeManagerId,
         // Backend rejects an availability object with zero days; omit instead.
-        // Times are entered in local time and stored in UTC.
+        // Backend expects local venue minutes for the displayed operating day.
         availability:
-          availabilityDays.length > 0
-            ? { days: availabilityDaysToUtc(availabilityDays) }
-            : undefined,
-        name: venue.name.trim(),
+          availabilityDays.length > 0 ? { days: availabilityDays } : undefined,
+        nameEn: venue.nameEn.trim(),
+        nameAr: venue.nameAr.trim(),
         description: venue.description?.trim() || undefined,
         addressLine: venue.addressLine.trim(),
         city: venue.city.trim(),
@@ -474,10 +518,12 @@ export default function OnboardingVenueManagerPage() {
                 managerDraft={managerDraft}
                 passwordScore={passwordScore}
                 error={stepErrors.manager}
+                fieldErrors={managerFieldErrors}
                 createdManager={createdManager}
                 onModeChange={(mode) => {
                   setManagerMode(mode);
                   setStepErrors((prev) => ({ ...prev, manager: undefined }));
+                  setManagerFieldErrors({});
                   if (mode === "existing") {
                     setCreatedManager(null);
                     setCreatedVenue(null);
@@ -489,6 +535,7 @@ export default function OnboardingVenueManagerPage() {
                   setCreatedManager(null);
                   setCreatedVenue(null);
                   setStepErrors((prev) => ({ ...prev, manager: undefined }));
+                  setManagerFieldErrors({});
                 }}
                 onUpdateManager={updateManager}
               />
@@ -525,29 +572,40 @@ export default function OnboardingVenueManagerPage() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
-            <Button
-              type="button"
-              onClick={handlePrimaryAction}
-              disabled={primaryDisabled}
-              className="bg-[linear-gradient(135deg,var(--teal),#00b894)] px-5 font-semibold text-[#06100d] shadow-[0_0_20px_-8px_var(--teal-glow)] hover:brightness-110"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Working...
-                </>
-              ) : step === "review" ? (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  {primaryLabel}
-                </>
-              ) : (
-                <>
-                  {primaryLabel}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-3">
+              {!isSubmitting &&
+                ((step === "manager" && !managerValid) ||
+                  (step === "venue" && !venueValid)) && (
+                  <span className="hidden text-[12px] text-[var(--text-4)] sm:inline">
+                    Complete required fields (
+                    <span className="text-[var(--semantic-red)]">*</span>) to
+                    continue
+                  </span>
+                )}
+              <Button
+                type="button"
+                onClick={handlePrimaryAction}
+                disabled={primaryDisabled}
+                className="bg-[linear-gradient(135deg,var(--teal),#00b894)] px-5 font-semibold text-[#06100d] shadow-[0_0_20px_-8px_var(--teal-glow)] hover:brightness-110"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Working...
+                  </>
+                ) : step === "review" ? (
+                  <>
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    {primaryLabel}
+                  </>
+                ) : (
+                  <>
+                    {primaryLabel}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </main>
       </div>
@@ -565,6 +623,7 @@ function ManagerStep({
   managerDraft,
   passwordScore,
   error,
+  fieldErrors,
   createdManager,
   onModeChange,
   onSearchChange,
@@ -587,6 +646,7 @@ function ManagerStep({
   };
   passwordScore: 0 | 1 | 2 | 3 | 4;
   error?: string;
+  fieldErrors: ManagerFieldErrors;
   createdManager: UserDto | null;
   onModeChange: (mode: ManagerMode) => void;
   onSearchChange: (value: string) => void;
@@ -696,7 +756,7 @@ function ManagerStep({
       ) : (
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="First name" required>
+            <Field label="First name" required error={fieldErrors.firstName}>
               <Input
                 value={managerDraft.firstName}
                 onChange={(e) => onUpdateManager("firstName", e.target.value)}
@@ -704,7 +764,7 @@ function ManagerStep({
                 className={fieldClass}
               />
             </Field>
-            <Field label="Last name" required>
+            <Field label="Last name" required error={fieldErrors.lastName}>
               <Input
                 value={managerDraft.lastName}
                 onChange={(e) => onUpdateManager("lastName", e.target.value)}
@@ -712,7 +772,7 @@ function ManagerStep({
                 className={fieldClass}
               />
             </Field>
-            <Field label="Email" required>
+            <Field label="Email" required error={fieldErrors.email}>
               <Input
                 type="email"
                 value={managerDraft.email}
@@ -721,26 +781,44 @@ function ManagerStep({
                 className={fieldClass}
               />
             </Field>
-            <PhoneNumberField
-              countryCode={managerDraft.phoneCountryCode}
-              phoneNumber={managerDraft.phoneNumber}
-              onCountryCodeChange={(countryCode) =>
-                onUpdateManager("phoneCountryCode", countryCode)
-              }
-              onPhoneNumberChange={(value) =>
-                onUpdateManager("phoneNumber", value)
-              }
-              phoneLabel="Phone"
-              inputClassName={fieldClass}
-              labelClassName={labelClass}
-              required
-            />
+            <div className="space-y-1.5">
+              <PhoneNumberField
+                countryCode={managerDraft.phoneCountryCode}
+                phoneNumber={managerDraft.phoneNumber}
+                onCountryCodeChange={(countryCode) =>
+                  onUpdateManager("phoneCountryCode", countryCode)
+                }
+                onPhoneNumberChange={(value) =>
+                  onUpdateManager("phoneNumber", value)
+                }
+                phoneLabel="Phone"
+                inputClassName={fieldClass}
+                labelClassName={labelClass}
+                required
+              />
+              {fieldErrors.phoneNumber && (
+                <p
+                  role="alert"
+                  className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                >
+                  {fieldErrors.phoneNumber}
+                </p>
+              )}
+            </div>
           </div>
           <TempPasswordField
             value={managerDraft.tempPassword}
             onChange={(value) => onUpdateManager("tempPassword", value)}
             strength={passwordScore}
           />
+          {fieldErrors.tempPassword && (
+            <p
+              role="alert"
+              className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+            >
+              {fieldErrors.tempPassword}
+            </p>
+          )}
         </div>
       )}
     </section>
@@ -770,11 +848,6 @@ function VenueStep({
   const recurringBookingsHelpId = useId();
   const facilitiesLabelId = useId();
   const timeZoneId = useId();
-  const [coverBroken, setCoverBroken] = useState(false);
-
-  const coverImageUrl = venue.coverImage?.trim() ?? "";
-  const coverImagePreview =
-    !coverBroken && /^https?:\/\//i.test(coverImageUrl) ? coverImageUrl : null;
 
   return (
     <section className="space-y-5 p-5">
@@ -811,11 +884,21 @@ function VenueStep({
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label="Venue name" required className="sm:col-span-2">
+        <Field label="Venue name (English)" required>
           <Input
-            value={venue.name}
-            onChange={(e) => onUpdateVenue("name", e.target.value)}
+            value={venue.nameEn}
+            onChange={(e) => onUpdateVenue("nameEn", e.target.value)}
             placeholder="Arena Sports Complex"
+            className={fieldClass}
+          />
+        </Field>
+        <Field label="Venue name (Arabic)" required>
+          <Input
+            dir="rtl"
+            lang="ar"
+            value={venue.nameAr}
+            onChange={(e) => onUpdateVenue("nameAr", e.target.value)}
+            placeholder="مجمّع الأرينا الرياضي"
             className={fieldClass}
           />
         </Field>
@@ -828,7 +911,7 @@ function VenueStep({
             className={cn(fieldClass, "min-h-24")}
           />
         </Field>
-        <Field label="Contact email">
+        <Field label="Contact email" required>
           <Input
             type="email"
             value={venue.contactEmail ?? ""}
@@ -836,41 +919,6 @@ function VenueStep({
             placeholder="frontdesk@venue.com"
             className={fieldClass}
           />
-        </Field>
-        <Field label="Cover image URL" className="sm:col-span-2">
-          <div className="flex items-start gap-3">
-            <div className="grid h-14 w-20 shrink-0 place-items-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)]">
-              {coverImagePreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={coverImagePreview}
-                  alt="Cover preview"
-                  className="h-full w-full object-cover"
-                  onError={() => setCoverBroken(true)}
-                />
-              ) : (
-                <ImageIcon className="h-4 w-4 text-[var(--text-4)]" />
-              )}
-            </div>
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <Input
-                type="url"
-                inputMode="url"
-                value={venue.coverImage ?? ""}
-                onChange={(e) => {
-                  setCoverBroken(false);
-                  onUpdateVenue("coverImage", e.target.value);
-                }}
-                placeholder="https://cdn.example.com/venue.jpg"
-                className={fieldClass}
-              />
-              <p className="text-[12px] text-[var(--text-4)]">
-                {coverBroken
-                  ? "That image didn't load. Check the URL is public and direct."
-                  : "Paste a direct, public link to the cover image."}
-              </p>
-            </div>
-          </div>
         </Field>
         <Field label="Address" required className="sm:col-span-2">
           <Input
@@ -880,14 +928,19 @@ function VenueStep({
             className={fieldClass}
           />
         </Field>
-        <Field label="City" required>
-          <Input
-            value={venue.city}
-            onChange={(e) => onUpdateVenue("city", e.target.value)}
-            placeholder="Beirut"
-            className={fieldClass}
-          />
-        </Field>
+        <VenueLocationFields
+          className="sm:col-span-2"
+          city={venue.city}
+          latitude={venue.latitude}
+          longitude={venue.longitude}
+          onCityChange={(city) => onUpdateVenue("city", city)}
+          onCoordinatesChange={({ latitude, longitude }) => {
+            onUpdateVenue("latitude", latitude);
+            onUpdateVenue("longitude", longitude);
+          }}
+          inputClassName={fieldClass}
+          labelClassName={labelClass}
+        />
         <PhoneNumberField
           countryCode={venue.countryCode}
           phoneNumber={venue.contactPhone ?? ""}
@@ -900,25 +953,7 @@ function VenueStep({
           }}
           onPhoneNumberChange={(value) => onUpdateVenue("contactPhone", value)}
           phoneLabel="Contact phone"
-          inputClassName={fieldClass}
-          labelClassName={labelClass}
-        />
-        <VenueLocationPicker
-          className="sm:col-span-2"
-          latitude={venue.latitude}
-          longitude={venue.longitude}
-          onChange={({ latitude, longitude }) => {
-            onUpdateVenue("latitude", latitude);
-            onUpdateVenue("longitude", longitude);
-          }}
-          onResolveAddress={(place) => {
-            if (!venue.addressLine.trim() && place.addressLine) {
-              onUpdateVenue("addressLine", place.addressLine);
-            }
-            if (!venue.city.trim() && place.city) {
-              onUpdateVenue("city", place.city);
-            }
-          }}
+          required
           inputClassName={fieldClass}
           labelClassName={labelClass}
         />
@@ -985,14 +1020,20 @@ function VenueStep({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Currency" required>
-            <Input
+            <select
               value={venue.currencyCode}
-              onChange={(e) =>
-                onUpdateVenue("currencyCode", e.target.value.toUpperCase())
-              }
-              maxLength={3}
-              className={fieldClass}
-            />
+              onChange={(e) => onUpdateVenue("currencyCode", e.target.value)}
+              className={cn(
+                "h-9 w-full rounded-md border px-3 text-sm outline-none transition-all",
+                fieldClass,
+              )}
+            >
+              {CURRENCY_OPTIONS.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.code} — {c.label}
+                </option>
+              ))}
+            </select>
           </Field>
           <Field label="Max advance booking days" required>
             <Input
@@ -1271,19 +1312,26 @@ function StepError({ message }: { message?: string }) {
 function Field({
   label,
   required,
+  error,
   className,
   children,
 }: {
   label: string;
   required?: boolean;
+  error?: string;
   className?: string;
   children: ReactNode;
 }) {
   const inputId = useId();
+  const errorId = `${inputId}-error`;
   const field = isValidElement<FieldChildProps>(children)
     ? cloneElement(children as ReactElement<FieldChildProps>, {
         id: children.props.id ?? inputId,
         "aria-required": required ? true : children.props["aria-required"],
+        "aria-invalid": Boolean(error) || children.props["aria-invalid"],
+        "aria-describedby": error
+          ? errorId
+          : children.props["aria-describedby"],
       })
     : children;
 
@@ -1294,6 +1342,15 @@ function Field({
         {required && <span className="ml-1 text-[var(--semantic-red)]">*</span>}
       </Label>
       {field}
+      {error && (
+        <p
+          id={errorId}
+          role="alert"
+          className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
@@ -1301,6 +1358,8 @@ function Field({
 type FieldChildProps = {
   id?: string;
   "aria-required"?: boolean;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 };
 
 function ModeButton({
