@@ -20,6 +20,7 @@ import {
   Check,
   CheckCircle2,
   ClipboardCheck,
+  FileText,
   Loader2,
   Search,
   Sparkles,
@@ -31,6 +32,7 @@ import { toast } from "sonner";
 
 import {
   createVenue,
+  createContract,
   createVenueManager,
   getApiErrorMessage,
   getApiErrorStatus,
@@ -39,6 +41,7 @@ import {
 } from "@/lib/api";
 import type {
   CreateVenueRequest,
+  ContractResponse,
   Facility,
   PaymentMode,
   UserDto,
@@ -70,8 +73,17 @@ import {
   passwordStrength,
   TempPasswordField,
 } from "../../users/create/_components/temp-password-field";
+import { ContractTermsEditor } from "@/components/contract-terms-editor";
+import {
+  contractDraftError,
+  contractDraftToPayload,
+  defaultContractDraft,
+  formatContractFee,
+  isContractDraftValid,
+  type ContractDraft,
+} from "@/lib/contracts";
 
-type StepKey = "manager" | "venue" | "review";
+type StepKey = "manager" | "venue" | "contract" | "review";
 type ManagerMode = "existing" | "new";
 type ManagersState = "loading" | "ready" | "error";
 type ManagerFieldErrors = Partial<
@@ -94,6 +106,12 @@ const STEPS: Array<{
     icon: UserCog,
   },
   { key: "venue", label: "Venue", title: "Create venue", icon: Building2 },
+  {
+    key: "contract",
+    label: "Contract",
+    title: "Set terms",
+    icon: FileText,
+  },
   {
     key: "review",
     label: "Review",
@@ -209,6 +227,8 @@ export default function OnboardingVenueManagerPage() {
   const [createdVenue, setCreatedVenue] = useState<VenueDetailResponse | null>(
     null,
   );
+  const [createdContract, setCreatedContract] =
+    useState<ContractResponse | null>(null);
 
   const [managerDraft, setManagerDraft] = useState({
     firstName: "",
@@ -219,6 +239,9 @@ export default function OnboardingVenueManagerPage() {
     tempPassword: "",
   });
   const [venue, setVenue] = useState<CreateVenueRequest>(emptyVenue);
+  const [contractDraft, setContractDraft] = useState<ContractDraft>(
+    defaultContractDraft(DEFAULT_CURRENCY),
+  );
 
   useEffect(() => {
     setManagerDraft((current) => ({
@@ -299,6 +322,7 @@ export default function OnboardingVenueManagerPage() {
     venue.paymentMode &&
     availabilityDaysWithErrors(venue.availability?.days ?? []).length === 0,
   );
+  const contractValid = isContractDraftValid(contractDraft);
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const progressPercent =
@@ -310,7 +334,17 @@ export default function OnboardingVenueManagerPage() {
   ) {
     setStepErrors((prev) => ({ ...prev, venue: undefined }));
     setCreatedVenue(null);
+    setCreatedContract(null);
     setVenue((prev) => ({ ...prev, [key]: value }));
+    if (key === "currencyCode" && typeof value === "string") {
+      setContractDraft((prev) => ({ ...prev, currencyCode: value }));
+    }
+  }
+
+  function updateContract(patch: Partial<ContractDraft>) {
+    setStepErrors((prev) => ({ ...prev, contract: undefined }));
+    setCreatedContract(null);
+    setContractDraft((prev) => ({ ...prev, ...patch }));
   }
 
   function updateManager<K extends keyof typeof managerDraft>(
@@ -330,12 +364,14 @@ export default function OnboardingVenueManagerPage() {
     });
     setCreatedManager(null);
     setCreatedVenue(null);
+    setCreatedContract(null);
     setManagerDraft((prev) => ({ ...prev, [key]: value }));
   }
 
   function toggleFacility(facility: Facility) {
     setStepErrors((prev) => ({ ...prev, venue: undefined }));
     setCreatedVenue(null);
+    setCreatedContract(null);
     setVenue((prev) => {
       const set = new Set(prev.facilities ?? []);
       if (set.has(facility)) set.delete(facility);
@@ -399,7 +435,7 @@ export default function OnboardingVenueManagerPage() {
     if (!venueValid || inFlight.current) return;
 
     if (createdVenue) {
-      setStep("review");
+      setStep("contract");
       return;
     }
 
@@ -430,7 +466,7 @@ export default function OnboardingVenueManagerPage() {
       });
       setCreatedVenue(created);
       toast.success(`Venue "${created.name}" created`);
-      setStep("review");
+      setStep("contract");
     } catch (err: unknown) {
       const message = getApiErrorMessage(err, "Failed to create venue");
       if (isServerError(err)) toast.error(message);
@@ -441,9 +477,45 @@ export default function OnboardingVenueManagerPage() {
     }
   }
 
+  async function continueFromContract() {
+    if (!createdVenue || inFlight.current) return;
+
+    const validationMessage = contractDraftError(contractDraft);
+    if (validationMessage) {
+      setStepErrors((prev) => ({ ...prev, contract: validationMessage }));
+      return;
+    }
+
+    if (createdContract) {
+      setStep("review");
+      return;
+    }
+
+    inFlight.current = true;
+    setIsSubmitting(true);
+    setStepErrors((prev) => ({ ...prev, contract: undefined }));
+    try {
+      const created = await createContract(
+        createdVenue.id,
+        contractDraftToPayload(contractDraft),
+      );
+      setCreatedContract(created);
+      toast.success("Contract terms created");
+      setStep("review");
+    } catch (err: unknown) {
+      const message = getApiErrorMessage(err, "Failed to create contract");
+      if (isServerError(err)) toast.error(message);
+      else setStepErrors((prev) => ({ ...prev, contract: message }));
+    } finally {
+      inFlight.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
   function handlePrimaryAction() {
     if (step === "manager") void continueFromManager();
     if (step === "venue") void continueFromVenue();
+    if (step === "contract") void continueFromContract();
     if (step === "review" && createdVenue) {
       router.push(`/dashboard/venues/${createdVenue.id}`);
     }
@@ -456,15 +528,20 @@ export default function OnboardingVenueManagerPage() {
         : "Continue"
       : step === "venue"
         ? createdVenue
-          ? "Review created venue"
-          : "Create and review"
-        : "Open venue";
+          ? "Continue to contract"
+          : "Create venue"
+        : step === "contract"
+          ? createdContract
+            ? "Review records"
+            : "Create contract"
+          : "Open venue";
 
   const primaryDisabled =
     isSubmitting ||
     (step === "manager" && !managerValid) ||
     (step === "venue" && !venueValid) ||
-    (step === "review" && !createdVenue);
+    (step === "contract" && (!createdVenue || !contractValid)) ||
+    (step === "review" && (!createdVenue || !createdContract));
 
   return (
     <div className="space-y-5">
@@ -486,8 +563,8 @@ export default function OnboardingVenueManagerPage() {
                 Onboarding Venue Manager
               </h1>
               <p className="mt-1 text-[13.5px] text-[var(--text-3)]">
-                Assign the manager, create the venue, and verify the records in
-                one guided flow.
+                Assign the manager, create the venue, set contract terms, and
+                verify the records in one guided flow.
               </p>
             </div>
           </div>
@@ -527,6 +604,7 @@ export default function OnboardingVenueManagerPage() {
                   if (mode === "existing") {
                     setCreatedManager(null);
                     setCreatedVenue(null);
+                    setCreatedContract(null);
                   }
                 }}
                 onSearchChange={setManagerSearch}
@@ -534,6 +612,7 @@ export default function OnboardingVenueManagerPage() {
                   setSelectedManagerId(managerId);
                   setCreatedManager(null);
                   setCreatedVenue(null);
+                  setCreatedContract(null);
                   setStepErrors((prev) => ({ ...prev, manager: undefined }));
                   setManagerFieldErrors({});
                 }}
@@ -552,11 +631,22 @@ export default function OnboardingVenueManagerPage() {
               />
             )}
 
+            {step === "contract" && (
+              <ContractStep
+                venue={createdVenue}
+                contractDraft={contractDraft}
+                error={stepErrors.contract}
+                createdContract={createdContract}
+                onUpdateContract={updateContract}
+              />
+            )}
+
             {step === "review" && (
               <ReviewStep
                 managerMode={managerMode}
                 manager={activeManager}
                 venue={createdVenue}
+                contract={createdContract}
               />
             )}
           </div>
@@ -1131,14 +1221,73 @@ function VenueStep({
   );
 }
 
+function ContractStep({
+  venue,
+  contractDraft,
+  error,
+  createdContract,
+  onUpdateContract,
+}: {
+  venue: VenueDetailResponse | null;
+  contractDraft: ContractDraft;
+  error?: string;
+  createdContract: ContractResponse | null;
+  onUpdateContract: (patch: Partial<ContractDraft>) => void;
+}) {
+  return (
+    <section className="space-y-5 p-5">
+      <SectionIntro
+        eyebrow="Contract Terms"
+        title="Set the venue billing terms"
+        body="Create the active contract for this venue. The backend keeps one active contract per venue."
+      />
+      <StepError message={error} />
+      {venue && (
+        <div className="flex items-center gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-4 py-3">
+          <AvatarLabel name={venue.name} />
+          <div className="min-w-0">
+            <div className="text-[13px] font-medium text-[var(--text-1)]">
+              {venue.name}
+            </div>
+            <div className="truncate font-mono text-[12px] text-[var(--text-4)]">
+              Venue ID {venue.id}
+            </div>
+          </div>
+        </div>
+      )}
+      {createdContract && (
+        <div className="flex items-center gap-3 rounded-lg border border-[rgba(16,185,129,0.24)] bg-[rgba(16,185,129,0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--semantic-green)]" />
+          <span>
+            Created active contract:{" "}
+            <span className="font-medium text-[var(--text-1)]">
+              {formatContractFee(createdContract)}
+            </span>
+            .
+          </span>
+        </div>
+      )}
+      <ContractTermsEditor
+        draft={contractDraft}
+        onChange={onUpdateContract}
+        inputClassName={fieldClass}
+        labelClassName={labelClass}
+        disabled={Boolean(createdContract)}
+      />
+    </section>
+  );
+}
+
 function ReviewStep({
   managerMode,
   manager,
   venue,
+  contract,
 }: {
   managerMode: ManagerMode;
   manager?: UserDto;
   venue: VenueDetailResponse | null;
+  contract: ContractResponse | null;
 }) {
   return (
     <section className="space-y-5 p-5">
@@ -1147,7 +1296,7 @@ function ReviewStep({
         title="Check the created records"
         body="The account and venue have already been submitted. Review the returned data before opening the venue."
       />
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 lg:grid-cols-3">
         <ReviewBlock
           title="Venue manager"
           rows={[
@@ -1178,6 +1327,20 @@ function ReviewStep({
                 : "Not available",
             ],
             ["Status", venue?.status ?? "Not available"],
+          ]}
+        />
+        <ReviewBlock
+          title="Active contract"
+          rows={[
+            ["ID", contract?.id ?? "Not available"],
+            ["Fee", contract ? formatContractFee(contract) : "Not available"],
+            [
+              "Grace period",
+              contract ? `${contract.gracePeriodDays} days` : "Not available",
+            ],
+            ["Start date", contract?.startDate ?? "Not available"],
+            ["End date", contract?.endDate ?? "Open-ended"],
+            ["Status", contract?.active ? "Active" : "Not available"],
           ]}
         />
       </div>
@@ -1211,7 +1374,12 @@ function WizardProgress({
           style={{ transform: `scaleX(${progressPercent / 100})` }}
           aria-hidden="true"
         />
-        <div className="relative grid grid-cols-3 gap-2">
+        <div
+          className="relative grid gap-2"
+          style={{
+            gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
+          }}
+        >
           {steps.map((item, index) => {
             const Icon = item.icon;
             const active = item.key === currentStep;

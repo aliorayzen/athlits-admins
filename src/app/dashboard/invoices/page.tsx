@@ -20,7 +20,6 @@ import {
   FileText,
   Loader2,
   Mail,
-  Printer,
   Receipt,
   RefreshCw,
   Search,
@@ -39,6 +38,7 @@ import {
 } from "@/lib/api";
 import type {
   BulkInvoiceResult,
+  InvoiceFilters,
   InvoiceKpiSummary,
   InvoiceResponse,
   InvoiceStatus,
@@ -47,6 +47,12 @@ import type {
 import { downloadCSV, downloadPDF } from "@/lib/export";
 import { cn } from "@/lib/utils";
 import { InvoicePdfDialog } from "./_components/invoice-pdf-dialog";
+import { SuspendVmDialog } from "./_components/invoice-suspend-dialog";
+import { InvoiceExportMenu } from "./_components/invoice-export-menu";
+import {
+  InvoiceFiltersPopover,
+  type InvoiceDateFilters,
+} from "./_components/invoice-filters-popover";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,6 +200,8 @@ function InvoicesContent() {
   const searchParams = useSearchParams();
   const urlVenueName = searchParams.get("venueName")?.trim() ?? "";
   const urlStatusFilter = parseStatusFilter(searchParams.get("status"));
+  // Exact-id filter for deep links (e.g. a venue page → its invoice history).
+  const urlVenueId = searchParams.get("venueId")?.trim() || undefined;
 
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
   const [pageData, setPageData] =
@@ -206,6 +214,7 @@ function InvoicesContent() {
   const [debouncedSearch, setDebouncedSearch] = useState(urlVenueName);
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>(urlStatusFilter);
+  const [dateFilters, setDateFilters] = useState<InvoiceDateFilters>({});
   const [page, setPage] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkPaidOpen, setBulkPaidOpen] = useState(false);
@@ -232,16 +241,38 @@ function InvoicesContent() {
     }
   }, []);
 
+  // Single source of truth for server-side filters, shared by the list query
+  // and the "export all matching" action so the two never drift. Paid dates are
+  // widened to datetimes (the backend expects ISO datetimes there).
+  const serverFilters: InvoiceFilters = useMemo(() => {
+    const query = debouncedSearch.trim();
+    return {
+      ...(query ? { venueNameEn: query } : {}),
+      ...(urlVenueId ? { venueId: urlVenueId } : {}),
+      ...(statusFilter === "all" ? {} : { status: statusFilter }),
+      ...(dateFilters.billingFrom
+        ? { billingFrom: dateFilters.billingFrom }
+        : {}),
+      ...(dateFilters.billingTo ? { billingTo: dateFilters.billingTo } : {}),
+      ...(dateFilters.dueFrom ? { dueFrom: dateFilters.dueFrom } : {}),
+      ...(dateFilters.dueTo ? { dueTo: dateFilters.dueTo } : {}),
+      ...(dateFilters.paidAfter
+        ? { paidAfter: `${dateFilters.paidAfter}T00:00:00` }
+        : {}),
+      ...(dateFilters.paidBefore
+        ? { paidBefore: `${dateFilters.paidBefore}T23:59:59` }
+        : {}),
+    };
+  }, [debouncedSearch, urlVenueId, statusFilter, dateFilters]);
+
   const reload = useCallback(async () => {
     setPhase("loading");
     setErrorMessage("");
     try {
-      const query = debouncedSearch.trim();
       const pageResp = await getInvoices({
+        ...serverFilters,
         page,
         size: INVOICE_PAGE_SIZE,
-        venueNameEn: query || undefined,
-        status: statusFilter === "all" ? undefined : statusFilter,
       });
 
       const real = pageResp.content ?? [];
@@ -253,7 +284,7 @@ function InvoicesContent() {
       setErrorMessage(getApiErrorMessage(err));
       setPhase("error");
     }
-  }, [debouncedSearch, page, statusFilter]);
+  }, [serverFilters, page]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -405,6 +436,12 @@ function InvoicesContent() {
 
   function updateStatusFilter(value: StatusFilter) {
     setStatusFilter(value);
+    setPage(0);
+    setSelectedIds(new Set());
+  }
+
+  function applyDateFilters(next: InvoiceDateFilters) {
+    setDateFilters(next);
     setPage(0);
     setSelectedIds(new Set());
   }
@@ -596,25 +633,17 @@ function InvoicesContent() {
               {kpiValues.overdueCount} overdue
             </span>
           )}
+          <InvoiceFiltersPopover
+            value={dateFilters}
+            onApply={applyDateFilters}
+          />
           {filtered.length > 0 && (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => exportCSV(filtered, "filtered")}
-                className="gap-1.5 border-[var(--border)] bg-[var(--bg-1)] text-[13px] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
-              >
-                <Download className="h-3.5 w-3.5" />
-                CSV
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => exportPDF(filtered, "filtered")}
-                className="gap-1.5 border-[var(--border)] bg-[var(--bg-1)] text-[13px] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
-              >
-                <Printer className="h-3.5 w-3.5" />
-                PDF
-              </Button>
-            </>
+            <InvoiceExportMenu
+              viewCount={filtered.length}
+              serverFilters={serverFilters}
+              onClientCsv={() => exportCSV(filtered, "filtered")}
+              onClientPdf={() => exportPDF(filtered, "filtered")}
+            />
           )}
         </div>
       </div>
@@ -931,6 +960,10 @@ function InvoicesContent() {
                         onToggle={() => toggleRow(inv.id)}
                         onVoid={() => handleVoid(inv.id)}
                         onPaid={() => {
+                          void reload();
+                          void loadKpis();
+                        }}
+                        onChanged={() => {
                           void reload();
                           void loadKpis();
                         }}
@@ -1442,6 +1475,7 @@ function InvoiceRow({
   onToggle,
   onVoid,
   onPaid,
+  onChanged,
   onPdf,
 }: {
   invoice: InvoiceResponse;
@@ -1449,6 +1483,7 @@ function InvoiceRow({
   onToggle: () => void;
   onVoid: () => void;
   onPaid: () => void;
+  onChanged: () => void;
   onPdf: () => void;
 }) {
   const urgency = computeUrgency(invoice);
@@ -1538,6 +1573,7 @@ function InvoiceRow({
           invoice={invoice}
           onVoid={onVoid}
           onPaid={onPaid}
+          onChanged={onChanged}
           onPdf={onPdf}
         />
       </td>
@@ -1673,11 +1709,13 @@ function RowActions({
   invoice,
   onVoid,
   onPaid,
+  onChanged,
   onPdf,
 }: {
   invoice: InvoiceResponse;
   onVoid: () => void;
   onPaid: () => void;
+  onChanged: () => void;
   onPdf: () => void;
 }) {
   const isTerminal = invoice.status === "PAID" || invoice.status === "VOID";
@@ -1692,6 +1730,9 @@ function RowActions({
       >
         <FileText className="h-[13px] w-[13px]" />
       </button>
+      {invoice.status === "OVERDUE" && (
+        <SuspendVmDialog invoice={invoice} onChanged={onChanged} />
+      )}
       {isTerminal ? (
         <SettledChip status={invoice.status} />
       ) : (

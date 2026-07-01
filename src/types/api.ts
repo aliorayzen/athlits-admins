@@ -376,31 +376,69 @@ export interface InvoiceKpisResponse {
   summary: InvoiceKpiSummary;
 }
 
+// Server-side invoice filters. `GET /api/admin/v1/invoices` and
+// `GET /api/admin/v1/invoices/export` accept the same set. Date fields are ISO
+// dates (billing/due) or ISO datetimes (paid). Venue-name fields stay for the
+// English-primary search box; `venueId` filters by exact id.
+export interface InvoiceFilters {
+  venueNameEn?: string;
+  venueNameAr?: string;
+  venueId?: string;
+  status?: InvoiceStatus;
+  billingFrom?: string;
+  billingTo?: string;
+  dueFrom?: string;
+  dueTo?: string;
+  paidAfter?: string;
+  paidBefore?: string;
+}
+
+export type InvoiceExportFormat = "csv" | "pdf";
+
+// Suspend a venue manager straight from one of their OVERDUE invoices. The
+// backend rejects non-overdue invoices with 409. `reason` is audit-logged.
+export interface SuspendVenueManagerRequest {
+  reason?: string;
+}
+
+export type VenueManagerSuspensionStatus = "SUSPENDED" | "REACTIVATED";
+
+// Result envelope for suspend/reactivate-venue-manager. `affected*Ids` report
+// every venue/court the action toggled, so the UI can summarize the blast
+// radius ("disabled 2 venues, 5 courts").
+export interface VenueManagerSuspensionResult {
+  invoice: InvoiceResponse;
+  venueManager: UserDto;
+  affectedVenueIds: number[];
+  affectedCourtIds: number[];
+  status: VenueManagerSuspensionStatus;
+}
+
 // Contracts
-export type FeeModel = "COMMISSION" | "FIXED_MONTHLY";
+export type FeeModel = "PER_RESERVATION" | "FIXED_MONTHLY";
 
 export interface ContractResponse {
   id: string;
   venueId: string;
   feeModel: FeeModel;
-  commissionRate?: number;
-  fixedMonthlyFee?: number;
+  perReservationFee?: number | null;
+  fixedMonthlyFee?: number | null;
   currencyCode: string;
   gracePeriodDays: number;
   startDate: string;
-  endDate?: string;
+  endDate?: string | null;
   active: boolean;
   createdAt: string;
 }
 
 export interface CreateContractRequest {
   feeModel: FeeModel;
-  commissionRate?: number;
-  fixedMonthlyFee?: number;
+  perReservationFee: number | null;
+  fixedMonthlyFee: number | null;
   currencyCode: string;
   gracePeriodDays: number;
   startDate: string;
-  endDate?: string;
+  endDate: string | null;
 }
 
 // Pagination

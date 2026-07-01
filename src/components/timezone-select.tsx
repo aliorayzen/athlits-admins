@@ -111,7 +111,7 @@ export function TimezoneSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
 
-  const zones = useMemo(buildZones, []);
+  const zones = useMemo(() => buildZones(), []);
   const selected = useMemo(
     () => zones.find((z) => z.id === value),
     [zones, value],

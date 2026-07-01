@@ -3,7 +3,6 @@
 import { useId, useRef } from "react";
 import { Copy } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { VenueAvailabilityDay, Weekday } from "@/types/api";
@@ -77,19 +76,32 @@ export function availabilityDaysFromUtc(
   return shiftAvailabilityDays(days, -new Date().getTimezoneOffset());
 }
 
-function minutesToTime(minutes: number): string {
-  // `<input type="time">` can't express 24:00, so the addressable range is
-  // 00:00–23:59. Overnight (midnight-crossing) hours aren't supported here.
-  const clamped = Math.min(Math.max(minutes, 0), 23 * 60 + 59);
-  const hh = String(Math.floor(clamped / 60)).padStart(2, "0");
-  const mm = String(clamped % 60).padStart(2, "0");
-  return `${hh}:${mm}`;
+// Selectable times are offered on a 30-minute grid. Operators pick from a
+// dropdown instead of typing a raw time (overnight/midnight-crossing windows
+// aren't representable by the per-day open<close model and stay out of scope).
+const TIME_STEP_MINUTES = 30;
+
+// 12-hour AM/PM label for a minutes-since-midnight value, e.g. 480 -> "8:00 AM".
+function minutesToLabel(minutes: number): string {
+  const m = wrapMinutes(minutes);
+  const hour24 = Math.floor(m / 60);
+  const mm = m % 60;
+  const period = hour24 < 12 ? "AM" : "PM";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return `${hour12}:${String(mm).padStart(2, "0")} ${period}`;
 }
 
-function timeToMinutes(value: string): number | null {
-  const match = /^(\d{2}):(\d{2})$/.exec(value);
-  if (!match) return null;
-  return Number(match[1]) * 60 + Number(match[2]);
+// The 30-minute grid (00:00–23:30). Any off-grid stored value (e.g. an existing
+// 08:15 returned by the backend) is injected so the select represents it
+// faithfully rather than silently snapping it to the nearest slot.
+function buildTimeOptions(current: number): number[] {
+  const options: number[] = [];
+  for (let m = 0; m < MINUTES_PER_DAY; m += TIME_STEP_MINUTES) options.push(m);
+  if (current >= 0 && current < MINUTES_PER_DAY && !options.includes(current)) {
+    options.push(current);
+    options.sort((a, b) => a - b);
+  }
+  return options;
 }
 
 function sortDays(days: VenueAvailabilityDay[]): VenueAvailabilityDay[] {
@@ -160,10 +172,8 @@ export function VenueAvailabilityEditor({
   function updateDay(
     weekday: Weekday,
     field: "openMinutes" | "closeMinutes",
-    time: string,
+    minutes: number,
   ) {
-    const minutes = timeToMinutes(time);
-    if (minutes === null) return;
     onChange(
       days.map((d) => (d.weekday === weekday ? { ...d, [field]: minutes } : d)),
     );
@@ -228,36 +238,24 @@ export function VenueAvailabilityEditor({
               {entry ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <Input
-                      type="time"
-                      value={minutesToTime(entry.openMinutes)}
-                      onChange={(e) =>
-                        updateDay(value, "openMinutes", e.target.value)
+                    <TimeSelect
+                      value={entry.openMinutes}
+                      onChange={(minutes) =>
+                        updateDay(value, "openMinutes", minutes)
                       }
-                      aria-label={`${label} opening time`}
-                      aria-invalid={invalid || undefined}
-                      className={cn(
-                        "h-9 w-[8.75rem] font-mono tabular-nums",
-                        inputClassName,
-                        invalid &&
-                          "border-[rgba(244,63,94,0.45)] focus:border-[rgba(244,63,94,0.6)]",
-                      )}
+                      ariaLabel={`${label} opening time`}
+                      invalid={invalid}
+                      className={inputClassName}
                     />
                     <span className="text-[12px] text-[var(--text-4)]">to</span>
-                    <Input
-                      type="time"
-                      value={minutesToTime(entry.closeMinutes)}
-                      onChange={(e) =>
-                        updateDay(value, "closeMinutes", e.target.value)
+                    <TimeSelect
+                      value={entry.closeMinutes}
+                      onChange={(minutes) =>
+                        updateDay(value, "closeMinutes", minutes)
                       }
-                      aria-label={`${label} closing time`}
-                      aria-invalid={invalid || undefined}
-                      className={cn(
-                        "h-9 w-[8.75rem] font-mono tabular-nums",
-                        inputClassName,
-                        invalid &&
-                          "border-[rgba(244,63,94,0.45)] focus:border-[rgba(244,63,94,0.6)]",
-                      )}
+                      ariaLabel={`${label} closing time`}
+                      invalid={invalid}
+                      className={inputClassName}
                     />
                     <button
                       type="button"
@@ -295,5 +293,45 @@ export function VenueAvailabilityEditor({
         </p>
       )}
     </div>
+  );
+}
+
+// Themed time-of-day picker. A native <select> (not a typed time input) so
+// operators choose from the 30-minute grid; it inherits the form's field
+// styling and follows the theme via `color-scheme` like the other selects.
+interface TimeSelectProps {
+  value: number;
+  onChange: (minutes: number) => void;
+  ariaLabel: string;
+  invalid: boolean;
+  className?: string;
+}
+
+function TimeSelect({
+  value,
+  onChange,
+  ariaLabel,
+  invalid,
+  className,
+}: TimeSelectProps) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      aria-label={ariaLabel}
+      aria-invalid={invalid || undefined}
+      className={cn(
+        "h-9 w-[8.25rem] rounded-md border px-2.5 text-[13px] font-mono tabular-nums outline-none transition-all",
+        className,
+        invalid &&
+          "border-[rgba(244,63,94,0.45)] focus:border-[rgba(244,63,94,0.6)]",
+      )}
+    >
+      {buildTimeOptions(value).map((minutes) => (
+        <option key={minutes} value={minutes}>
+          {minutesToLabel(minutes)}
+        </option>
+      ))}
+    </select>
   );
 }

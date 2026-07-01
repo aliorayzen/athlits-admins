@@ -20,6 +20,9 @@ import type {
   InvoiceKpiSummary,
   InvoiceResponse,
   InvoiceStatus,
+  InvoiceFilters,
+  InvoiceExportFormat,
+  VenueManagerSuspensionResult,
   MarkPaidRequest,
   BulkInvoiceResult,
   PageResponse,
@@ -234,6 +237,14 @@ function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
   };
 }
 
+function normalizeContract(contract: ContractResponse): ContractResponse {
+  return {
+    ...contract,
+    id: ensureStringId(contract.id),
+    venueId: ensureStringId(contract.venueId),
+  };
+}
+
 // ── Auth ──────────────────────────────────────
 export async function adminLogin(payload: AdminLoginRequest) {
   const { data } = await apiClient.post("/api/admin/v1/auth/login", payload);
@@ -293,10 +304,6 @@ export async function createVenue(
     managerId: payload.managerId,
     nameEn: payload.nameEn.trim(),
     nameAr: payload.nameAr.trim(),
-    // Compatibility mirror: also send a single `name` (English-primary) so the
-    // backend accepts the create whether its DTO expects `nameEn`/`nameAr` or a
-    // legacy single `name`. Harmless if the backend ignores unknown fields.
-    name: payload.nameEn.trim(),
     addressLine: payload.addressLine.trim(),
     city: payload.city.trim(),
     timeZoneId: payload.timeZoneId,
@@ -346,16 +353,9 @@ export async function updateVenue(
   venueId: string,
   payload: UpdateVenueRequest,
 ): Promise<VenueResponse> {
-  const body = {
-    ...payload,
-    // Compatibility mirror: when an English name is being sent, also send a
-    // single `name` so the update works whether the backend DTO expects
-    // `nameEn`/`nameAr` or a legacy single `name`.
-    ...(payload.nameEn !== undefined ? { name: payload.nameEn } : {}),
-  };
   const { data } = await apiClient.put<VenueResponse>(
     `/api/admin/v1/venues/${venueId}`,
-    body,
+    payload,
   );
   return {
     ...data,
@@ -466,16 +466,12 @@ export async function deactivateVenueManager(
 }
 
 // ── Invoices ─────────────────────────────────
-export async function getInvoices(params?: {
-  // Backend filters venue names separately by language. The admin search box is
-  // English-primary, so callers pass `venueNameEn`; `venueNameAr` is available
-  // for completeness. Both apply together when sent.
-  venueNameEn?: string;
-  venueNameAr?: string;
-  status?: InvoiceStatus;
-  page?: number;
-  size?: number;
-}): Promise<PageResponse<InvoiceResponse>> {
+// Lists invoices with server-side filtering + pagination. `InvoiceFilters`
+// carries venue-name search, exact `venueId`, status, and the billing/due/paid
+// date ranges; only non-empty params are forwarded so the URL stays clean.
+export async function getInvoices(
+  params?: InvoiceFilters & { page?: number; size?: number; sort?: string },
+): Promise<PageResponse<InvoiceResponse>> {
   const { data } = await apiClient.get<PageResponse<InvoiceResponse>>(
     "/api/admin/v1/invoices",
     { params },
@@ -598,6 +594,56 @@ export async function getInvoicePdf(id: string): Promise<Blob> {
   return data;
 }
 
+// Server-side export of ALL invoices matching `filters` (not just the loaded
+// page) as a single CSV or PDF file. Returns raw bytes, so we keep the envelope
+// off like the single-invoice PDF above.
+export async function exportInvoices(
+  format: InvoiceExportFormat,
+  filters?: InvoiceFilters,
+): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>("/api/admin/v1/invoices/export", {
+    params: { format, ...filters },
+    responseType: "blob",
+    preserveEnvelope: true,
+  });
+  return data;
+}
+
+// Suspend the venue manager tied to an OVERDUE invoice (and their venues/
+// courts). Backend returns 409 if the invoice isn't overdue. We normalize the
+// returned invoice + manager so callers render names consistently.
+function normalizeSuspensionResult(
+  result: VenueManagerSuspensionResult,
+): VenueManagerSuspensionResult {
+  return {
+    ...result,
+    invoice: normalizeInvoice(result.invoice),
+    venueManager: normalizeUser(result.venueManager),
+    affectedVenueIds: result.affectedVenueIds ?? [],
+    affectedCourtIds: result.affectedCourtIds ?? [],
+  };
+}
+
+export async function suspendVenueManagerFromInvoice(
+  id: string,
+  reason?: string,
+): Promise<VenueManagerSuspensionResult> {
+  const { data } = await apiClient.post<VenueManagerSuspensionResult>(
+    `/api/admin/v1/invoices/${id}/suspend-venue-manager`,
+    reason ? { reason } : {},
+  );
+  return normalizeSuspensionResult(data);
+}
+
+export async function reactivateVenueManagerFromInvoice(
+  id: string,
+): Promise<VenueManagerSuspensionResult> {
+  const { data } = await apiClient.post<VenueManagerSuspensionResult>(
+    `/api/admin/v1/invoices/${id}/reactivate-venue-manager`,
+  );
+  return normalizeSuspensionResult(data);
+}
+
 // ── Contracts ────────────────────────────────
 export async function getContracts(
   venueId: string,
@@ -605,7 +651,7 @@ export async function getContracts(
   const { data } = await apiClient.get<ContractResponse[]>(
     `/api/admin/v1/venues/${venueId}/contracts`,
   );
-  return data;
+  return (data ?? []).map(normalizeContract);
 }
 
 export async function getActiveContract(
@@ -614,7 +660,7 @@ export async function getActiveContract(
   const { data } = await apiClient.get<ContractResponse>(
     `/api/admin/v1/venues/${venueId}/contracts/active`,
   );
-  return data;
+  return normalizeContract(data);
 }
 
 export async function createContract(
@@ -625,5 +671,5 @@ export async function createContract(
     `/api/admin/v1/venues/${venueId}/contracts`,
     payload,
   );
-  return data;
+  return normalizeContract(data);
 }
