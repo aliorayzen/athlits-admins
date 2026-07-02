@@ -1,5 +1,6 @@
 import axios from "axios";
 import { apiClient } from "./api-client";
+import { cityName } from "./venue-locality";
 import type {
   AdminLoginRequest,
   AdminVerifyOtpRequest,
@@ -185,6 +186,7 @@ function normalizeVenueSummary(v: VenueSummaryResponse): VenueSummaryResponse {
     ...v,
     id: ensureStringId(v.id),
     name: displayName(v.nameEn, v.nameAr),
+    city: cityName(v.city),
   };
 }
 
@@ -193,6 +195,7 @@ function normalizeVenueDetail(v: VenueDetailResponse): VenueDetailResponse {
     ...v,
     id: ensureStringId(v.id),
     name: displayName(v.nameEn, v.nameAr),
+    city: cityName(v.city),
     managerId: v.managerId ? ensureStringId(v.managerId) : v.managerId,
     createdByAdminId: v.createdByAdminId
       ? ensureStringId(v.createdByAdminId)
@@ -305,7 +308,8 @@ export async function createVenue(
     nameEn: payload.nameEn.trim(),
     nameAr: payload.nameAr.trim(),
     addressLine: payload.addressLine.trim(),
-    city: payload.city.trim(),
+    // Plain locality name only — never the legacy `"City: <Name>"` fold.
+    city: cityName(payload.city),
     timeZoneId: payload.timeZoneId,
     countryCode: payload.countryCode,
     latitude: payload.latitude,
@@ -344,6 +348,7 @@ export async function getEditableVenue(
     ...data,
     id: ensureStringId(data.id),
     name: displayName(data.nameEn, data.nameAr),
+    city: cityName(data.city),
     managerId: data.managerId ? ensureStringId(data.managerId) : data.managerId,
   };
 }
@@ -355,7 +360,12 @@ export async function updateVenue(
 ): Promise<VenueResponse> {
   const { data } = await apiClient.put<VenueResponse>(
     `/api/admin/v1/venues/${venueId}`,
-    payload,
+    {
+      ...payload,
+      // Strip the legacy `"City: <Name>"` fold, but only when a city is sent —
+      // `city` is optional here and must stay omitted when absent.
+      ...(payload.city !== undefined ? { city: cityName(payload.city) } : {}),
+    },
   );
   return {
     ...data,
