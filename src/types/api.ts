@@ -80,6 +80,13 @@ export interface CreateVmUserRequest {
   tempPassword: string;
 }
 
+export interface UpdateVenueManagerRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
 // Venues
 export type VenueStatus = "ACTIVE" | "SUSPENDED";
 

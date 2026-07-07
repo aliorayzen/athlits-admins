@@ -11,6 +11,7 @@ import type {
   CreateVmUserRequest,
   AssignManagerRequest,
   SetVenueStatusRequest,
+  UpdateVenueManagerRequest,
   UpdateVenueRequest,
   VenueDetailResponse,
   VenueResponse,
@@ -416,6 +417,17 @@ export async function createVenueManager(
 ): Promise<UserDto> {
   const { data } = await apiClient.post<UserDto>(
     "/api/admin/v1/users/venue-manager",
+    payload,
+  );
+  return normalizeUser(data);
+}
+
+export async function updateVenueManager(
+  managerId: string,
+  payload: UpdateVenueManagerRequest,
+): Promise<UserDto> {
+  const { data } = await apiClient.put<UserDto>(
+    `/api/admin/v1/users/venue-managers/${managerId}`,
     payload,
   );
   return normalizeUser(data);

@@ -6,8 +6,9 @@ import {
   deactivateVenueManager,
   getApiErrorMessage,
   getVenueManagers,
+  updateVenueManager,
 } from "@/lib/api";
-import type { UserDto } from "@/types/api";
+import type { UpdateVenueManagerRequest, UserDto } from "@/types/api";
 import {
   useUserDirectory,
   type SortOption,
@@ -28,6 +29,10 @@ export interface VenueManagersState extends UserDirectory {
   pendingIds: ReadonlySet<string>;
   /** Toggle ACTIVE↔DISABLED, optimistic with rollback. Throws on failure. */
   toggleActive: (manager: UserDto) => Promise<void>;
+  updateDetails: (
+    managerId: string,
+    payload: UpdateVenueManagerRequest,
+  ) => Promise<UserDto>;
 }
 
 /** Venue-manager directory: the generic engine plus the VM-only activate /
@@ -69,8 +74,26 @@ export function useVenueManagers(): VenueManagersState {
     [dir],
   );
 
+  const updateDetails = useCallback(
+    async (managerId: string, payload: UpdateVenueManagerRequest) => {
+      setPendingIds((prev) => new Set(prev).add(managerId));
+      try {
+        const updated = await updateVenueManager(managerId, payload);
+        dir.replaceUser(updated);
+        return updated;
+      } finally {
+        setPendingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(managerId);
+          return next;
+        });
+      }
+    },
+    [dir],
+  );
+
   return useMemo(
-    () => ({ ...dir, pendingIds, toggleActive }),
-    [dir, pendingIds, toggleActive],
+    () => ({ ...dir, pendingIds, toggleActive, updateDetails }),
+    [dir, pendingIds, toggleActive, updateDetails],
   );
 }
