@@ -1,24 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import {
-  AlertTriangle,
-  Download,
-  ExternalLink,
-  FileText,
-  Loader2,
-  Printer,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { useRef, useState } from "react";
+import { Download, FileText, Loader2, Printer, X } from "lucide-react";
+import { toast } from "sonner";
 
 import { getApiErrorMessage, getInvoicePdf } from "@/lib/api";
 import { downloadBlob } from "@/lib/export";
 import type { InvoiceResponse, InvoiceStatus } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-type LoadStatus = "loading" | "ready" | "error";
+import { InvoiceDocument } from "./invoice-document";
 
 // Pill tone per status, matching the on-page StatusPill palette.
 const STATUS_PILL: Record<InvoiceStatus, { label: string; cls: string }> = {
@@ -53,80 +44,54 @@ function formatAmount(amount: number, currency: string): string {
 }
 
 interface InvoicePdfDialogProps {
-  /** The invoice whose backend PDF to preview; `null` keeps the dialog closed. */
+  /** The invoice to preview; `null` keeps the dialog closed. */
   invoice: InvoiceResponse | null;
   onOpenChange: (open: boolean) => void;
 }
 
 /**
- * Themed in-app viewer for the backend-rendered invoice PDF. Fetches
- * `/api/admin/v1/invoices/{id}/pdf` as a Blob, renders it in an iframe wrapped
- * in Athlits chrome, and exposes Download / Print / Open-in-tab actions.
+ * In-app invoice viewer. Renders the live <InvoiceDocument /> — the same
+ * template the backend PDF uses, bound to this invoice's `InvoiceResponse` — so
+ * the preview always reflects the record shown in the table (they stay in
+ * sync). "Print / Save PDF" prints exactly this document via the browser;
+ * "Download PDF" fetches the backend-rendered file for a canonical copy.
  */
 export function InvoicePdfDialog({
   invoice,
   onOpenChange,
 }: InvoicePdfDialogProps) {
-  const [status, setStatus] = useState<LoadStatus>("loading");
-  const [url, setUrl] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [attempt, setAttempt] = useState(0);
-  const blobRef = useRef<Blob | null>(null);
-  const frameRef = useRef<HTMLIFrameElement | null>(null);
-
-  const invoiceId = invoice?.id ?? null;
-
-  useEffect(() => {
-    if (!invoiceId) return;
-    let cancelled = false;
-    let objectUrl: string | null = null;
-
-    // Nested async fn so the setState calls aren't flagged as synchronous in
-    // the effect body (matches the dashboard's reload() pattern).
-    async function loadPdf() {
-      setStatus("loading");
-      setErrorMsg("");
-      setUrl(null);
-      blobRef.current = null;
-      try {
-        const blob = await getInvoicePdf(invoiceId as string);
-        if (cancelled) return;
-        objectUrl = URL.createObjectURL(blob);
-        blobRef.current = blob;
-        setUrl(objectUrl);
-        setStatus("ready");
-      } catch (err: unknown) {
-        if (cancelled) return;
-        setErrorMsg(getApiErrorMessage(err, "Failed to load invoice PDF"));
-        setStatus("error");
-      }
-    }
-    void loadPdf();
-
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [invoiceId, attempt]);
-
-  function handleDownload() {
-    if (blobRef.current && invoice) {
-      downloadBlob(blobRef.current, `invoice-${invoice.id.slice(0, 8)}.pdf`);
-    }
-  }
+  const [downloading, setDownloading] = useState(false);
+  const printCleanup = useRef<(() => void) | null>(null);
 
   function handlePrint() {
-    try {
-      frameRef.current?.contentWindow?.focus();
-      frameRef.current?.contentWindow?.print();
-    } catch {
-      // Some browsers block cross-frame print on the PDF viewer; fall back.
-      if (url) window.open(url, "_blank");
-    }
+    // Tag <body> so the scoped @media print rules paint only .invoice-doc.
+    // Cleared on afterprint (with a timeout fallback for browsers that skip it).
+    const body = document.body;
+    body.classList.add("printing-invoice-doc");
+
+    const cleanup = () => {
+      body.classList.remove("printing-invoice-doc");
+      window.removeEventListener("afterprint", cleanup);
+      if (printCleanup.current === cleanup) printCleanup.current = null;
+    };
+    printCleanup.current = cleanup;
+    window.addEventListener("afterprint", cleanup);
+    window.setTimeout(cleanup, 1000);
+
+    window.print();
   }
 
-  function handleOpenTab() {
-    if (url) window.open(url, "_blank");
+  async function handleDownload() {
+    if (!invoice) return;
+    setDownloading(true);
+    try {
+      const blob = await getInvoicePdf(invoice.id);
+      downloadBlob(blob, `invoice-${invoice.id.slice(0, 8)}.pdf`);
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to download invoice PDF"));
+    } finally {
+      setDownloading(false);
+    }
   }
 
   const pill = invoice ? STATUS_PILL[invoice.status] : null;
@@ -175,22 +140,18 @@ export function InvoicePdfDialog({
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 <HeaderBtn
-                  icon={Download}
-                  label="Download"
-                  onClick={handleDownload}
-                  disabled={status !== "ready"}
-                />
-                <HeaderBtn
                   icon={Printer}
-                  label="Print"
+                  label="Print / Save PDF"
+                  shortLabel="Print"
                   onClick={handlePrint}
-                  disabled={status !== "ready"}
                 />
                 <HeaderBtn
-                  icon={ExternalLink}
-                  label="Open in tab"
-                  onClick={handleOpenTab}
-                  disabled={status !== "ready"}
+                  icon={downloading ? Loader2 : Download}
+                  label="Download PDF"
+                  shortLabel="Download"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  spinning={downloading}
                 />
                 <button
                   type="button"
@@ -203,46 +164,11 @@ export function InvoicePdfDialog({
               </div>
             </header>
 
-            {/* ─── PDF surface ─── */}
-            <div className="relative flex-1 bg-[var(--bg-0)]">
-              {status === "loading" && (
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="flex flex-col items-center gap-3 text-[var(--text-3)]">
-                    <Loader2 className="h-6 w-6 animate-spin text-[var(--teal-text)]" />
-                    <span className="text-[12.5px]">Loading invoice…</span>
-                  </div>
-                </div>
-              )}
-
-              {status === "error" && (
-                <div className="absolute inset-0 grid place-items-center px-6">
-                  <div className="flex max-w-sm flex-col items-center gap-3 text-center">
-                    <div className="grid h-11 w-11 place-items-center rounded-full border border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.1)]">
-                      <AlertTriangle className="h-5 w-5 text-[var(--semantic-red)]" />
-                    </div>
-                    <p className="text-[13px] text-[var(--text-2)]">
-                      {errorMsg}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setAttempt((a) => a + 1)}
-                      className="mt-1 inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-3 py-1.5 text-[12px] font-medium text-[var(--text-2)] transition-colors hover:border-[rgba(0,212,170,0.2)] hover:text-[var(--teal-text)]"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Retry
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {status === "ready" && url && (
-                <iframe
-                  ref={frameRef}
-                  src={url}
-                  title={`Invoice ${shortId} PDF`}
-                  className="h-full w-full border-0"
-                />
-              )}
+            {/* ─── Document surface ─── */}
+            <div className="flex-1 overflow-auto bg-[var(--bg-0)] px-4 py-6 sm:px-8 sm:py-8">
+              <div className="mx-auto w-full max-w-[860px]">
+                <InvoiceDocument invoice={invoice} />
+              </div>
             </div>
           </>
         )}
@@ -254,13 +180,17 @@ export function InvoicePdfDialog({
 function HeaderBtn({
   icon: Icon,
   label,
+  shortLabel,
   onClick,
   disabled,
+  spinning,
 }: {
   icon: typeof Download;
   label: string;
+  shortLabel: string;
   onClick: () => void;
   disabled?: boolean;
+  spinning?: boolean;
 }) {
   return (
     <button
@@ -271,8 +201,8 @@ function HeaderBtn({
       aria-label={label}
       className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(0,212,170,0.2)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:bg-[var(--bg-2)] disabled:hover:text-[var(--text-2)]"
     >
-      <Icon className="h-[13px] w-[13px]" />
-      <span className="hidden sm:inline">{label}</span>
+      <Icon className={cn("h-[13px] w-[13px]", spinning && "animate-spin")} />
+      <span className="hidden sm:inline">{shortLabel}</span>
     </button>
   );
 }

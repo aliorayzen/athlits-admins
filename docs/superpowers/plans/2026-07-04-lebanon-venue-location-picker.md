@@ -13,6 +13,7 @@
 ### Task 1: Catalogue And Helpers
 
 **Files:**
+
 - Create: `src/lib/lebanon-locations-data.json`
 - Create: `src/lib/lebanon-locations.ts`
 - Create: `scripts/verify-lebanon-locations.mjs`
@@ -24,6 +25,7 @@
 ### Task 2: Shared Picker UI
 
 **Files:**
+
 - Modify: `src/components/venue-location-fields.tsx`
 
 - [ ] Replace the free-form city input with three searchable combobox controls.
@@ -35,6 +37,7 @@
 ### Task 3: Verification
 
 **Files:**
+
 - No production file changes.
 
 - [ ] Run `node scripts/verify-lebanon-locations.mjs`.

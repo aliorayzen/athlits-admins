@@ -227,9 +227,7 @@ export function VenueLocationFields({
   const [governorate, setGovernorate] = useState(
     initialLocation?.governorate ?? "",
   );
-  const [cityDistrict, setCityDistrict] = useState(
-    initialLocation?.city ?? "",
-  );
+  const [cityDistrict, setCityDistrict] = useState(initialLocation?.city ?? "");
   const [selectedLocationKey, setSelectedLocationKey] = useState(
     initialLocation ? locationKey(initialLocation) : "",
   );
@@ -311,10 +309,9 @@ export function VenueLocationFields({
         searchPlaceholder="Search location or alias"
         options={locationOptions}
         onChange={(value) => {
-          const selected = lebanonLocationsFor(
-            governorate,
-            cityDistrict,
-          ).find((location) => locationKey(location) === value);
+          const selected = lebanonLocationsFor(governorate, cityDistrict).find(
+            (location) => locationKey(location) === value,
+          );
           if (!selected) return;
           setSelectedLocationKey(value);
           onCityChange(selected.name);
