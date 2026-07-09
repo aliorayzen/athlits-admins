@@ -1,11 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Download, FileText, Loader2, Printer, X } from "lucide-react";
-import { toast } from "sonner";
+import { useRef } from "react";
+import { Download, FileText, Printer, X } from "lucide-react";
 
-import { getApiErrorMessage, getInvoicePdf } from "@/lib/api";
-import { downloadBlob } from "@/lib/export";
+import { downloadInvoiceTemplate } from "@/lib/export";
 import type { InvoiceResponse, InvoiceStatus } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -51,16 +49,17 @@ interface InvoicePdfDialogProps {
 
 /**
  * In-app invoice viewer. Renders the live <InvoiceDocument /> — the same
- * template the backend PDF uses, bound to this invoice's `InvoiceResponse` — so
- * the preview always reflects the record shown in the table (they stay in
- * sync). "Print / Save PDF" prints exactly this document via the browser;
- * "Download PDF" fetches the backend-rendered file for a canonical copy.
+ * template (`arena_scr_invoice_template.html`) reproduced from this invoice's
+ * `InvoiceResponse` — so the preview always reflects the record shown in the
+ * table (they stay in sync). "Print / Save PDF" prints exactly this document;
+ * "Download PDF" opens the same template as a standalone, print-ready page
+ * (→ "Save as PDF") so the saved file matches the preview and the source
+ * template field-for-field.
  */
 export function InvoicePdfDialog({
   invoice,
   onOpenChange,
 }: InvoicePdfDialogProps) {
-  const [downloading, setDownloading] = useState(false);
   const printCleanup = useRef<(() => void) | null>(null);
 
   function handlePrint() {
@@ -81,17 +80,9 @@ export function InvoicePdfDialog({
     window.print();
   }
 
-  async function handleDownload() {
+  function handleDownload() {
     if (!invoice) return;
-    setDownloading(true);
-    try {
-      const blob = await getInvoicePdf(invoice.id);
-      downloadBlob(blob, `invoice-${invoice.id.slice(0, 8)}.pdf`);
-    } catch (err: unknown) {
-      toast.error(getApiErrorMessage(err, "Failed to download invoice PDF"));
-    } finally {
-      setDownloading(false);
-    }
+    downloadInvoiceTemplate(invoice);
   }
 
   const pill = invoice ? STATUS_PILL[invoice.status] : null;
@@ -146,12 +137,10 @@ export function InvoicePdfDialog({
                   onClick={handlePrint}
                 />
                 <HeaderBtn
-                  icon={downloading ? Loader2 : Download}
+                  icon={Download}
                   label="Download PDF"
                   shortLabel="Download"
                   onClick={handleDownload}
-                  disabled={downloading}
-                  spinning={downloading}
                 />
                 <button
                   type="button"

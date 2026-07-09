@@ -1556,6 +1556,15 @@ textarea:disabled,
    "Print / Save PDF" action (see the @media print block at the end).
    ─────────────────────────────────────────────────────────────────────── */
 
+/* The shell is a CSS container so the document responds to its OWN width (the
+   preview surface / dialog), not the viewport — the invoice renders inside a
+   dialog that is narrower than the page, where a viewport media query would
+   never fire at the right moment. */
+.invoice-doc-shell {
+  container-type: inline-size;
+  container-name: invoice-doc;
+}
+
 .invoice-doc {
   --doc-ink: #111827;
   --doc-text: #374151;
@@ -1768,7 +1777,10 @@ textarea:disabled,
   font-size: 12px;
 }
 
-@media (max-width: 640px) {
+/* Stack the two-column regions once the document surface itself gets narrow,
+   regardless of the viewport width. Mirrors the source template's 720px
+   breakpoint, minus its page gutters. */
+@container invoice-doc (max-width: 680px) {
   .invoice-doc {
     padding: 28px 22px;
   }
@@ -1801,6 +1813,13 @@ textarea:disabled,
    surrounding app + dialog chrome drop out. Toggled by the dialog adding
    `printing-invoice-doc` to <body> around window.print(). */
 @media print {
+  /* Drop the container context while printing: its layout containment would
+     otherwise make the shell the containing block for the fixed-position
+     `.invoice-doc` below, anchoring it to the shell instead of the page. */
+  body.printing-invoice-doc .invoice-doc-shell {
+    container-type: normal;
+    contain: none;
+  }
   body.printing-invoice-doc * {
     visibility: hidden !important;
   }

@@ -4,6 +4,8 @@
  */
 
 import type { InvoiceResponse } from "@/types/api";
+import { ATHLITS_INVOICE_LOGO } from "@/app/dashboard/invoices/_components/invoice-logo";
+import { deriveInvoiceView } from "./invoice-view";
 
 function escapeCSV(value: string | number | undefined | null): string {
   const str = String(value ?? "");
@@ -525,6 +527,180 @@ export function downloadInvoiceDocument(inv: InvoiceResponse): void {
     </div>
   </div>
 </body></html>`;
+
+  openPrintDocument(html);
+}
+
+/**
+ * Open the Athlits invoice as a print-ready document in a new tab and fire the
+ * print dialog (→ "Save as PDF"). This is a verbatim reproduction of
+ * `arena_scr_invoice_template.html` — same markup, same CSS — populated from the
+ * dashboard's `InvoiceResponse` via `deriveInvoiceView`, the exact derivation
+ * the in-app preview uses. The saved PDF therefore looks identical to both the
+ * template and the on-screen preview (they share one source of truth).
+ */
+export function downloadInvoiceTemplate(invoice: InvoiceResponse): void {
+  const v = deriveInvoiceView(invoice);
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Athlits Invoice #${escapeHTML(v.number)}</title>
+<style>
+  :root {
+    --ink: #111827;
+    --text: #374151;
+    --muted: #6b7280;
+    --line: #d1d5db;
+    --soft-line: #e5e7eb;
+    --paper: #ffffff;
+    --bg: #f5f5f5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .page { width: min(860px, calc(100% - 28px)); margin: 24px auto; }
+  .invoice { background: var(--paper); border: 1px solid var(--line); padding: 40px 44px; }
+  .top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 28px; padding-bottom: 28px; border-bottom: 2px solid var(--ink);
+  }
+  .brand img { display: block; width: 132px; height: auto; margin-bottom: 28px; }
+  h1 { margin: 0; color: var(--ink); font-size: 36px; line-height: 1.1; font-weight: 700; letter-spacing: 0; }
+  .invoice-number { margin-top: 8px; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .amount { min-width: 230px; text-align: right; }
+  .amount-label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+  .amount-value { margin-top: 5px; color: var(--ink); font-size: 32px; font-weight: 750; font-variant-numeric: tabular-nums; }
+  .meta { margin-top: 10px; color: var(--muted); font-size: 13px; }
+  .info {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 44px;
+    padding: 28px 0 24px; border-bottom: 1px solid var(--line);
+  }
+  .section-title { margin: 0 0 12px; color: var(--ink); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .row { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 6px 0; }
+  .label { color: var(--muted); font-size: 13px; }
+  .value { color: var(--ink); font-weight: 600; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; margin-top: 28px; }
+  th {
+    color: var(--muted); border-bottom: 1px solid var(--line); font-size: 12px;
+    font-weight: 700; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; padding: 0 0 10px;
+  }
+  td { border-bottom: 1px solid var(--soft-line); padding: 14px 0; vertical-align: top; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .item { color: var(--ink); font-weight: 650; }
+  .note-text { margin-top: 3px; color: var(--muted); font-size: 13px; }
+  .after-table { display: grid; grid-template-columns: 1fr 310px; gap: 44px; margin-top: 26px; align-items: start; }
+  .payment-note { color: var(--muted); font-size: 13px; max-width: 420px; }
+  .payment-note strong { display: block; color: var(--ink); margin-bottom: 4px; }
+  .totals { border-top: 1px solid var(--line); }
+  .total-row {
+    display: flex; justify-content: space-between; gap: 16px; padding: 9px 0;
+    border-bottom: 1px solid var(--soft-line); font-variant-numeric: tabular-nums;
+  }
+  .total-row span:first-child { color: var(--muted); }
+  .total-row.final { border-bottom: 0; padding-top: 12px; color: var(--ink); font-size: 18px; font-weight: 750; }
+  .footer {
+    display: flex; justify-content: space-between; gap: 20px; margin-top: 38px;
+    padding-top: 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px;
+  }
+  @media (max-width: 720px) {
+    .page { width: min(100% - 18px, 860px); margin: 14px auto; }
+    .invoice { padding: 28px 22px; }
+    .top, .info, .after-table, .footer { grid-template-columns: 1fr; flex-direction: column; }
+    .amount { text-align: left; min-width: 0; }
+    h1 { font-size: 31px; }
+    .row { grid-template-columns: 1fr; gap: 1px; }
+    th:nth-child(3), td:nth-child(3) { display: none; }
+  }
+  @media print {
+    body { background: #fff; }
+    .page { width: 100%; margin: 0; }
+    .invoice { border: 0; padding: 0; }
+    @page { size: A4; margin: 14mm; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <article class="invoice" aria-label="Athlits invoice">
+      <header class="top">
+        <div>
+          <div class="brand"><img src="${ATHLITS_INVOICE_LOGO}" alt="Athlits" /></div>
+          <h1>Athlits Invoice</h1>
+          <div class="invoice-number">Invoice #${escapeHTML(v.number)}</div>
+        </div>
+        <div class="amount">
+          <div class="amount-label">Amount due</div>
+          <div class="amount-value">${escapeHTML(v.amountDue)}</div>
+          <div class="meta">Status: ${escapeHTML(v.status)}<br />Due date: ${escapeHTML(v.dueDate)}</div>
+        </div>
+      </header>
+
+      <section class="info" aria-label="Invoice information">
+        <div>
+          <h2 class="section-title">Venue</h2>
+          <div class="row"><div class="label">Venue EN</div><div class="value">${escapeHTML(v.venueDisplay)}</div></div>
+          <div class="row"><div class="label">Venue AR</div><div class="value">${escapeHTML(v.venueAr)}</div></div>
+          <div class="row"><div class="label">Billing period</div><div class="value">${escapeHTML(v.billingPeriod)}</div></div>
+        </div>
+        <div>
+          <h2 class="section-title">Summary</h2>
+          <div class="row"><div class="label">Fee model</div><div class="value">${escapeHTML(v.feeModelLabel)}</div></div>
+          <div class="row"><div class="label">Total bookings</div><div class="value">${escapeHTML(v.bookings)}</div></div>
+          <div class="row"><div class="label">Total revenue</div><div class="value">${escapeHTML(v.totalRevenue)}</div></div>
+        </div>
+      </section>
+
+      <table aria-label="Invoice charges">
+        <thead>
+          <tr><th>Charge</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="item">Reservation billing fee</div><div class="note-text">${escapeHTML(v.reservationNote)}</div></td>
+            <td class="num">${escapeHTML(v.reservationQty)}</td>
+            <td class="num">${escapeHTML(v.reservationRate)}</td>
+            <td class="num">${escapeHTML(v.reservationAmount)}</td>
+          </tr>
+          <tr>
+            <td><div class="item">Fixed monthly fee</div><div class="note-text">${escapeHTML(v.fixedNote)}</div></td>
+            <td class="num">-</td>
+            <td class="num">-</td>
+            <td class="num">${escapeHTML(v.fixedAmount)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <section class="after-table">
+        <div class="payment-note">
+          <strong>Payment</strong>
+          Paid at: ${escapeHTML(v.paidAt)}<br />
+          Payment reference: ${escapeHTML(v.paymentReference)}
+        </div>
+        <div class="totals" aria-label="Invoice totals">
+          <div class="total-row"><span>Total revenue</span><strong>${escapeHTML(v.totalRevenue)}</strong></div>
+          <div class="total-row"><span>Fixed monthly fee</span><strong>${escapeHTML(v.totalsFixed)}</strong></div>
+          <div class="total-row"><span>Per reservation fee</span><strong>${escapeHTML(v.totalsPerReservation)}</strong></div>
+          <div class="total-row final"><span>Amount due</span><strong>${escapeHTML(v.amountDue)}</strong></div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>Athlits venue billing</span>
+        <span>Generated for ${escapeHTML(v.venueDisplay)}</span>
+      </footer>
+    </article>
+  </main>
+</body>
+</html>`;
 
   openPrintDocument(html);
 }
