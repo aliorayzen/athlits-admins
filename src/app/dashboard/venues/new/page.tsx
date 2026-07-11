@@ -21,6 +21,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
+import { VenueCoverImageField } from "@/components/venue-cover-image-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
 import {
@@ -43,7 +44,6 @@ import {
   ArrowLeft,
   Building2,
   Clock,
-  ImageIcon,
   Loader2,
   MapPin,
   Settings,
@@ -80,7 +80,7 @@ type ManagersState = "loading" | "ready" | "error";
 export default function NewVenuePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [coverImageBroken, setCoverImageBroken] = useState(false);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
 
   const [managers, setManagers] = useState<UserDto[]>([]);
   const [managersState, setManagersState] = useState<ManagersState>("loading");
@@ -98,7 +98,6 @@ export default function NewVenuePage() {
     longitude: 0,
     contactPhone: "",
     contactEmail: "",
-    coverImage: "",
     currencyCode: DEFAULT_CURRENCY,
     paymentMode: "CASH",
     allowRecurringBookings: false,
@@ -194,19 +193,22 @@ export default function NewVenuePage() {
     setIsLoading(true);
     try {
       const availabilityDays = form.availability?.days ?? [];
-      const venue = await createVenue({
-        ...form,
-        contactPhone: normalizePhoneForSubmit(
-          form.contactPhone,
-          form.countryCode,
-        ),
-        // Backend rejects an availability object with zero days; omit instead.
-        // Times are entered in local time and stored in UTC.
-        availability:
-          availabilityDays.length > 0
-            ? { days: availabilityDaysToUtc(availabilityDays) }
-            : undefined,
-      });
+      const venue = await createVenue(
+        {
+          ...form,
+          contactPhone: normalizePhoneForSubmit(
+            form.contactPhone,
+            form.countryCode,
+          ),
+          // Backend rejects an availability object with zero days; omit instead.
+          // Times are entered in local time and stored in UTC.
+          availability:
+            availabilityDays.length > 0
+              ? { days: availabilityDaysToUtc(availabilityDays) }
+              : undefined,
+        },
+        coverImage ?? undefined,
+      );
       toast.success(`Venue "${venue.name}" created`);
       router.push(`/dashboard/venues/${venue.id}`);
     } catch (err: unknown) {
@@ -219,12 +221,6 @@ export default function NewVenuePage() {
   }
 
   const noManagers = managersState === "ready" && managers.length === 0;
-  const coverImageUrl = form.coverImage?.trim() ?? "";
-  const coverImagePreview =
-    !coverImageBroken && /^https?:\/\//i.test(coverImageUrl)
-      ? coverImageUrl
-      : null;
-
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
@@ -411,46 +407,16 @@ export default function NewVenuePage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="coverImage" className={LABEL_CLASS}>
-                <span className="inline-flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5" />
-                  Cover Image URL
-                </span>
-              </Label>
-              <div className="flex items-start gap-3">
-                <div className="grid h-16 w-24 shrink-0 place-items-center overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-hover)]">
-                  {coverImagePreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={coverImagePreview}
-                      alt="Cover preview"
-                      className="h-full w-full object-cover"
-                      onError={() => setCoverImageBroken(true)}
-                    />
-                  ) : (
-                    <ImageIcon className="h-5 w-5 text-[var(--text-4)]" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 space-y-1.5">
-                  <Input
-                    id="coverImage"
-                    type="url"
-                    inputMode="url"
-                    value={form.coverImage ?? ""}
-                    onChange={(e) => {
-                      setCoverImageBroken(false);
-                      updateField("coverImage", e.target.value);
-                    }}
-                    placeholder="https://cdn.example.com/venue.jpg"
-                    className={INPUT_CLASS}
-                  />
-                  <p className="text-xs text-[var(--text-4)]">
-                    {coverImageBroken
-                      ? "That image didn't load. Check the URL is public and direct."
-                      : "Paste a direct, public link to the venue's cover image."}
-                  </p>
-                </div>
-              </div>
+              <Label className={LABEL_CLASS}>Cover Image</Label>
+              <VenueCoverImageField
+                value={coverImage}
+                onChange={setCoverImage}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-[var(--text-4)]">
+                Optional. The image is cropped to 16:9 before the venue is
+                created.
+              </p>
             </div>
           </CardContent>
         </Card>

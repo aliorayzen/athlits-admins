@@ -195,9 +195,8 @@ export interface VenueAvailabilitySchedule {
   days: VenueAvailabilityDay[];
 }
 
-// POST /api/admin/v1/venues is application/json. `managerId`, `paymentMode`,
-// and `courtLimit` are required by the backend. Cover images are not accepted
-// as URL strings in this DTO; they require a separate multipart upload flow.
+// POST /api/admin/v1/venues accepts multipart/form-data. The optional cover
+// image File is passed separately to createVenue so this DTO stays serializable.
 export interface CreateVenueRequest {
   managerId: string;
   nameEn: string;
@@ -213,9 +212,6 @@ export interface CreateVenueRequest {
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
-  // UI draft only for screens that still collect a URL; createVenue strips it
-  // from JSON because the backend create DTO does not accept it.
-  coverImage?: string;
   currencyCode: string;
   paymentMode: PaymentMode;
   allowRecurringBookings?: boolean;

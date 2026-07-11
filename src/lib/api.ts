@@ -298,42 +298,61 @@ export async function getVenue(venueId: string): Promise<VenueDetailResponse> {
 
 export async function createVenue(
   payload: CreateVenueRequest,
+  coverImage?: File,
 ): Promise<VenueDetailResponse> {
-  // Endpoint is application/json. Trim optional string fields and drop empties
-  // so we never send blank strings the backend would reject. Cover images are
-  // not part of the JSON create DTO; they require a multipart upload flow.
+  // Spring binds this multipart request through @ModelAttribute. Keep nested
+  // field names explicit so availability binds as a list and facilities as a
+  // repeated set field.
   const trimmedDescription = payload.description?.trim();
   const trimmedContactPhone = payload.contactPhone?.trim();
   const trimmedContactEmail = payload.contactEmail?.trim();
 
-  const body = {
-    managerId: payload.managerId,
-    nameEn: payload.nameEn.trim(),
-    nameAr: payload.nameAr.trim(),
-    addressLine: payload.addressLine.trim(),
-    // Plain locality name only — never the legacy `"City: <Name>"` fold.
-    city: cityName(payload.city),
-    timeZoneId: payload.timeZoneId,
-    countryCode: payload.countryCode,
-    latitude: payload.latitude,
-    longitude: payload.longitude,
-    currencyCode: payload.currencyCode,
-    paymentMode: payload.paymentMode,
-    courtLimit: payload.courtLimit,
-    maxAdvanceBookingDays: payload.maxAdvanceBookingDays,
-    allowRecurringBookings: payload.allowRecurringBookings,
-    facilities: payload.facilities ?? [],
-    ...(trimmedDescription ? { description: trimmedDescription } : {}),
-    ...(trimmedContactPhone ? { contactPhone: trimmedContactPhone } : {}),
-    ...(trimmedContactEmail ? { contactEmail: trimmedContactEmail } : {}),
-    // Backend rejects an availability object with zero days; the caller already
-    // omits `availability` in that case.
-    ...(payload.availability ? { availability: payload.availability } : {}),
-  };
+  const body = new FormData();
+  body.append("managerId", payload.managerId);
+  body.append("nameEn", payload.nameEn.trim());
+  body.append("nameAr", payload.nameAr.trim());
+  body.append("addressLine", payload.addressLine.trim());
+  body.append("city", cityName(payload.city));
+  body.append("timeZoneId", payload.timeZoneId);
+  body.append("countryCode", payload.countryCode);
+  body.append("latitude", String(payload.latitude));
+  body.append("longitude", String(payload.longitude));
+  body.append("currencyCode", payload.currencyCode);
+  body.append("paymentMode", payload.paymentMode);
+  body.append("courtLimit", String(payload.courtLimit));
+  body.append(
+    "maxAdvanceBookingDays",
+    String(payload.maxAdvanceBookingDays ?? 30),
+  );
+  body.append(
+    "allowRecurringBookings",
+    String(payload.allowRecurringBookings ?? false),
+  );
+
+  if (trimmedDescription) body.append("description", trimmedDescription);
+  if (trimmedContactPhone) body.append("contactPhone", trimmedContactPhone);
+  if (trimmedContactEmail) body.append("contactEmail", trimmedContactEmail);
+  if (coverImage) body.append("coverImage", coverImage, coverImage.name);
+
+  for (const facility of payload.facilities ?? []) {
+    body.append("facilities", facility);
+  }
+  for (const [index, day] of (payload.availability?.days ?? []).entries()) {
+    body.append(`availability.days[${index}].weekday`, day.weekday);
+    body.append(
+      `availability.days[${index}].openMinutes`,
+      String(day.openMinutes),
+    );
+    body.append(
+      `availability.days[${index}].closeMinutes`,
+      String(day.closeMinutes),
+    );
+  }
 
   const { data } = await apiClient.post<VenueDetailResponse>(
     "/api/admin/v1/venues",
     body,
+    { headers: { "Content-Type": undefined } },
   );
   return normalizeVenueDetail(data);
 }
