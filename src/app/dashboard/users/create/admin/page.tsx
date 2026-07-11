@@ -11,6 +11,7 @@ import {
   getApiErrorStatus,
   getApiFieldErrors,
 } from "@/lib/api";
+import { normalizeEmail } from "@/lib/email";
 import { BackLink } from "../_components/back-link";
 import {
   FormFooter,
@@ -42,7 +43,7 @@ function validateFields(values: {
   if (!values.firstName.trim()) errors.firstName = "First name is required.";
   if (!values.lastName.trim()) errors.lastName = "Last name is required.";
 
-  const email = values.email.trim();
+  const email = normalizeEmail(values.email);
   if (!email) {
     errors.email = "Email is required.";
   } else if (!EMAIL_PATTERN.test(email)) {
@@ -89,8 +90,9 @@ export default function CreateAdminPage() {
       inFlight.current = true;
       setIsSubmitting(true);
       try {
+        const normalizedEmail = normalizeEmail(email);
         const created = await createAdmin({
-          email: email.trim(),
+          email: normalizedEmail,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
         });
@@ -142,7 +144,7 @@ export default function CreateAdminPage() {
   const preview = {
     initials: `${firstName[0] ?? "J"}${lastName[0] ?? "D"}`.toUpperCase(),
     name: `${firstName.trim() || "First"} ${lastName.trim() || "Last"}`.trim(),
-    email: email.trim() || "admin@orayzen.com",
+    email: normalizeEmail(email) || "admin@orayzen.com",
   };
 
   return (

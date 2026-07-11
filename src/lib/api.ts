@@ -29,9 +29,11 @@ import type {
   BulkInvoiceResult,
   PageResponse,
   PageQuery,
+  RestorableCustomerDto,
   ContractResponse,
   CreateContractRequest,
 } from "@/types/api";
+import { normalizeEmail } from "@/lib/email";
 
 // ── Error helpers ────────────────────────────
 // Type-narrow an `unknown` thrown from the API layer into a user-facing message.
@@ -403,7 +405,7 @@ export async function createAdmin(
 ): Promise<{ user: UserDto; message: string }> {
   const { data } = await apiClient.post<ApiEnvelope<UserDto>>(
     "/api/admin/v1/users/admin",
-    payload,
+    { ...payload, email: normalizeEmail(payload.email) },
     { preserveEnvelope: true },
   );
   return {
@@ -467,6 +469,29 @@ export async function getCustomers(
     { params },
   );
   return { ...data, content: (data?.content ?? []).map(normalizeUser) };
+}
+
+export async function getRestorableCustomers(
+  params: PageQuery = {},
+): Promise<PageResponse<RestorableCustomerDto>> {
+  const { data } = await apiClient.get<PageResponse<RestorableCustomerDto>>(
+    "/api/admin/v1/users/customers/restorable",
+    { params },
+  );
+  return {
+    ...data,
+    content: (data?.content ?? []).map((customer) => ({
+      ...customer,
+      id: ensureStringId(customer.id),
+    })),
+  };
+}
+
+export async function restoreCustomer(customerId: string): Promise<UserDto> {
+  const { data } = await apiClient.post<UserDto>(
+    `/api/admin/v1/users/customers/${customerId}/restore`,
+  );
+  return normalizeUser(data);
 }
 
 export async function activateVenueManager(

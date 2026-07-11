@@ -16,6 +16,7 @@ import {
   Table as TableIcon,
   UserPlus,
   UserRound,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -103,6 +104,11 @@ function buildNavSections(stats: {
           href: "/dashboard/users/players",
           label: "Players",
           icon: UserRound,
+        },
+        {
+          href: "/dashboard/users/restorable",
+          label: "Restorable Accounts",
+          icon: RotateCcw,
         },
         {
           href: "/dashboard/settings",
