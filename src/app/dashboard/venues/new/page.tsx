@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createVenue, getApiErrorMessage, getVenueManagers } from "@/lib/api";
+import {
+  createVenue,
+  getApiErrorMessage,
+  getVenueManagers,
+  updateVenueBookingPreferences,
+} from "@/lib/api";
 import type {
   CreateVenueRequest,
   Facility,
@@ -22,6 +27,7 @@ import {
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
 import { VenueCoverImageField } from "@/components/venue-cover-image-field";
+import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
 import {
@@ -81,6 +87,7 @@ export default function NewVenuePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [autoConfirmation, setAutoConfirmation] = useState(false);
 
   const [managers, setManagers] = useState<UserDto[]>([]);
   const [managersState, setManagersState] = useState<ManagersState>("loading");
@@ -209,6 +216,18 @@ export default function NewVenuePage() {
         },
         coverImage ?? undefined,
       );
+      try {
+        await updateVenueBookingPreferences(venue.id, { autoConfirmation });
+      } catch (err: unknown) {
+        toast.warning(`Venue "${venue.name}" created with incomplete settings`, {
+          description: getApiErrorMessage(
+            err,
+            "The booking preference could not be saved. Edit the venue to try again.",
+          ),
+        });
+        router.push(`/dashboard/venues/${venue.id}`);
+        return;
+      }
       toast.success(`Venue "${venue.name}" created`);
       router.push(`/dashboard/venues/${venue.id}`);
     } catch (err: unknown) {
@@ -626,6 +645,12 @@ export default function NewVenuePage() {
                 })}
               </div>
             </div>
+
+            <VenueBookingPreferencesField
+              autoConfirmation={autoConfirmation}
+              onAutoConfirmationChange={setAutoConfirmation}
+              disabled={isLoading}
+            />
 
             <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-hover)] p-4">
               <div>

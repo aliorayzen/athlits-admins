@@ -38,6 +38,7 @@ import {
   getApiErrorStatus,
   getApiFieldErrorMap,
   getVenueManagers,
+  updateVenueBookingPreferences,
 } from "@/lib/api";
 import type {
   CreateVenueRequest,
@@ -60,6 +61,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
+import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
 import {
@@ -239,6 +241,7 @@ export default function OnboardingVenueManagerPage() {
     tempPassword: "",
   });
   const [venue, setVenue] = useState<CreateVenueRequest>(emptyVenue);
+  const [autoConfirmation, setAutoConfirmation] = useState(false);
   const [contractDraft, setContractDraft] = useState<ContractDraft>(
     defaultContractDraft(DEFAULT_CURRENCY),
   );
@@ -380,6 +383,11 @@ export default function OnboardingVenueManagerPage() {
     });
   }
 
+  function updateAutoConfirmation(checked: boolean) {
+    setStepErrors((prev) => ({ ...prev, venue: undefined }));
+    setAutoConfirmation(checked);
+  }
+
   function goBack() {
     setStep(STEPS[Math.max(stepIndex - 1, 0)].key);
   }
@@ -435,7 +443,27 @@ export default function OnboardingVenueManagerPage() {
     if (!venueValid || inFlight.current) return;
 
     if (createdVenue) {
-      setStep("contract");
+      inFlight.current = true;
+      setIsSubmitting(true);
+      setStepErrors((prev) => ({ ...prev, venue: undefined }));
+      try {
+        await updateVenueBookingPreferences(createdVenue.id, {
+          autoConfirmation,
+        });
+        toast.success("Booking preference saved");
+        setStep("contract");
+      } catch (err: unknown) {
+        setStepErrors((prev) => ({
+          ...prev,
+          venue: getApiErrorMessage(
+            err,
+            "The venue was created, but its booking preference could not be saved. Try again.",
+          ),
+        }));
+      } finally {
+        inFlight.current = false;
+        setIsSubmitting(false);
+      }
       return;
     }
 
@@ -465,6 +493,19 @@ export default function OnboardingVenueManagerPage() {
         currencyCode: venue.currencyCode.trim().toUpperCase(),
       });
       setCreatedVenue(created);
+      try {
+        await updateVenueBookingPreferences(created.id, { autoConfirmation });
+      } catch (err: unknown) {
+        setStepErrors((prev) => ({
+          ...prev,
+          venue: getApiErrorMessage(
+            err,
+            "The venue was created, but its booking preference could not be saved. Try again.",
+          ),
+        }));
+        toast.warning(`Venue "${created.name}" created with incomplete settings`);
+        return;
+      }
       toast.success(`Venue "${created.name}" created`);
       setStep("contract");
     } catch (err: unknown) {
@@ -623,10 +664,12 @@ export default function OnboardingVenueManagerPage() {
             {step === "venue" && (
               <VenueStep
                 venue={venue}
+                autoConfirmation={autoConfirmation}
                 manager={activeManager}
                 error={stepErrors.venue}
                 createdVenue={createdVenue}
                 onUpdateVenue={updateVenue}
+                onAutoConfirmationChange={updateAutoConfirmation}
                 onToggleFacility={toggleFacility}
               />
             )}
@@ -917,13 +960,16 @@ function ManagerStep({
 
 function VenueStep({
   venue,
+  autoConfirmation,
   manager,
   error,
   createdVenue,
   onUpdateVenue,
+  onAutoConfirmationChange,
   onToggleFacility,
 }: {
   venue: CreateVenueRequest;
+  autoConfirmation: boolean;
   manager?: UserDto;
   error?: string;
   createdVenue: VenueDetailResponse | null;
@@ -931,6 +977,7 @@ function VenueStep({
     key: K,
     value: CreateVenueRequest[K],
   ) => void;
+  onAutoConfirmationChange: (checked: boolean) => void;
   onToggleFacility: (facility: Facility) => void;
 }) {
   const paymentModesLabelId = useId();
@@ -1185,6 +1232,11 @@ function VenueStep({
             />
           </div>
         </div>
+
+        <VenueBookingPreferencesField
+          autoConfirmation={autoConfirmation}
+          onAutoConfirmationChange={onAutoConfirmationChange}
+        />
 
         <div>
           <Label id={facilitiesLabelId} className={labelClass}>

@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getApiErrorMessage, getEditableVenue, updateVenue } from "@/lib/api";
+import {
+  getApiErrorMessage,
+  getEditableVenue,
+  updateVenue,
+  updateVenueBookingPreferences,
+} from "@/lib/api";
 import type {
   Facility,
   UpdateVenueRequest,
@@ -21,6 +26,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
+import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import {
   DEFAULT_COUNTRY_CODE,
   normalizePhoneForSubmit,
@@ -77,6 +83,7 @@ interface EditForm {
   longitude: number;
   contactPhone: string;
   contactEmail: string;
+  autoConfirmation: boolean;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
   facilities: Facility[];
@@ -94,6 +101,7 @@ export default function EditVenuePage() {
   const [form, setForm] = useState<EditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isPartialSave, setIsPartialSave] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,6 +121,7 @@ export default function EditVenuePage() {
           longitude: venue.longitude,
           contactPhone: venue.contactPhone ?? "",
           contactEmail: venue.contactEmail ?? "",
+          autoConfirmation: venue.autoConfirmation ?? false,
           allowRecurringBookings: venue.allowRecurringBookings,
           maxAdvanceBookingDays: venue.maxAdvanceBookingDays,
           facilities: venue.facilities ?? [],
@@ -166,6 +175,7 @@ export default function EditVenuePage() {
     e.preventDefault();
     if (!form) return;
     setSubmitError(null);
+    setIsPartialSave(false);
 
     if (!form.nameEn.trim()) {
       setSubmitError("Enter the venue's English name.");
@@ -209,6 +219,21 @@ export default function EditVenuePage() {
             : undefined,
       };
       const updated = await updateVenue(params.venueId, payload);
+      try {
+        await updateVenueBookingPreferences(params.venueId, {
+          autoConfirmation: form.autoConfirmation,
+        });
+      } catch (err: unknown) {
+        setIsPartialSave(true);
+        setSubmitError(
+          getApiErrorMessage(
+            err,
+            "Venue details were saved, but the booking preference was not. Try saving again.",
+          ),
+        );
+        toast.error("Booking preference not saved");
+        return;
+      }
       toast.success(`Venue "${updated.name}" updated`);
       router.push(`/dashboard/venues/${params.venueId}`);
     } catch (err: unknown) {
@@ -516,6 +541,14 @@ export default function EditVenuePage() {
               </div>
             </div>
 
+            <VenueBookingPreferencesField
+              autoConfirmation={form.autoConfirmation}
+              onAutoConfirmationChange={(checked) =>
+                updateField("autoConfirmation", checked)
+              }
+              disabled={isSaving}
+            />
+
             <div className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-hover)] p-4">
               <div>
                 <p className="text-sm font-medium text-[var(--text-1)]">
@@ -543,7 +576,9 @@ export default function EditVenuePage() {
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
             <div>
               <p className="font-medium text-[var(--semantic-red)]">
-                The venue was not updated
+                {isPartialSave
+                  ? "Booking preference was not updated"
+                  : "The venue was not updated"}
               </p>
               <p className="mt-0.5 text-[var(--text-3)]">{submitError}</p>
             </div>

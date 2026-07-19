@@ -244,6 +244,14 @@ export interface UpdateVenueRequest {
   availability?: VenueAvailabilitySchedule;
 }
 
+export interface UpdateVenueBookingPreferencesRequest {
+  autoConfirmation: boolean;
+}
+
+export interface VenueBookingPreferencesResponse {
+  autoConfirmation: boolean;
+}
+
 // GET/PUT /api/admin/v1/venues/{venueId} → VenueResponse. Richer than
 // VenueDetailResponse: notably carries `availability` and `paymentMode`.
 // Used to prefill and save the venue edit form.
@@ -268,6 +276,7 @@ export interface VenueResponse {
   currencyCode: string;
   status: VenueStatus;
   paymentMode?: PaymentMode;
+  autoConfirmation: boolean;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
   courtLimit?: number;
