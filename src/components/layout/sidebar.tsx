@@ -17,6 +17,7 @@ import {
   UserPlus,
   UserRound,
   RotateCcw,
+  ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -76,6 +77,11 @@ function buildNavSections(stats: {
             stats.invoicesOverdue && stats.invoicesOverdue > 0
               ? stats.invoicesOverdue
               : undefined,
+        },
+        {
+          href: "/dashboard/audit-events",
+          label: "Audit Events",
+          icon: ScrollText,
         },
       ],
     },

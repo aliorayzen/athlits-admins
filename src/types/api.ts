@@ -488,3 +488,55 @@ export interface PageQuery {
   size?: number;
   sort?: string;
 }
+
+// Audit events
+export type AuditEventOutcome =
+  | "SUCCESS"
+  | "FAILURE"
+  | "DENIED"
+  | "UNKNOWN";
+
+/**
+ * Stable dashboard model for a platform audit event. The API wrapper
+ * normalizes backend naming differences (for example `timestamp` vs
+ * `createdAt`) before this reaches a page.
+ */
+export interface AuditEvent {
+  id: string;
+  occurredAt: string;
+  action: string;
+  outcome: AuditEventOutcome;
+  actorId?: string | null;
+  actorEmail?: string | null;
+  actorName?: string | null;
+  actorRole?: string | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  requestMethod?: string | null;
+  requestPath?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  traceId?: string | null;
+  reason?: string | null;
+  metadata?: unknown;
+  before?: unknown;
+  after?: unknown;
+  raw: Record<string, unknown>;
+}
+
+export interface AuditEventFilters {
+  actorId?: string;
+  actorEmail?: string;
+  action?: string;
+  entityType?: string;
+  entityId?: string;
+  outcome?: Exclude<AuditEventOutcome, "UNKNOWN">;
+  from?: string;
+  to?: string;
+}
+
+export interface AuditEventQuery extends AuditEventFilters {
+  page?: number;
+  size?: number;
+  sort?: string;
+}

@@ -34,6 +34,10 @@ import type {
   RestorableCustomerDto,
   ContractResponse,
   CreateContractRequest,
+  AuditEvent,
+  AuditEventFilters,
+  AuditEventOutcome,
+  AuditEventQuery,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
 
@@ -250,6 +254,165 @@ function normalizeContract(contract: ContractResponse): ContractResponse {
     ...contract,
     id: ensureStringId(contract.id),
     venueId: ensureStringId(contract.venueId),
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function firstString(
+  sources: Record<string, unknown>[],
+  keys: string[],
+): string | null {
+  for (const source of sources) {
+    for (const key of keys) {
+      const value = source[key];
+      if (value !== null && value !== undefined && String(value).trim()) {
+        return String(value);
+      }
+    }
+  }
+  return null;
+}
+
+function normalizeAuditOutcome(value: string | null): AuditEventOutcome {
+  const normalized = value?.trim().toUpperCase();
+  if (normalized === "SUCCESS" || normalized === "SUCCEEDED") return "SUCCESS";
+  if (
+    normalized === "FAILURE" ||
+    normalized === "FAILED" ||
+    normalized === "ERROR"
+  ) {
+    return "FAILURE";
+  }
+  if (
+    normalized === "DENIED" ||
+    normalized === "REJECTED" ||
+    normalized === "FORBIDDEN"
+  ) {
+    return "DENIED";
+  }
+  return "UNKNOWN";
+}
+
+function normalizeAuditEvent(value: unknown): AuditEvent {
+  const raw = asRecord(value);
+  const actor = asRecord(raw.actor ?? raw.user ?? raw.performedBy);
+  const entity = asRecord(raw.entity ?? raw.resource ?? raw.target);
+  const request = asRecord(raw.request ?? raw.requestContext);
+  const metadata = raw.metadata ?? raw.details ?? raw.payload ?? null;
+  const metadataRecord = asRecord(metadata);
+
+  const actorFirstName = firstString([actor, raw], [
+    "firstName",
+    "actorFirstName",
+  ]);
+  const actorLastName = firstString([actor, raw], [
+    "lastName",
+    "actorLastName",
+  ]);
+  const derivedActorName = [actorFirstName, actorLastName]
+    .filter(Boolean)
+    .join(" ");
+
+  return {
+    id:
+      firstString([raw], ["id", "eventId", "auditEventId"]) ??
+      "unknown-event",
+    occurredAt:
+      firstString([raw], [
+        "occurredAt",
+        "createdAt",
+        "timestamp",
+        "eventTime",
+      ]) ?? "",
+    action:
+      firstString([raw], ["action", "eventType", "operation", "activity"]) ??
+      "UNKNOWN",
+    outcome: normalizeAuditOutcome(
+      firstString([raw], ["outcome", "status", "result"]),
+    ),
+    actorId: firstString([actor, raw], [
+      "id",
+      "actorId",
+      "actorUserId",
+      "userId",
+    ]),
+    actorEmail: firstString([actor, raw], [
+      "email",
+      "actorEmail",
+      "userEmail",
+    ]),
+    actorName:
+      firstString([actor, raw], [
+        "name",
+        "displayName",
+        "actorName",
+        "userName",
+      ]) ||
+      derivedActorName ||
+      null,
+    actorRole: firstString([actor, raw], ["role", "actorRole", "userRole"]),
+    entityType: firstString([entity, raw], [
+      "type",
+      "entityType",
+      "resourceType",
+      "targetType",
+    ]),
+    entityId: firstString([entity, raw], [
+      "id",
+      "entityId",
+      "resourceId",
+      "targetId",
+    ]),
+    requestMethod: firstString([request, raw], [
+      "method",
+      "requestMethod",
+      "httpMethod",
+    ]),
+    requestPath: firstString([request, raw], [
+      "path",
+      "requestPath",
+      "endpoint",
+      "uri",
+    ]),
+    ipAddress: firstString([request, raw], [
+      "ipAddress",
+      "clientIp",
+      "ip",
+    ]),
+    userAgent: firstString([request, raw], ["userAgent"]),
+    traceId: firstString([request, raw], [
+      "traceId",
+      "requestId",
+      "correlationId",
+    ]),
+    reason: firstString([raw, metadataRecord], [
+      "reason",
+      "message",
+      "description",
+    ]),
+    metadata,
+    before:
+      raw.before ??
+      raw.previousValues ??
+      raw.oldValues ??
+      metadataRecord.before ??
+      metadataRecord.previousValues ??
+      metadataRecord.oldValues ??
+      null,
+    after:
+      raw.after ??
+      raw.newValues ??
+      raw.currentValues ??
+      metadataRecord.after ??
+      metadataRecord.newValues ??
+      metadataRecord.currentValues ??
+      null,
+    raw,
   };
 }
 
@@ -601,6 +764,42 @@ export async function getInvoice(id: string): Promise<InvoiceResponse> {
     `/api/admin/v1/invoices/${id}`,
   );
   return normalizeInvoice(data);
+}
+
+// ── Audit events ─────────────────────────────────────────────────────────────
+
+export async function getAuditEvents(
+  params?: AuditEventQuery,
+): Promise<PageResponse<AuditEvent>> {
+  const { data } = await apiClient.get<PageResponse<unknown>>(
+    "/api/admin/v1/audit-events",
+    { params },
+  );
+  return {
+    ...data,
+    content: (data?.content ?? []).map(normalizeAuditEvent),
+  };
+}
+
+export async function getAuditEvent(id: string): Promise<AuditEvent> {
+  const { data } = await apiClient.get<unknown>(
+    `/api/admin/v1/audit-events/${encodeURIComponent(id)}`,
+  );
+  return normalizeAuditEvent(data);
+}
+
+export async function exportAuditEvents(
+  filters?: AuditEventFilters,
+): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(
+    "/api/admin/v1/audit-events/export",
+    {
+      params: filters,
+      responseType: "blob",
+      preserveEnvelope: true,
+    },
+  );
+  return data;
 }
 
 export async function voidInvoice(id: string): Promise<InvoiceResponse> {
