@@ -504,12 +504,20 @@ export type AuditEventOutcome =
 export interface AuditEvent {
   id: string;
   occurredAt: string;
+  summary?: string | null;
+  category?: string | null;
+  scope?: string | null;
   action: string;
   outcome: AuditEventOutcome;
   actorId?: string | null;
   actorEmail?: string | null;
   actorName?: string | null;
   actorRole?: string | null;
+  affectedUserId?: string | null;
+  affectedUserName?: string | null;
+  venueId?: string | null;
+  venueName?: string | null;
+  bookingId?: string | null;
   entityType?: string | null;
   entityId?: string | null;
   requestMethod?: string | null;

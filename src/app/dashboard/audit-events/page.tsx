@@ -41,6 +41,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   auditActionTone,
   auditActorLabel,
+  auditContextLabel,
+  auditEventSummary,
   auditInitials,
   auditOutcomeTone,
   formatAuditTimestamp,
@@ -525,14 +527,13 @@ function AuditEventsBody({
         <table className="w-full min-w-[880px] border-collapse text-left">
           <thead>
             <tr className="bg-white/[0.012]">
-              {["Time", "Actor", "Action", "Target", "Origin", "Outcome", ""].map(
+              {["Time", "What happened", "Performed by", "Context", "Outcome", ""].map(
                 (heading, index) => (
                   <th
                     key={`${heading}-${index}`}
                     className={cn(
                       "border-b border-[var(--border)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]",
-                      index === 4 && "hidden xl:table-cell",
-                      index === 6 && "w-10",
+                      index === 5 && "w-10",
                     )}
                   >
                     {heading}
@@ -560,6 +561,7 @@ function AuditEventsBody({
 
 function AuditEventRow({ event }: { event: AuditEvent }) {
   const outcome = auditOutcomeTone(event.outcome);
+  const context = auditContextLabel(event);
   return (
     <tr className="group transition-colors hover:bg-white/[0.018]">
       <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
@@ -570,6 +572,28 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           <span className="font-mono text-[9.5px] text-[var(--text-4)]">
             {event.id}
           </span>
+        </div>
+      </td>
+      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+        <div className="max-w-[430px] space-y-1.5">
+          <p className="text-[12.5px] font-medium leading-[1.45] text-[var(--text-1)]">
+            {auditEventSummary(event)}
+          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span
+              className={cn(
+                "inline-flex rounded-full px-2 py-0.5 text-[9.5px] font-semibold",
+                auditActionTone(event.action),
+              )}
+            >
+              {humanizeAuditValue(event.action)}
+            </span>
+            {event.category && (
+              <span className="text-[9.5px] text-[var(--text-4)]">
+                {humanizeAuditValue(event.category)}
+              </span>
+            )}
+          </div>
         </div>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
@@ -588,36 +612,15 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
         </div>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
-        <span
-          className={cn(
-            "inline-flex rounded-full px-2 py-1 text-[10.5px] font-semibold",
-            auditActionTone(event.action),
-          )}
-        >
-          {humanizeAuditValue(event.action)}
-        </span>
-      </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
         <div className="flex max-w-[220px] flex-col gap-0.5">
           <span className="text-[12px] font-medium text-[var(--text-2)]">
-            {humanizeAuditValue(event.entityType ?? "Platform")}
+            {context.primary}
           </span>
-          {event.entityId && (
-            <span className="truncate font-mono text-[10px] text-[var(--text-4)]">
-              {event.entityId}
+          {context.secondary && (
+            <span className="truncate text-[10px] text-[var(--text-4)]">
+              {context.secondary}
             </span>
           )}
-        </div>
-      </td>
-      <td className="hidden border-t border-white/[0.035] px-4 py-3 align-middle xl:table-cell">
-        <div className="flex max-w-[230px] flex-col gap-0.5">
-          <span className="truncate font-mono text-[10.5px] text-[var(--text-3)]">
-            {[event.requestMethod, event.requestPath].filter(Boolean).join(" ") ||
-              "Request not recorded"}
-          </span>
-          <span className="font-mono text-[10px] text-[var(--text-4)]">
-            {event.ipAddress ?? "IP not recorded"}
-          </span>
         </div>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 align-middle">

@@ -329,6 +329,9 @@ function normalizeAuditEvent(value: unknown): AuditEvent {
         "timestamp",
         "eventTime",
       ]) ?? "",
+    summary: firstString([raw], ["summary", "eventSummary"]),
+    category: firstString([raw], ["category", "eventCategory"]),
+    scope: firstString([raw], ["scope", "eventScope"]),
     action:
       firstString([raw], ["action", "eventType", "operation", "activity"]) ??
       "UNKNOWN",
@@ -350,12 +353,31 @@ function normalizeAuditEvent(value: unknown): AuditEvent {
       firstString([actor, raw], [
         "name",
         "displayName",
+        "actorDisplayName",
         "actorName",
         "userName",
       ]) ||
       derivedActorName ||
       null,
-    actorRole: firstString([actor, raw], ["role", "actorRole", "userRole"]),
+    actorRole: firstString([actor, raw], [
+      "role",
+      "actorRole",
+      "actorType",
+      "userRole",
+    ]),
+    affectedUserId: firstString([raw], [
+      "affectedUserId",
+      "targetUserId",
+    ]),
+    affectedUserName: firstString([raw], [
+      "affectedUserDisplayName",
+      "affectedUserName",
+      "targetUserDisplayName",
+      "targetUserName",
+    ]),
+    venueId: firstString([raw], ["venueId"]),
+    venueName: firstString([raw], ["venueNameSnapshot", "venueName"]),
+    bookingId: firstString([raw], ["bookingId"]),
     entityType: firstString([entity, raw], [
       "type",
       "entityType",

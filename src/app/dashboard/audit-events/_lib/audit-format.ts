@@ -41,6 +41,48 @@ export function auditTargetLabel(event: AuditEvent): string {
   return event.entityId ? `${type} ${event.entityId}` : type;
 }
 
+export function auditEventSummary(event: AuditEvent): string {
+  return event.summary?.trim() || `${auditActorLabel(event)} performed ${humanizeAuditValue(event.action).toLowerCase()}`;
+}
+
+export function auditContextLabel(event: AuditEvent): {
+  primary: string;
+  secondary?: string;
+} {
+  if (event.affectedUserName || event.affectedUserId) {
+    return {
+      primary:
+        event.affectedUserName ?? `User ${event.affectedUserId ?? "unknown"}`,
+      secondary: event.affectedUserId
+        ? `Affected user ${event.affectedUserId}`
+        : "Affected user",
+    };
+  }
+
+  if (event.venueName || event.venueId) {
+    return {
+      primary: event.venueName ?? `Venue ${event.venueId ?? "unknown"}`,
+      secondary: event.venueId ? `Venue ${event.venueId}` : "Venue",
+    };
+  }
+
+  if (event.bookingId) {
+    return { primary: `Booking ${event.bookingId}`, secondary: "Booking" };
+  }
+
+  return {
+    primary: auditTargetLabel(event),
+    secondary: event.scope ? humanizeAuditValue(event.scope) : undefined,
+  };
+}
+
+export function auditAffectedUserLabel(event: AuditEvent): string {
+  return (
+    event.affectedUserName ??
+    (event.affectedUserId ? `User ${event.affectedUserId}` : "Not applicable")
+  );
+}
+
 export function auditOutcomeTone(outcome: AuditEventOutcome): {
   dot: string;
   pill: string;

@@ -27,10 +27,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   auditActionTone,
+  auditAffectedUserLabel,
   auditActorLabel,
+  auditEventSummary,
   auditInitials,
   auditOutcomeTone,
-  auditTargetLabel,
   formatAuditJson,
   formatAuditTimestamp,
   humanizeAuditValue,
@@ -123,8 +124,8 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
                 {outcome.label}
               </span>
             </div>
-            <h1 className="truncate text-[26px] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-1)]">
-              {auditTargetLabel(event)}
+            <h1 className="max-w-4xl text-[26px] font-semibold leading-[1.2] tracking-[-0.02em] text-[var(--text-1)]">
+              {auditEventSummary(event)}
             </h1>
             <p className="mt-1.5 font-mono text-[11px] text-[var(--text-4)]">
               Event {event.id}
@@ -174,15 +175,32 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
               <DetailField label="Action">
                 {humanizeAuditValue(event.action)}
               </DetailField>
-              <DetailField label="Entity type">
+              <DetailField label="Category">
+                {humanizeAuditValue(event.category)}
+              </DetailField>
+              <DetailField label="Scope">
+                {humanizeAuditValue(event.scope)}
+              </DetailField>
+              <DetailField label="Resource type">
                 {humanizeAuditValue(event.entityType)}
               </DetailField>
               <DetailField
-                label="Entity ID"
+                label="Resource ID"
                 mono
                 copyValue={event.entityId ?? undefined}
               >
                 {event.entityId ?? "Not recorded"}
+              </DetailField>
+              <DetailField label="Affected user">
+                {auditAffectedUserLabel(event)}
+                {event.affectedUserId ? ` (${event.affectedUserId})` : ""}
+              </DetailField>
+              <DetailField label="Venue">
+                {event.venueName ??
+                  (event.venueId ? `Venue ${event.venueId}` : "Not applicable")}
+              </DetailField>
+              <DetailField label="Booking ID" mono>
+                {event.bookingId ?? "Not applicable"}
               </DetailField>
               <DetailField label="Outcome">{outcome.label}</DetailField>
               <DetailField label="Occurred at" mono>
