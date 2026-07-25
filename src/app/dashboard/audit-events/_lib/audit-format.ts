@@ -1,5 +1,7 @@
 import type { AuditEvent, AuditEventOutcome } from "@/types/api";
 
+const AUDIT_TIME_ZONE = "Asia/Beirut";
+
 export function humanizeAuditValue(value: string | null | undefined): string {
   if (!value) return "Not recorded";
   return value
@@ -14,10 +16,15 @@ export function formatAuditTimestamp(
   includeSeconds = false,
 ): string {
   if (!value) return "Time not recorded";
-  const date = new Date(value);
+  const trimmedValue = value.trim();
+  const hasExplicitTimeZone = /(?:z|[+-]\d{2}:?\d{2})$/i.test(trimmedValue);
+  const date = new Date(
+    hasExplicitTimeZone ? trimmedValue : `${trimmedValue}Z`,
+  );
   if (Number.isNaN(date.getTime())) return value;
 
   return date.toLocaleString("en-US", {
+    timeZone: AUDIT_TIME_ZONE,
     month: "short",
     day: "2-digit",
     year: "numeric",

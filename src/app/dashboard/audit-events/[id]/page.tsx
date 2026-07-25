@@ -136,7 +136,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
             <Clock3 className="h-4 w-4 text-[var(--teal-text)]" />
             <div>
               <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
-                Recorded
+                Recorded (Beirut)
               </p>
               <p className="mt-0.5 font-mono text-[11.5px] tabular-nums text-[var(--text-2)]">
                 {formatAuditTimestamp(event.occurredAt, true)}
@@ -203,7 +203,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
                 {event.bookingId ?? "Not applicable"}
               </DetailField>
               <DetailField label="Outcome">{outcome.label}</DetailField>
-              <DetailField label="Occurred at" mono>
+              <DetailField label="Occurred at (Beirut)" mono>
                 {formatAuditTimestamp(event.occurredAt, true)}
               </DetailField>
             </dl>

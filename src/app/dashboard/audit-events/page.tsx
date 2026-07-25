@@ -527,7 +527,7 @@ function AuditEventsBody({
         <table className="w-full min-w-[880px] border-collapse text-left">
           <thead>
             <tr className="bg-white/[0.012]">
-              {["Time", "What happened", "Performed by", "Context", "Outcome", ""].map(
+              {["Time (Beirut)", "What happened", "Performed by", "Context", "Outcome", ""].map(
                 (heading, index) => (
                   <th
                     key={`${heading}-${index}`}
