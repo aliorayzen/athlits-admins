@@ -205,19 +205,35 @@ export default function AuditEventsPage() {
           </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={handleExport}
-          disabled={isExporting}
-          className="gap-1.5 border border-[rgba(0,212,170,0.22)] bg-[var(--teal)] px-3.5 text-[13px] font-semibold text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[var(--teal)] hover:brightness-110"
-        >
-          {isExporting ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <Download className="h-3.5 w-3.5" />
-          )}
-          {isExporting ? "Preparing CSV" : "Export CSV"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setReloadToken((token) => token + 1)}
+            disabled={isFetching}
+            className="gap-1.5 border-[var(--border)] bg-[var(--bg-1)] px-3.5 text-[13px] font-medium text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
+          >
+            {isFetching ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+            {isFetching ? "Refreshing" : "Refresh"}
+          </Button>
+          <Button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="gap-1.5 border border-[rgba(0,212,170,0.22)] bg-[var(--teal)] px-3.5 text-[13px] font-semibold text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[var(--teal)] hover:brightness-110"
+          >
+            {isExporting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            {isExporting ? "Preparing CSV" : "Export CSV"}
+          </Button>
+        </div>
       </header>
 
       <section aria-label="Audit event filters">
