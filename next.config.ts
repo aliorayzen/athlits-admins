@@ -1,6 +1,14 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+// Deployment branches pin their backend URL so a Vercel project-level value
+// cannot accidentally point this build at another environment. Local dev still
+// honors NEXT_PUBLIC_API_URL from .env.local.
+const apiUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://src-mobile-app.onrender.com"
+    : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
+
 // Static security headers applied to every response. The Content-Security-Policy
 // is deliberately NOT here — it needs a per-request nonce, so it lives in
 // `src/proxy.ts` (middleware). These headers have no per-request part.
@@ -27,6 +35,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_API_URL: apiUrl,
+  },
   turbopack: {
     root: path.resolve(__dirname),
   },
