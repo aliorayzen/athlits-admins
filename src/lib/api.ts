@@ -31,7 +31,7 @@ import type {
   BulkInvoiceResult,
   PageResponse,
   PageQuery,
-  RestorableCustomerDto,
+  RestorableAccountDto,
   ContractResponse,
   CreateContractRequest,
   AuditEvent,
@@ -688,27 +688,24 @@ export async function getCustomers(
   return { ...data, content: (data?.content ?? []).map(normalizeUser) };
 }
 
-export async function getRestorableCustomers(
+export async function getRestorableAccounts(
   params: PageQuery = {},
-): Promise<PageResponse<RestorableCustomerDto>> {
-  const { data } = await apiClient.get<PageResponse<RestorableCustomerDto>>(
-    "/api/admin/v1/users/customers/restorable",
+): Promise<PageResponse<RestorableAccountDto>> {
+  const { data } = await apiClient.get<PageResponse<RestorableAccountDto>>(
+    "/api/admin/v1/users/restorable",
     { params },
   );
   return {
     ...data,
-    content: (data?.content ?? []).map((customer) => ({
-      ...customer,
-      id: ensureStringId(customer.id),
+    content: (data?.content ?? []).map((account) => ({
+      ...account,
+      id: ensureStringId(account.id),
     })),
   };
 }
 
-export async function restoreCustomer(customerId: string): Promise<UserDto> {
-  const { data } = await apiClient.post<UserDto>(
-    `/api/admin/v1/users/customers/${customerId}/restore`,
-  );
-  return normalizeUser(data);
+export async function restoreAccount(userId: string): Promise<void> {
+  await apiClient.post<void>(`/api/admin/v1/users/${userId}/restore`);
 }
 
 export async function activateVenueManager(

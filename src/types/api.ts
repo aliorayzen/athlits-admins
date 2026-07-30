@@ -66,12 +66,12 @@ export interface UserDto {
   sportsInterests?: string[];
 }
 
-/** Customer account that is still inside the backend's restoration window. */
-export interface RestorableCustomerDto {
+/** Account that is still inside the backend's one-month restoration window. */
+export interface RestorableAccountDto {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   phoneNumber?: string | null;
   profilePictureUrl?: string | null;
   deletionRequestedAt: string;

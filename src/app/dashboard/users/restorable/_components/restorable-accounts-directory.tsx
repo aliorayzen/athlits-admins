@@ -7,6 +7,7 @@ import {
   CalendarClock,
   ChevronLeft,
   ChevronRight,
+  CircleHelp,
   Loader2,
   Phone,
   RefreshCw,
@@ -32,11 +33,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   getApiErrorMessage,
   getApiErrorStatus,
-  getRestorableCustomers,
-  restoreCustomer,
+  getRestorableAccounts,
+  restoreAccount,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { PageResponse, RestorableCustomerDto } from "@/types/api";
+import type { PageResponse, RestorableAccountDto } from "@/types/api";
 
 const PAGE_SIZE = 20;
 const SORTS = [
@@ -74,9 +75,9 @@ function timeRemaining(value: string): string {
   return `${days} ${days === 1 ? "day" : "days"} left`;
 }
 
-function initials(customer: RestorableCustomerDto): string {
+function initials(account: RestorableAccountDto): string {
   return (
-    `${customer.firstName?.[0] ?? ""}${customer.lastName?.[0] ?? ""}`.toUpperCase() ||
+    `${account.firstName?.[0] ?? ""}${account.lastName?.[0] ?? ""}`.toUpperCase() ||
     "U"
   );
 }
@@ -84,7 +85,7 @@ function initials(customer: RestorableCustomerDto): string {
 export function RestorableAccountsDirectory() {
   const [phase, setPhase] = useState<Phase>("loading");
   const [data, setData] =
-    useState<PageResponse<RestorableCustomerDto> | null>(null);
+    useState<PageResponse<RestorableAccountDto> | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("deadline");
   const [page, setPage] = useState(0);
@@ -105,7 +106,7 @@ export function RestorableAccountsDirectory() {
       setIsFetching(true);
       if (!hasLoaded.current) setPhase("loading");
       try {
-        const result = await getRestorableCustomers({
+        const result = await getRestorableAccounts({
           search: debouncedSearch || undefined,
           page,
           size: PAGE_SIZE,
@@ -143,12 +144,12 @@ export function RestorableAccountsDirectory() {
     setPage(0);
   }
 
-  function removeRestored(customerId: string) {
+  function removeRestored(accountId: string) {
     const moveToPreviousPage = page > 0 && data?.content.length === 1;
     setData((current) => {
       if (!current) return current;
       const content = current.content.filter(
-        (customer) => customer.id !== customerId,
+        (account) => account.id !== accountId,
       );
       const totalElements = Math.max(0, current.totalElements - 1);
       return {
@@ -178,10 +179,25 @@ export function RestorableAccountsDirectory() {
           )}
         </div>
         <p className="text-[13px] text-[var(--text-3)]">
-          Customer accounts that can still be reactivated before permanent
-          deletion
+          Restore deleted accounts before their permanent-deletion deadline
         </p>
       </header>
+
+      <div
+        role="note"
+        className="flex items-start gap-3 rounded-lg border border-[rgba(99,102,241,0.22)] bg-[rgba(99,102,241,0.07)] px-4 py-3"
+      >
+        <CircleHelp className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-blue)]" />
+        <div className="space-y-0.5">
+          <p className="text-[12.5px] font-medium text-[var(--text-2)]">
+            One-month restoration window
+          </p>
+          <p className="max-w-[72ch] text-[12px] leading-5 text-[var(--text-3)]">
+            Accounts remain recoverable for one month after deletion is
+            requested. After the deadline shown below, deletion is permanent.
+          </p>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="inline-flex items-center gap-2">
@@ -257,7 +273,7 @@ function DirectoryBody({
   onRestored,
   onRefresh,
 }: {
-  data: PageResponse<RestorableCustomerDto> | null;
+  data: PageResponse<RestorableAccountDto> | null;
   search: string;
   isFetching: boolean;
   onClearSearch: () => void;
@@ -283,7 +299,7 @@ function DirectoryBody({
         <p className="mt-1 max-w-sm text-sm text-[var(--text-3)]">
           {filtered
             ? "Try a different name, email address, or phone number."
-            : "Customers inside the restoration window will appear here."}
+            : "Accounts inside the one-month restoration window will appear here."}
         </p>
         {filtered && (
           <Button
@@ -310,7 +326,7 @@ function DirectoryBody({
         <table className="w-full min-w-[900px] border-separate border-spacing-0">
           <thead className="bg-white/[0.012]">
             <tr>
-              <Th className="pl-4">Customer</Th>
+              <Th className="pl-4">Account</Th>
               <Th>Phone</Th>
               <Th>Deletion requested</Th>
               <Th>Permanent deletion</Th>
@@ -318,10 +334,10 @@ function DirectoryBody({
             </tr>
           </thead>
           <tbody>
-            {rows.map((customer) => (
-              <CustomerRow
-                key={customer.id}
-                customer={customer}
+            {rows.map((account) => (
+              <AccountRow
+                key={account.id}
+                account={account}
                 onRestored={onRestored}
                 onRefresh={onRefresh}
               />
@@ -338,28 +354,28 @@ function DirectoryBody({
   );
 }
 
-function CustomerRow({
-  customer,
+function AccountRow({
+  account,
   onRestored,
   onRefresh,
 }: {
-  customer: RestorableCustomerDto;
+  account: RestorableAccountDto;
   onRestored: (id: string) => void;
   onRefresh: () => void;
 }) {
   const fullName =
-    `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim() ||
-    "Unnamed customer";
+    `${account.firstName ?? ""} ${account.lastName ?? ""}`.trim() ||
+    "Unnamed account";
   return (
     <tr className="group transition-colors hover:bg-white/[0.015]">
       <td className="border-t border-white/[0.035] px-4 py-3">
         <div className="flex min-w-[240px] items-center gap-2.5">
           <Avatar className="h-9 w-9 border border-[rgba(0,212,170,0.16)]">
-            {customer.profilePictureUrl && (
-              <AvatarImage src={customer.profilePictureUrl} alt="" />
+            {account.profilePictureUrl && (
+              <AvatarImage src={account.profilePictureUrl} alt="" />
             )}
             <AvatarFallback className="bg-[var(--teal-subtle)] text-[11px] font-semibold text-[var(--teal-text)]">
-              {initials(customer)}
+              {initials(account)}
             </AvatarFallback>
           </Avatar>
           <div className="flex min-w-0 flex-col gap-px">
@@ -367,38 +383,38 @@ function CustomerRow({
               {fullName}
             </span>
             <span className="truncate font-mono text-[11px] text-[var(--text-4)]">
-              {customer.email}
+              {account.email}
             </span>
           </div>
         </div>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3">
-        {customer.phoneNumber ? (
+        {account.phoneNumber ? (
           <span className="inline-flex items-center gap-1.5 font-mono text-[12px] text-[var(--text-2)]">
             <Phone className="h-[11px] w-[11px] text-[var(--text-4)]" />
-            {customer.phoneNumber}
+            {account.phoneNumber}
           </span>
         ) : (
           <span className="text-[12px] text-[var(--text-4)]">Not provided</span>
         )}
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3">
-        <DateCell icon={Trash2} value={customer.deletionRequestedAt} />
+        <DateCell icon={Trash2} value={account.deletionRequestedAt} />
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3">
         <div className="flex flex-col gap-px whitespace-nowrap">
           <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--semantic-amber)]">
             <CalendarClock className="h-3 w-3" />
-            {timeRemaining(customer.permanentDeletionAt)}
+            {timeRemaining(account.permanentDeletionAt)}
           </span>
           <span className="font-mono text-[10.5px] text-[var(--text-4)]">
-            {formatDateTime(customer.permanentDeletionAt)}
+            {formatDateTime(account.permanentDeletionAt)}
           </span>
         </div>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 text-right">
         <RestoreDialog
-          customer={customer}
+          account={account}
           onRestored={onRestored}
           onRefresh={onRefresh}
         />
@@ -423,34 +439,38 @@ function DateCell({
 }
 
 function RestoreDialog({
-  customer,
+  account,
   onRestored,
   onRefresh,
 }: {
-  customer: RestorableCustomerDto;
+  account: RestorableAccountDto;
   onRestored: (id: string) => void;
   onRefresh: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const name = `${customer.firstName} ${customer.lastName}`.trim();
+  const name =
+    `${account.firstName ?? ""} ${account.lastName ?? ""}`.trim();
 
   async function handleRestore() {
     setIsRestoring(true);
     try {
-      await restoreCustomer(customer.id);
-      onRestored(customer.id);
+      await restoreAccount(account.id);
+      onRestored(account.id);
       setOpen(false);
-      toast.success(`${name || customer.email} restored`);
+      toast.success("Account restored", {
+        description: `${name || account.email} can sign in again.`,
+      });
     } catch (error: unknown) {
-      const expired = getApiErrorStatus(error) === 409;
+      const status = getApiErrorStatus(error);
+      const stale = status === 404 || status === 409 || status === 410;
       toast.error(
         getApiErrorMessage(
           error,
           "Couldn't restore this account. Please try again.",
         ),
       );
-      if (expired) {
+      if (stale) {
         setOpen(false);
         onRefresh();
       }
@@ -479,11 +499,11 @@ function RestoreDialog({
       <DialogContent className="border-[var(--border)] bg-[var(--bg-1)] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-[var(--text-1)]">
-            Restore this customer account?
+            Restore this account?
           </DialogTitle>
           <DialogDescription className="text-[var(--text-3)]">
             <span className="font-medium text-[var(--text-2)]">
-              {name || customer.email}
+              {name || account.email}
             </span>{" "}
             will regain access immediately. Their pending permanent deletion
             will be cancelled.
@@ -491,10 +511,10 @@ function RestoreDialog({
         </DialogHeader>
         <div className="rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-3 py-2.5">
           <p className="font-mono text-[11px] text-[var(--text-3)]">
-            {customer.email}
+            {account.email}
           </p>
           <p className="mt-1 text-[11px] text-[var(--semantic-amber)]">
-            Restore before {formatDateTime(customer.permanentDeletionAt)}
+            Restore before {formatDateTime(account.permanentDeletionAt)}
           </p>
         </div>
         <DialogFooter className="border-[var(--border)] bg-white/[0.008]">
@@ -550,7 +570,7 @@ function Pagination({
   isFetching,
   onPageChange,
 }: {
-  data: PageResponse<RestorableCustomerDto> | null;
+  data: PageResponse<RestorableAccountDto> | null;
   isFetching: boolean;
   onPageChange: (page: number) => void;
 }) {
