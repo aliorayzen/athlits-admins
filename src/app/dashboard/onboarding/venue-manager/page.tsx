@@ -244,6 +244,15 @@ export default function OnboardingVenueManagerPage() {
   const [contractDraft, setContractDraft] = useState<ContractDraft>(
     defaultContractDraft(DEFAULT_CURRENCY),
   );
+  const pageTopRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    pageTopRef.current?.scrollIntoView({
+      behavior: "auto",
+      block: "start",
+      inline: "nearest",
+    });
+  }, [step]);
 
   useEffect(() => {
     setManagerDraft((current) => ({
@@ -546,7 +555,7 @@ export default function OnboardingVenueManagerPage() {
     (step === "review" && (!createdVenue || !createdContract));
 
   return (
-    <div className="space-y-5">
+    <div ref={pageTopRef} className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link
