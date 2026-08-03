@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PhoneNumberField } from "@/components/phone-number-field";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  availabilityDaysFromUtc,
+  availabilityDaysForEdit,
   availabilityDaysToUtc,
   availabilityDaysWithErrors,
   VenueAvailabilityEditor,
@@ -125,9 +125,10 @@ export default function EditVenuePage() {
           allowRecurringBookings: venue.allowRecurringBookings,
           maxAdvanceBookingDays: venue.maxAdvanceBookingDays,
           facilities: venue.facilities ?? [],
-          // Backend stores availability in UTC; the form edits local time.
-          availabilityDays: availabilityDaysFromUtc(
-            venue.availability?.days ?? [],
+          // Backend stores availability in UTC; the form edits normalized
+          // local-time rows and supplies valid defaults for legacy venues.
+          availabilityDays: availabilityDaysForEdit(
+            venue.availability?.days,
           ),
         });
         setLoadState("ready");

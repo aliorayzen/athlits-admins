@@ -32,10 +32,47 @@ export function defaultAvailabilityDays(): VenueAvailabilityDay[] {
   }));
 }
 
+// Availability data has existed across multiple backend versions. Normalize it
+// before it reaches the editor so legacy aliases, numeric strings, duplicate
+// weekdays, or malformed hidden rows cannot block the entire venue form.
+export function normalizeAvailabilityDays(
+  value: unknown,
+): VenueAvailabilityDay[] {
+  if (!Array.isArray(value)) return [];
+
+  const byWeekday = new Map<Weekday, VenueAvailabilityDay>();
+  for (const candidate of value) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const raw = candidate as Record<string, unknown>;
+    const weekdayValue = raw.weekday ?? raw.dayOfWeek;
+    if (typeof weekdayValue !== "string") continue;
+
+    const weekday = weekdayValue.trim().toUpperCase() as Weekday;
+    if (!WEEKDAY_ORDER.includes(weekday)) continue;
+
+    const openMinutes = Number(raw.openMinutes);
+    const closeMinutes = Number(raw.closeMinutes);
+    if (
+      !Number.isInteger(openMinutes) ||
+      !Number.isInteger(closeMinutes) ||
+      openMinutes < 0 ||
+      openMinutes >= 24 * 60 ||
+      closeMinutes < 0 ||
+      closeMinutes >= 24 * 60
+    ) {
+      continue;
+    }
+
+    byWeekday.set(weekday, { weekday, openMinutes, closeMinutes });
+  }
+
+  return sortDays([...byWeekday.values()]);
+}
+
 export function availabilityDaysWithErrors(
   days: VenueAvailabilityDay[],
 ): Weekday[] {
-  return days
+  return normalizeAvailabilityDays(days)
     .filter((day) => day.closeMinutes <= day.openMinutes)
     .map((day) => day.weekday);
 }
@@ -57,7 +94,7 @@ function shiftAvailabilityDays(
   days: VenueAvailabilityDay[],
   offsetMinutes: number,
 ): VenueAvailabilityDay[] {
-  return days.map((day) => ({
+  return normalizeAvailabilityDays(days).map((day) => ({
     ...day,
     openMinutes: wrapMinutes(day.openMinutes + offsetMinutes),
     closeMinutes: wrapMinutes(day.closeMinutes + offsetMinutes),
@@ -74,6 +111,16 @@ export function availabilityDaysFromUtc(
   days: VenueAvailabilityDay[],
 ): VenueAvailabilityDay[] {
   return shiftAvailabilityDays(days, -new Date().getTimezoneOffset());
+}
+
+// Existing venues created before schedules were required may return no usable
+// availability. Use the same valid working defaults as venue creation instead
+// of presenting seven closed days that cannot be saved reliably.
+export function availabilityDaysForEdit(
+  days: VenueAvailabilityDay[] | null | undefined,
+): VenueAvailabilityDay[] {
+  const localDays = availabilityDaysFromUtc(days ?? []);
+  return localDays.length > 0 ? localDays : defaultAvailabilityDays();
 }
 
 // Selectable times are offered on a 30-minute grid. Operators pick from a
@@ -288,8 +335,7 @@ export function VenueAvailabilityEditor({
       </div>
       {days.length === 0 && (
         <p className="text-xs text-[var(--text-4)]">
-          All days are closed. The venue will be created without operating
-          hours.
+          No operating hours are set. Select a weekday to open it.
         </p>
       )}
     </div>
