@@ -512,6 +512,7 @@ export async function createVenue(
   body.append("longitude", String(payload.longitude));
   body.append("currencyCode", payload.currencyCode);
   body.append("paymentMode", payload.paymentMode);
+  body.append("autoConfirmation", String(payload.autoConfirmation));
   body.append("courtLimit", String(payload.courtLimit));
   body.append(
     "maxAdvanceBookingDays",

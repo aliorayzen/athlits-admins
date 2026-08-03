@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
 import { PhoneNumberField } from "@/components/phone-number-field";
 import { VenueAvailabilityEditor } from "@/components/venue-availability-editor";
+import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { VenueLocationFields } from "@/components/venue-location-fields";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
@@ -126,6 +127,7 @@ function emptyVenue(): CreateVenueRequest {
     contactEmail: "",
     currencyCode: DEFAULT_CURRENCY,
     paymentMode: "BOTH",
+    autoConfirmation: false,
     allowRecurringBookings: false,
     courtLimit: undefined,
     maxAdvanceBookingDays: 30,
@@ -648,6 +650,16 @@ export default function CreateVenueManagerPage() {
                     }
                   />
                 </div>
+              </div>
+
+              <div className="mt-4">
+                <VenueBookingPreferencesField
+                  autoConfirmation={venue.autoConfirmation}
+                  onAutoConfirmationChange={(checked) =>
+                    updateVenue("autoConfirmation", checked)
+                  }
+                  disabled={isSubmitting}
+                />
               </div>
 
               <div className="mt-4">

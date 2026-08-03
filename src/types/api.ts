@@ -214,6 +214,7 @@ export interface CreateVenueRequest {
   contactEmail?: string;
   currencyCode: string;
   paymentMode: PaymentMode;
+  autoConfirmation: boolean;
   allowRecurringBookings?: boolean;
   // Max number of courts the venue may host. Required by the backend.
   courtLimit?: number;
