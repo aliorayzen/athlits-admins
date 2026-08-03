@@ -45,6 +45,7 @@ import type {
   PageResponse,
 } from "@/types/api";
 import { downloadCSV, downloadPDF } from "@/lib/export";
+import { invoiceAmountDue } from "@/lib/invoice-view";
 import { cn } from "@/lib/utils";
 import { InvoicePdfDialog } from "./_components/invoice-pdf-dialog";
 import { SuspendVmDialog } from "./_components/invoice-suspend-dialog";
@@ -342,7 +343,7 @@ function InvoicesContent() {
         const b =
           days <= 30 ? "b1" : days <= 60 ? "b2" : days <= 90 ? "b3" : "b4";
         buckets[b].count += 1;
-        buckets[b].amount += inv.amount;
+        buckets[b].amount += invoiceAmountDue(inv);
       });
     const maxAmount = Math.max(
       buckets.b1.amount,
@@ -397,7 +398,7 @@ function InvoicesContent() {
     filtered.some((i) => selectedIds.has(i.id)) && !allVisibleSelected;
 
   const selectedTotal = useMemo(
-    () => selectedInvoices.reduce((sum, i) => sum + i.amount, 0),
+    () => selectedInvoices.reduce((sum, i) => sum + invoiceAmountDue(i), 0),
     [selectedInvoices],
   );
 
@@ -528,7 +529,7 @@ function InvoicesContent() {
       inv.id.slice(0, 8),
       inv.venueName ?? inv.venueId,
       formatPeriod(inv.periodStart, inv.periodEnd),
-      inv.amount,
+      invoiceAmountDue(inv),
       inv.currencyCode,
       inv.status,
       formatDate(inv.dueDate),
@@ -558,13 +559,13 @@ function InvoicesContent() {
         `#${inv.id.slice(0, 8)}`,
         inv.venueName ?? inv.venueId,
         formatPeriod(inv.periodStart, inv.periodEnd),
-        formatCurrency(inv.amount, inv.currencyCode),
+        formatCurrency(invoiceAmountDue(inv), inv.currencyCode),
         inv.status,
         formatDate(inv.dueDate),
       ]);
       const totalValue = list
         .filter((i) => i.status !== "VOID")
-        .reduce((sum, i) => sum + i.amount, 0);
+        .reduce((sum, i) => sum + invoiceAmountDue(i), 0);
       downloadPDF(
         "Athlits Invoices Report",
         `invoices-${suffix}`,
@@ -1598,7 +1599,7 @@ function AmountCell({ invoice }: { invoice: InvoiceResponse }) {
       <span className="mr-0.5 font-sans text-[10px] font-medium text-[var(--text-4)]">
         {invoice.currencyCode}
       </span>
-      {formatCurrencyNoSymbol(invoice.amount)}
+      {formatCurrencyNoSymbol(invoiceAmountDue(invoice))}
     </span>
   );
 }
@@ -1814,7 +1815,7 @@ function MarkPaidDialog({
             </span>{" "}
             —{" "}
             <span className="font-mono text-[var(--text-2)]">
-              {formatCurrency(invoice.amount, invoice.currencyCode)}
+              {formatCurrency(invoiceAmountDue(invoice), invoice.currencyCode)}
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -1891,7 +1892,7 @@ function VoidDialog({
             </span>{" "}
             for{" "}
             <span className="font-mono text-[var(--text-2)]">
-              {formatCurrency(invoice.amount, invoice.currencyCode)}
+              {formatCurrency(invoiceAmountDue(invoice), invoice.currencyCode)}
             </span>{" "}
             will be permanently voided.
           </AlertDialogDescription>

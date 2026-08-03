@@ -194,6 +194,9 @@ export function ContractTermsEditor({
               )}
             />
           </div>
+          <p className="text-[12px] leading-5 text-[var(--text-4)]">
+            Any calendar date is valid. The first billing month is prorated.
+          </p>
         </div>
 
         <div className="space-y-2 sm:col-span-2">

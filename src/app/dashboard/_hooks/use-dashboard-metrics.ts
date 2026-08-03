@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import type { InvoiceResponse, VenueSummaryResponse } from "@/types/api";
+import { invoiceAmountDue } from "@/lib/invoice-view";
 import type { RevenueByVenue } from "../_components/top-venues";
 
 export interface DashboardMetrics {
@@ -54,9 +55,18 @@ export function useDashboardMetrics(
       return d !== null && d >= lastMonthStart && d <= lastMonthEnd;
     });
 
-    const thisMonthRevenue = thisMonthPaid.reduce((s, i) => s + i.amount, 0);
-    const lastMonthRevenue = lastMonthPaid.reduce((s, i) => s + i.amount, 0);
-    const totalRevenue = paid.reduce((s, i) => s + i.amount, 0);
+    const thisMonthRevenue = thisMonthPaid.reduce(
+      (sum, invoice) => sum + invoiceAmountDue(invoice),
+      0,
+    );
+    const lastMonthRevenue = lastMonthPaid.reduce(
+      (sum, invoice) => sum + invoiceAmountDue(invoice),
+      0,
+    );
+    const totalRevenue = paid.reduce(
+      (sum, invoice) => sum + invoiceAmountDue(invoice),
+      0,
+    );
 
     let momDelta: number | null = null;
     if (lastMonthRevenue > 0) {
@@ -93,7 +103,10 @@ export function useDashboardMetrics(
       .sort(
         (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
       );
-    const upcomingSum = upcoming.reduce((s, i) => s + i.amount, 0);
+    const upcomingSum = upcoming.reduce(
+      (sum, invoice) => sum + invoiceAmountDue(invoice),
+      0,
+    );
 
     return {
       totalRevenue,
@@ -139,13 +152,13 @@ export function useRevenueByVenue(
         const name =
           i.venueName ?? venueMap.get(i.venueId)?.name ?? "Unknown venue";
         if (existing) {
-          existing.revenue += i.amount;
+          existing.revenue += invoiceAmountDue(i);
           existing.count += 1;
         } else {
           byVenue.set(i.venueId, {
             venueId: i.venueId,
             venueName: name,
-            revenue: i.amount,
+            revenue: invoiceAmountDue(i),
             count: 1,
           });
         }

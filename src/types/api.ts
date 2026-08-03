@@ -319,6 +319,21 @@ export type InvoiceStatus = "GENERATED" | "PAID" | "OVERDUE" | "VOID";
 // COMMISSION | FIXED_MONTHLY — see `FeeModel` below.)
 export type InvoiceFeeModel = "FIXED_MONTHLY" | "PER_RESERVATION";
 
+export interface InvoiceLineResponse {
+  contractId: string;
+  servicePeriodStart: string;
+  servicePeriodEnd: string;
+  feeModel: InvoiceFeeModel;
+  fixedMonthlyFee?: number | null;
+  perReservationFee?: number | null;
+  coveredDays: number;
+  daysInMonth: number;
+  totalBookings: number;
+  totalRevenue: number;
+  amountDue: number;
+  currencyCode: string;
+}
+
 export interface InvoiceResponse {
   id: string;
   venueId: string;
@@ -332,7 +347,7 @@ export interface InvoiceResponse {
   billingPeriodEnd?: string;
   totalBookings?: number;
   totalRevenue?: number;
-  feeModel?: InvoiceFeeModel;
+  feeModel?: InvoiceFeeModel | null;
   fixedMonthlyFee?: number | null;
   perReservationFee?: number | null;
   // `amountDue` is the canonical amount on the wire. `amount` is kept as a
@@ -347,6 +362,9 @@ export interface InvoiceResponse {
   paidAt?: string | null;
   paymentReference?: string | null;
   createdAt: string;
+  // Optional during the backend rollout. The API normalization boundary
+  // defaults an absent value to [] for consumers.
+  lines?: InvoiceLineResponse[];
 }
 
 export interface MarkPaidRequest {

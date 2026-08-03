@@ -242,10 +242,16 @@ function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
     billingPeriodStart: billingPeriodStart ?? periodStart,
     billingPeriodEnd: billingPeriodEnd ?? periodEnd,
     amountDue,
-    amount: i.amount ?? amountDue,
+    // `amount` is a compatibility alias only. Keep every existing consumer on
+    // the canonical top-level amountDue, even if both fields are present.
+    amount: amountDue,
     periodStart,
     periodEnd,
     createdAt: i.createdAt ?? periodStart,
+    lines: (i.lines ?? []).map((line) => ({
+      ...line,
+      contractId: ensureStringId(line.contractId),
+    })),
   };
 }
 

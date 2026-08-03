@@ -25,6 +25,7 @@ import {
 import { getDuePayments } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { InvoiceResponse } from "@/types/api";
+import { invoiceAmountDue } from "@/lib/invoice-view";
 
 const READ_NOTIFICATION_IDS_KEY = "arena-admin:read-notification-ids";
 
@@ -313,7 +314,7 @@ function toOverdueNotification(invoice: InvoiceResponse): AppNotification {
     title: venueName
       ? `Payment overdue: ${venueName}`
       : `Payment overdue: invoice ${invoice.id}`,
-    description: `${formatMoney(invoice.amount, invoice.currencyCode)} due ${formatShortDate(
+    description: `${formatMoney(invoiceAmountDue(invoice), invoice.currencyCode)} due ${formatShortDate(
       invoice.dueDate,
     )}`,
     createdAt: invoice.dueDate,

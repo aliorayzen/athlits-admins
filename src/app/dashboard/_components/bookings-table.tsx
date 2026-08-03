@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Eye, MoreHorizontal } from "lucide-react";
 import type { InvoiceResponse, VenueSummaryResponse } from "@/types/api";
+import { invoiceAmountDue } from "@/lib/invoice-view";
 import {
   formatNumber,
   formatShortDate,
@@ -30,7 +31,7 @@ export function BookingsTable({
   const emptyCopy =
     mode === "upcoming"
       ? "No invoices due. Everything is paid or upcoming billing hasn't started."
-      : "No invoices yet. They appear here after venues generate bookings.";
+      : "No invoices yet. They appear after each billing month closes.";
 
   return (
     <div className="dash-fade-up stg-7 overflow-hidden rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] py-[22px] pb-3">
@@ -95,7 +96,7 @@ export function BookingsTable({
                     {formatSlot(inv.dueDate)}
                   </td>
                   <td className="px-6 py-3.5 font-mono font-semibold tabular-nums text-[var(--text-1)]">
-                    USD {formatNumber(inv.amount)}
+                    USD {formatNumber(invoiceAmountDue(inv))}
                   </td>
                   <td className="px-6 py-3.5">
                     <span
