@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { Download, FileText, Printer, X } from "lucide-react";
 
 import { downloadInvoiceTemplate } from "@/lib/export";
+import { invoiceAmountDue } from "@/lib/invoice-view";
 import type { InvoiceResponse, InvoiceStatus } from "@/types/api";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -124,7 +125,10 @@ export function InvoicePdfDialog({
                     {venueName}
                     {" · "}
                     <span className="font-mono tabular-nums">
-                      {formatAmount(invoice.amount, invoice.currencyCode)}
+                      {formatAmount(
+                        invoiceAmountDue(invoice),
+                        invoice.currencyCode,
+                      )}
                     </span>
                   </div>
                 </div>

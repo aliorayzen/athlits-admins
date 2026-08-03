@@ -5,7 +5,7 @@
 
 import type { InvoiceResponse } from "@/types/api";
 import { ATHLITS_INVOICE_LOGO } from "@/app/dashboard/invoices/_components/invoice-logo";
-import { deriveInvoiceView } from "./invoice-view";
+import { deriveInvoiceView, invoiceAmountDue } from "./invoice-view";
 
 function escapeCSV(value: string | number | undefined | null): string {
   const str = String(value ?? "");
@@ -325,8 +325,25 @@ interface InvoiceLineItem {
 // always trusts `amountDue`/`amount` (the canonical wire value).
 function buildLineItems(inv: InvoiceResponse): InvoiceLineItem[] {
   const currency = inv.currencyCode;
-  const total = inv.amountDue ?? inv.amount;
+  const total = invoiceAmountDue(inv);
   const bookings = inv.totalBookings ?? 0;
+
+  if (inv.lines && inv.lines.length > 0) {
+    return inv.lines.map((line) => {
+      const lineCurrency = line.currencyCode || currency;
+      const isFixed = line.feeModel === "FIXED_MONTHLY";
+      const rate = isFixed ? line.fixedMonthlyFee : line.perReservationFee;
+      const basis = isFixed
+        ? `${line.coveredDays} of ${line.daysInMonth} days`
+        : `${line.totalBookings} ${line.totalBookings === 1 ? "booking" : "bookings"}`;
+
+      return {
+        description: isFixed ? "Fixed monthly platform fee" : "Per-reservation fee",
+        detail: `Contract #${line.contractId} · ${fmtDate(line.servicePeriodStart)} to ${fmtDate(line.servicePeriodEnd)} · ${basis}${rate == null ? "" : ` at ${fmtMoney(rate, lineCurrency)}`}`,
+        amount: line.amountDue,
+      };
+    });
+  }
 
   if (inv.feeModel === "PER_RESERVATION") {
     const unit = inv.perReservationFee ?? null;
@@ -396,7 +413,7 @@ export function downloadInvoiceDocument(inv: InvoiceResponse): void {
   const shortId = inv.id.slice(0, 8).toUpperCase();
   const venueName = inv.venueName ?? inv.venueId;
   const currency = inv.currencyCode;
-  const total = inv.amountDue ?? inv.amount;
+  const total = invoiceAmountDue(inv);
   const items = buildLineItems(inv);
 
   const billedToHTML = `
@@ -541,6 +558,17 @@ export function downloadInvoiceDocument(inv: InvoiceResponse): void {
  */
 export function downloadInvoiceTemplate(invoice: InvoiceResponse): void {
   const v = deriveInvoiceView(invoice);
+  const chargeRows = v.charges
+    .map(
+      (charge) => `
+          <tr>
+            <td><div class="item">${escapeHTML(charge.description)}</div><div class="note-text">${escapeHTML(charge.note)}</div></td>
+            <td class="num">${escapeHTML(charge.quantity)}</td>
+            <td class="num">${escapeHTML(charge.rate)}</td>
+            <td class="num">${escapeHTML(charge.amount)}</td>
+          </tr>`,
+    )
+    .join("");
 
   const html = `<!doctype html>
 <html lang="en">
@@ -664,18 +692,7 @@ export function downloadInvoiceTemplate(invoice: InvoiceResponse): void {
           <tr><th>Charge</th><th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th></tr>
         </thead>
         <tbody>
-          <tr>
-            <td><div class="item">Reservation billing fee</div><div class="note-text">${escapeHTML(v.reservationNote)}</div></td>
-            <td class="num">${escapeHTML(v.reservationQty)}</td>
-            <td class="num">${escapeHTML(v.reservationRate)}</td>
-            <td class="num">${escapeHTML(v.reservationAmount)}</td>
-          </tr>
-          <tr>
-            <td><div class="item">Fixed monthly fee</div><div class="note-text">${escapeHTML(v.fixedNote)}</div></td>
-            <td class="num">-</td>
-            <td class="num">-</td>
-            <td class="num">${escapeHTML(v.fixedAmount)}</td>
-          </tr>
+          ${chargeRows}
         </tbody>
       </table>
 
@@ -686,9 +703,7 @@ export function downloadInvoiceTemplate(invoice: InvoiceResponse): void {
           Payment reference: ${escapeHTML(v.paymentReference)}
         </div>
         <div class="totals" aria-label="Invoice totals">
-          <div class="total-row"><span>Total revenue</span><strong>${escapeHTML(v.totalRevenue)}</strong></div>
-          <div class="total-row"><span>Fixed monthly fee</span><strong>${escapeHTML(v.totalsFixed)}</strong></div>
-          <div class="total-row"><span>Per reservation fee</span><strong>${escapeHTML(v.totalsPerReservation)}</strong></div>
+          <div class="total-row"><span>Line subtotal</span><strong>${escapeHTML(v.chargesSubtotal)}</strong></div>
           <div class="total-row final"><span>Amount due</span><strong>${escapeHTML(v.amountDue)}</strong></div>
         </div>
       </section>

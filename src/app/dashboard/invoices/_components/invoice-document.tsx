@@ -1,5 +1,5 @@
 import type { InvoiceResponse } from "@/types/api";
-import { deriveInvoiceView, INVOICE_DASH } from "@/lib/invoice-view";
+import { deriveInvoiceView } from "@/lib/invoice-view";
 import { ATHLITS_INVOICE_LOGO } from "./invoice-logo";
 
 /**
@@ -75,24 +75,19 @@ export function InvoiceDocument({ invoice }: InvoiceDocumentProps) {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <div className="invoice-doc__item">Reservation billing fee</div>
-                <div className="invoice-doc__note">{v.reservationNote}</div>
-              </td>
-              <td className="invoice-doc__num">{v.reservationQty}</td>
-              <td className="invoice-doc__num">{v.reservationRate}</td>
-              <td className="invoice-doc__num">{v.reservationAmount}</td>
-            </tr>
-            <tr>
-              <td>
-                <div className="invoice-doc__item">Fixed monthly fee</div>
-                <div className="invoice-doc__note">{v.fixedNote}</div>
-              </td>
-              <td className="invoice-doc__num">{INVOICE_DASH}</td>
-              <td className="invoice-doc__num">{INVOICE_DASH}</td>
-              <td className="invoice-doc__num">{v.fixedAmount}</td>
-            </tr>
+            {v.charges.map((charge) => (
+              <tr key={charge.key}>
+                <td>
+                  <div className="invoice-doc__item">
+                    {charge.description}
+                  </div>
+                  <div className="invoice-doc__note">{charge.note}</div>
+                </td>
+                <td className="invoice-doc__num">{charge.quantity}</td>
+                <td className="invoice-doc__num">{charge.rate}</td>
+                <td className="invoice-doc__num">{charge.amount}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
@@ -105,12 +100,7 @@ export function InvoiceDocument({ invoice }: InvoiceDocumentProps) {
           </div>
 
           <div className="invoice-doc__totals" aria-label="Invoice totals">
-            <TotalRow label="Total revenue" value={v.totalRevenue} />
-            <TotalRow label="Fixed monthly fee" value={v.totalsFixed} />
-            <TotalRow
-              label="Per reservation fee"
-              value={v.totalsPerReservation}
-            />
+            <TotalRow label="Line subtotal" value={v.chargesSubtotal} />
             <TotalRow final label="Amount due" value={v.amountDue} />
           </div>
         </section>
