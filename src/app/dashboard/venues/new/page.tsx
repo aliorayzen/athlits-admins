@@ -28,12 +28,10 @@ import {
 import { VenueLocationFields } from "@/components/venue-location-fields";
 import { VenueCoverImageField } from "@/components/venue-cover-image-field";
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
+import { WhishPaymentQrField } from "@/components/whish-payment-qr-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
-import {
-  getOptionalHttpUrlError,
-  MAX_HTTP_URL_LENGTH,
-} from "@/lib/http-url";
+import { getOptionalHttpUrlError } from "@/lib/http-url";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -339,9 +337,20 @@ export default function NewVenuePage() {
                 id="paymentMode"
                 required
                 value={form.paymentMode}
-                onChange={(e) =>
-                  updateField("paymentMode", e.target.value as PaymentMode)
-                }
+                onChange={(e) => {
+                  const paymentMode = e.target.value as PaymentMode;
+                  setForm((previous) => ({
+                    ...previous,
+                    paymentMode,
+                    whishPaymentLink:
+                      paymentMode === "CASH"
+                        ? ""
+                        : previous.whishPaymentLink,
+                  }));
+                  if (paymentMode === "CASH") {
+                    setWhishPaymentLinkError(null);
+                  }
+                }}
                 className={`h-9 w-full rounded-md border px-3 text-sm outline-none transition-all ${INPUT_CLASS}`}
               >
                 {PAYMENT_MODES.map((p) => (
@@ -351,55 +360,16 @@ export default function NewVenuePage() {
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="whishPaymentLink" className={LABEL_CLASS}>
-                Whish Payment Link
-              </Label>
-              <Input
-                id="whishPaymentLink"
-                inputMode="url"
-                autoComplete="url"
-                autoCapitalize="none"
-                spellCheck={false}
-                maxLength={MAX_HTTP_URL_LENGTH}
+            {form.paymentMode !== "CASH" && (
+              <WhishPaymentQrField
                 value={form.whishPaymentLink ?? ""}
-                onChange={(e) => {
-                  updateField("whishPaymentLink", e.target.value);
-                  if (whishPaymentLinkError) setWhishPaymentLinkError(null);
-                }}
-                onBlur={(e) =>
-                  setWhishPaymentLinkError(
-                    getOptionalHttpUrlError(e.target.value),
-                  )
-                }
-                placeholder="https://whish.example/pay/venue-owner"
-                aria-invalid={whishPaymentLinkError ? true : undefined}
-                aria-describedby={
-                  whishPaymentLinkError
-                    ? "whishPaymentLink-help whishPaymentLink-error"
-                    : "whishPaymentLink-help"
-                }
-                className={`${INPUT_CLASS} ${
-                  whishPaymentLinkError
-                    ? "border-[var(--semantic-red)] focus:border-[var(--semantic-red)]"
-                    : ""
-                }`}
+                onChange={(value) => updateField("whishPaymentLink", value)}
+                error={whishPaymentLinkError}
+                onErrorChange={setWhishPaymentLinkError}
+                disabled={isLoading}
+                labelClassName={LABEL_CLASS}
               />
-              <p
-                id="whishPaymentLink-help"
-                className="text-xs text-[var(--text-4)]"
-              >
-                Optional. Use a full http:// or https:// payment URL.
-              </p>
-              {whishPaymentLinkError && (
-                <p
-                  id="whishPaymentLink-error"
-                  className="text-xs text-[var(--semantic-red)]"
-                >
-                  {whishPaymentLinkError}
-                </p>
-              )}
-            </div>
+            )}
           </CardContent>
         </Card>
 

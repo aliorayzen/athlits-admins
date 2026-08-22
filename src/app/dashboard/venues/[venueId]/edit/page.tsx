@@ -28,15 +28,13 @@ import {
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
+import { WhishPaymentQrField } from "@/components/whish-payment-qr-field";
 import {
   DEFAULT_COUNTRY_CODE,
   normalizePhoneForSubmit,
   phoneValueForCountry,
 } from "@/lib/phone";
-import {
-  getOptionalHttpUrlError,
-  MAX_HTTP_URL_LENGTH,
-} from "@/lib/http-url";
+import { getOptionalHttpUrlError } from "@/lib/http-url";
 import {
   Card,
   CardContent,
@@ -104,6 +102,7 @@ export default function EditVenuePage() {
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [venueName, setVenueName] = useState("");
+  const [onlinePaymentsEnabled, setOnlinePaymentsEnabled] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -119,6 +118,11 @@ export default function EditVenuePage() {
       .then((venue) => {
         if (cancelled) return;
         setVenueName(venue.name);
+        setOnlinePaymentsEnabled(
+          venue.paymentMode === "ONLINE" ||
+            venue.paymentMode === "BOTH" ||
+            Boolean(venue.whishPaymentLink),
+        );
         setForm({
           nameEn: venue.nameEn ?? "",
           nameAr: venue.nameAr ?? "",
@@ -519,55 +523,16 @@ export default function EditVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
-            <div className="space-y-2">
-              <Label htmlFor="whishPaymentLink" className={LABEL_CLASS}>
-                Whish Payment Link
-              </Label>
-              <Input
-                id="whishPaymentLink"
-                inputMode="url"
-                autoComplete="url"
-                autoCapitalize="none"
-                spellCheck={false}
-                maxLength={MAX_HTTP_URL_LENGTH}
+            {onlinePaymentsEnabled && (
+              <WhishPaymentQrField
                 value={form.whishPaymentLink}
-                onChange={(e) => {
-                  updateField("whishPaymentLink", e.target.value);
-                  if (whishPaymentLinkError) setWhishPaymentLinkError(null);
-                }}
-                onBlur={(e) =>
-                  setWhishPaymentLinkError(
-                    getOptionalHttpUrlError(e.target.value),
-                  )
-                }
-                placeholder="https://whish.example/pay/venue-owner"
-                aria-invalid={whishPaymentLinkError ? true : undefined}
-                aria-describedby={
-                  whishPaymentLinkError
-                    ? "whishPaymentLink-help whishPaymentLink-error"
-                    : "whishPaymentLink-help"
-                }
-                className={`${INPUT_CLASS} ${
-                  whishPaymentLinkError
-                    ? "border-[var(--semantic-red)] focus:border-[var(--semantic-red)]"
-                    : ""
-                }`}
+                onChange={(value) => updateField("whishPaymentLink", value)}
+                error={whishPaymentLinkError}
+                onErrorChange={setWhishPaymentLinkError}
+                disabled={isSaving}
+                labelClassName={LABEL_CLASS}
               />
-              <p
-                id="whishPaymentLink-help"
-                className="text-xs text-[var(--text-4)]"
-              >
-                Use a full http:// or https:// URL. Leave blank to clear it.
-              </p>
-              {whishPaymentLinkError && (
-                <p
-                  id="whishPaymentLink-error"
-                  className="text-xs text-[var(--semantic-red)]"
-                >
-                  {whishPaymentLinkError}
-                </p>
-              )}
-            </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="maxAdvanceBookingDays" className={LABEL_CLASS}>
                 Max Advance Booking (days) *
