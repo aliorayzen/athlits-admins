@@ -55,6 +55,7 @@ import {
   Layers,
   Pencil,
   UserPlus,
+  Users,
   FileText,
   Loader2,
   ExternalLink,
@@ -270,7 +271,7 @@ export default function VenueDetailPage() {
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           {/* Edit */}
           <Link href={`/dashboard/venues/${venue.id}/edit`}>
             <Button
@@ -332,6 +333,16 @@ export default function VenueDetailPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {venue.managerId && (
+            <Link
+              href={`/dashboard/venues/${venue.id}/staff/new`}
+              className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 text-sm font-medium text-[var(--semantic-amber)] transition-all outline-none hover:bg-[rgba(245,158,11,0.16)] focus-visible:ring-3 focus-visible:ring-[rgba(245,158,11,0.18)] active:translate-y-px"
+            >
+              <Users className="h-3.5 w-3.5" />
+              Create staff
+            </Link>
+          )}
 
           {/* Status toggle */}
           <AlertDialog

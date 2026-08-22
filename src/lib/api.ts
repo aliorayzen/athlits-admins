@@ -7,10 +7,12 @@ import type {
   ApiEnvelope,
   AuthResponse,
   CreateAdminRequest,
+  CreateVenueStaffRequest,
   CreateVenueRequest,
   CreateVmUserRequest,
   AssignManagerRequest,
   SetVenueStatusRequest,
+  StaffUserDto,
   UpdateVenueManagerRequest,
   UpdateVenueRequest,
   VenueDetailResponse,
@@ -643,6 +645,25 @@ export async function createVenueManager(
     payload,
   );
   return normalizeUser(data);
+}
+
+export async function createVenueStaff(
+  managerId: string,
+  payload: CreateVenueStaffRequest,
+): Promise<{ user: StaffUserDto; message: string }> {
+  const { data } = await apiClient.post<ApiEnvelope<StaffUserDto>>(
+    `/api/admin/v1/users/venue-managers/${managerId}/staff`,
+    { ...payload, email: normalizeEmail(payload.email) },
+    { preserveEnvelope: true },
+  );
+  return {
+    user: {
+      ...data.data,
+      id: ensureStringId(data.data.id),
+      venueAccess: data.data.venueAccess ?? [],
+    },
+    message: data.message ?? "Staff user created",
+  };
 }
 
 export async function updateVenueManager(

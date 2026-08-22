@@ -1,4 +1,4 @@
-import { Shield, Table as TableIcon } from "lucide-react";
+import { Shield, Table as TableIcon, Users } from "lucide-react";
 
 import { BackLink } from "./_components/back-link";
 import { RoleChooserCard } from "./_components/role-chooser-card";
@@ -18,13 +18,12 @@ export default function CreateUserChooserPage() {
           Create a user
         </h1>
         <p className="text-[13.5px] tracking-[-0.003em] text-[var(--text-3)]">
-          Choose the kind of user to add. Admins have platform-wide access and
-          log in with a one-time code; Venue Managers are scoped to assigned
-          venues and log in with a temporary password.
+          Choose the kind of user to add. Venue staff start from a managed
+          venue so their owner and access scope are explicit.
         </p>
       </div>
 
-      <div className="grid gap-3.5 sm:grid-cols-2 lg:max-w-[760px]">
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:max-w-[1080px] lg:grid-cols-3">
         <RoleChooserCard
           href="/dashboard/users/create/admin"
           accent="teal"
@@ -47,6 +46,18 @@ export default function CreateUserChooserPage() {
             "Manage assigned venues only",
             "Add courts and set pricing",
             "Login with email + temporary password",
+          ]}
+        />
+        <RoleChooserCard
+          href="/dashboard/venues"
+          accent="amber"
+          icon={Users}
+          title="Create Venue Staff"
+          description="Choose a venue with an assigned manager, then grant booking access."
+          perks={[
+            "Scoped to one venue",
+            "Granular booking permissions",
+            "Password change on first login",
           ]}
         />
       </div>
