@@ -13,8 +13,6 @@ import type {
   SetVenueStatusRequest,
   UpdateVenueManagerRequest,
   UpdateVenueRequest,
-  UpdateVenueBookingPreferencesRequest,
-  VenueBookingPreferencesResponse,
   VenueDetailResponse,
   VenueResponse,
   VenueSummaryResponse,
@@ -598,17 +596,6 @@ export async function updateVenue(
     id: ensureStringId(data.id),
     name: displayName(data.nameEn, data.nameAr),
   };
-}
-
-export async function updateVenueBookingPreferences(
-  venueId: string,
-  payload: UpdateVenueBookingPreferencesRequest,
-): Promise<VenueBookingPreferencesResponse> {
-  const { data } = await apiClient.put<VenueBookingPreferencesResponse>(
-    `/api/vm/v1/venues/${venueId}/booking-preferences`,
-    payload,
-  );
-  return data;
 }
 
 export async function setVenueStatus(

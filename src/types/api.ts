@@ -242,21 +242,13 @@ export interface UpdateVenueRequest {
   longitude?: number;
   contactPhone?: string;
   contactEmail?: string;
-  // The VM update endpoint treats an omitted value the same as null. The API
-  // wrapper therefore always sends either a trimmed URL or null.
+  // The API wrapper always sends either a trimmed URL or null.
   whishPaymentLink?: string | null;
+  autoConfirmation?: boolean;
   allowRecurringBookings?: boolean;
   maxAdvanceBookingDays?: number;
   facilities?: Facility[];
   availability?: VenueAvailabilitySchedule;
-}
-
-export interface UpdateVenueBookingPreferencesRequest {
-  autoConfirmation: boolean;
-}
-
-export interface VenueBookingPreferencesResponse {
-  autoConfirmation: boolean;
 }
 
 // GET and PUT /api/admin/v1/venues/{venueId} return
