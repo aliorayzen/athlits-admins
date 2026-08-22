@@ -30,7 +30,7 @@ export interface RefreshTokenRequest {
 }
 
 // Users
-export type UserRole = "CUSTOMER" | "VENUE_MANAGER" | "ADMIN";
+export type UserRole = "CUSTOMER" | "VENUE_MANAGER" | "STAFF" | "ADMIN";
 export type UserStatus =
   | "PENDING_PHONE_VERIFICATION"
   | "PENDING_SIGNUP_COMPLETION"
@@ -97,6 +97,27 @@ export interface UpdateVenueManagerRequest {
   lastName: string;
   email: string;
   phoneNumber: string;
+}
+
+export type StaffPermission = "BOOKINGS_READ" | "BOOKINGS_WRITE";
+
+export interface VenueStaffAssignmentRequest {
+  venueId: number;
+  permissions: StaffPermission[];
+}
+
+export interface CreateVenueStaffRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  tempPassword: string;
+  venueAssignments: VenueStaffAssignmentRequest[];
+}
+
+export interface StaffUserDto extends Omit<UserDto, "role"> {
+  role: "STAFF";
+  forcePasswordChange: boolean;
+  venueAccess: unknown[];
 }
 
 // Venues

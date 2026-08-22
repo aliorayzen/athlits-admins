@@ -64,7 +64,7 @@ const HELP_GROUPS: HelpGroup[] = [
       },
       {
         label: "Create a user",
-        description: "Onboard admins and venue managers",
+        description: "Onboard admins, managers, and venue staff",
         icon: UserPlus,
         href: "/dashboard/users/create",
       },

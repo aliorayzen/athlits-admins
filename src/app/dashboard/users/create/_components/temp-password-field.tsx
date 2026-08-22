@@ -59,12 +59,18 @@ export function TempPasswordField({
   value,
   onChange,
   strength,
+  error,
+  recipientLabel = "manager",
 }: {
   value: string;
   onChange: (v: string) => void;
   strength: 0 | 1 | 2 | 3 | 4;
+  error?: string;
+  recipientLabel?: string;
 }) {
   const inputId = useId();
+  const errorId = `${inputId}-error`;
+  const hintId = `${inputId}-hint`;
   return (
     <div className="flex flex-col gap-1.5">
       <label
@@ -83,10 +89,17 @@ export function TempPasswordField({
         <input
           id={inputId}
           type="text"
+          required
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Tr-4xV9-bQ82!"
-          className="h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-[34px] pr-[108px] font-mono text-[13px] tracking-[0.02em] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]"
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={error ? errorId : hintId}
+          className={`h-[38px] w-full rounded-md border bg-[var(--bg-0)] pl-[34px] pr-[108px] font-mono text-[13px] tracking-[0.02em] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] ${
+            error
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
+              : "border-[var(--border)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]"
+          }`}
         />
         <button
           type="button"
@@ -99,13 +112,26 @@ export function TempPasswordField({
         </button>
       </div>
       <StrengthMeter strength={strength} />
-      <div className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-[1.4] text-[var(--semantic-amber)]">
-        <AlertTriangle className="mt-0.5 h-[11px] w-[11px] flex-shrink-0" />
-        <span>
-          Share this password with the manager via a secure channel — it
-          won&apos;t be shown again after creation.
-        </span>
-      </div>
+      {error ? (
+        <p
+          id={errorId}
+          role="alert"
+          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+        >
+          {error}
+        </p>
+      ) : (
+        <div
+          id={hintId}
+          className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-[1.4] text-[var(--semantic-amber)]"
+        >
+          <AlertTriangle className="mt-0.5 h-[11px] w-[11px] flex-shrink-0" />
+          <span>
+            Share this password with the {recipientLabel} via a secure channel.
+            It won&apos;t be shown again after creation.
+          </span>
+        </div>
+      )}
     </div>
   );
 }
