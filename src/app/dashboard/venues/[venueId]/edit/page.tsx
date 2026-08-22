@@ -7,7 +7,6 @@ import {
   getApiFieldErrorMap,
   getEditableVenue,
   updateVenue,
-  updateVenueBookingPreferences,
 } from "@/lib/api";
 import type {
   Facility,
@@ -109,7 +108,6 @@ export default function EditVenuePage() {
   const [whishPaymentLinkError, setWhishPaymentLinkError] = useState<
     string | null
   >(null);
-  const [isPartialSave, setIsPartialSave] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,7 +189,6 @@ export default function EditVenuePage() {
     if (!form) return;
     setSubmitError(null);
     setWhishPaymentLinkError(null);
-    setIsPartialSave(false);
 
     if (!form.nameEn.trim()) {
       setSubmitError("Enter the venue's English name.");
@@ -231,8 +228,9 @@ export default function EditVenuePage() {
           normalizePhoneForSubmit(form.contactPhone, form.countryCode) ??
           undefined,
         contactEmail: form.contactEmail.trim() || undefined,
-        // An empty field explicitly clears the VM venue's stored payment link.
+        // An empty field explicitly clears the venue's stored payment link.
         whishPaymentLink: form.whishPaymentLink.trim() || null,
+        autoConfirmation: form.autoConfirmation,
         allowRecurringBookings: form.allowRecurringBookings,
         maxAdvanceBookingDays: form.maxAdvanceBookingDays,
         facilities: form.facilities,
@@ -244,21 +242,6 @@ export default function EditVenuePage() {
             : undefined,
       };
       const updated = await updateVenue(params.venueId, payload);
-      try {
-        await updateVenueBookingPreferences(params.venueId, {
-          autoConfirmation: form.autoConfirmation,
-        });
-      } catch (err: unknown) {
-        setIsPartialSave(true);
-        setSubmitError(
-          getApiErrorMessage(
-            err,
-            "Venue details were saved, but the booking preference was not. Try saving again.",
-          ),
-        );
-        toast.error("Booking preference not saved");
-        return;
-      }
       toast.success(`Venue "${updated.name}" updated`);
       router.push(`/dashboard/venues/${params.venueId}`);
     } catch (err: unknown) {
@@ -614,9 +597,7 @@ export default function EditVenuePage() {
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
             <div>
               <p className="font-medium text-[var(--semantic-red)]">
-                {isPartialSave
-                  ? "Booking preference was not updated"
-                  : "The venue was not updated"}
+                The venue was not updated
               </p>
               <p className="mt-0.5 text-[var(--text-3)]">{submitError}</p>
             </div>
