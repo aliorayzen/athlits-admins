@@ -141,6 +141,7 @@ export interface VenueDetailResponse {
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
+  whishPaymentLink?: string | null;
   coverImageUrl?: string;
   currencyCode: string;
   status: VenueStatus;
@@ -212,6 +213,9 @@ export interface CreateVenueRequest {
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
+  // Optional on create. When present, the backend accepts only an HTTP(S) URL
+  // up to 2048 characters.
+  whishPaymentLink?: string | null;
   currencyCode: string;
   paymentMode: PaymentMode;
   autoConfirmation: boolean;
@@ -239,6 +243,9 @@ export interface UpdateVenueRequest {
   longitude?: number;
   contactPhone?: string;
   contactEmail?: string;
+  // The VM update endpoint treats an omitted value the same as null. The API
+  // wrapper therefore always sends either a trimmed URL or null.
+  whishPaymentLink?: string | null;
   allowRecurringBookings?: boolean;
   maxAdvanceBookingDays?: number;
   facilities?: Facility[];
@@ -253,9 +260,9 @@ export interface VenueBookingPreferencesResponse {
   autoConfirmation: boolean;
 }
 
-// GET/PUT /api/admin/v1/venues/{venueId} → VenueResponse. Richer than
-// VenueDetailResponse: notably carries `availability` and `paymentMode`.
-// Used to prefill and save the venue edit form.
+// GET /api/admin/v1/venues/{venueId} and PUT /api/vm/v1/venues/{venueId} return
+// VenueResponse. It is richer than VenueDetailResponse and notably carries
+// `availability` and `paymentMode`. Used to prefill and save the edit form.
 export interface VenueResponse {
   id: string;
   managerId?: string;
@@ -273,6 +280,7 @@ export interface VenueResponse {
   longitude: number;
   contactPhone?: string;
   contactEmail?: string;
+  whishPaymentLink?: string | null;
   coverImageUrl?: string;
   currencyCode: string;
   status: VenueStatus;

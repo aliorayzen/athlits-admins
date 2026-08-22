@@ -57,6 +57,7 @@ import {
   UserPlus,
   FileText,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -530,7 +531,7 @@ export default function VenueDetailPage() {
               Configuration
             </h2>
             <p className="text-xs text-[var(--text-4)]">
-              Booking behavior &amp; ownership
+              Payment, booking behavior, and ownership
             </p>
           </header>
           <div className="divide-y divide-[var(--border)]">
@@ -539,6 +540,22 @@ export default function VenueDetailPage() {
             </ConfigRow>
             <ConfigRow label="Recurring bookings">
               <BoolBadge on={venue.allowRecurringBookings} />
+            </ConfigRow>
+            <ConfigRow label="Whish payment">
+              {venue.whishPaymentLink ? (
+                <a
+                  href={venue.whishPaymentLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={venue.whishPaymentLink}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--teal-text)] hover:underline hover:underline-offset-2"
+                >
+                  Open link
+                  <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                </a>
+              ) : (
+                <span className="text-xs text-[var(--text-4)]">Not set</span>
+              )}
             </ConfigRow>
             <ConfigRow label="Manager">
               {venue.managerId ? (

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   getApiErrorMessage,
+  getApiFieldErrorMap,
   getEditableVenue,
   updateVenue,
   updateVenueBookingPreferences,
@@ -32,6 +33,10 @@ import {
   normalizePhoneForSubmit,
   phoneValueForCountry,
 } from "@/lib/phone";
+import {
+  getOptionalHttpUrlError,
+  MAX_HTTP_URL_LENGTH,
+} from "@/lib/http-url";
 import {
   Card,
   CardContent,
@@ -83,6 +88,7 @@ interface EditForm {
   longitude: number;
   contactPhone: string;
   contactEmail: string;
+  whishPaymentLink: string;
   autoConfirmation: boolean;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
@@ -101,6 +107,9 @@ export default function EditVenuePage() {
   const [form, setForm] = useState<EditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [whishPaymentLinkError, setWhishPaymentLinkError] = useState<
+    string | null
+  >(null);
   const [isPartialSave, setIsPartialSave] = useState(false);
 
   useEffect(() => {
@@ -121,6 +130,7 @@ export default function EditVenuePage() {
           longitude: venue.longitude,
           contactPhone: venue.contactPhone ?? "",
           contactEmail: venue.contactEmail ?? "",
+          whishPaymentLink: venue.whishPaymentLink ?? "",
           autoConfirmation: venue.autoConfirmation ?? false,
           allowRecurringBookings: venue.allowRecurringBookings,
           maxAdvanceBookingDays: venue.maxAdvanceBookingDays,
@@ -176,6 +186,7 @@ export default function EditVenuePage() {
     e.preventDefault();
     if (!form) return;
     setSubmitError(null);
+    setWhishPaymentLinkError(null);
     setIsPartialSave(false);
 
     if (!form.nameEn.trim()) {
@@ -184,6 +195,13 @@ export default function EditVenuePage() {
     }
     if (!form.nameAr.trim()) {
       setSubmitError("Enter the venue's Arabic name.");
+      return;
+    }
+
+    const paymentLinkError = getOptionalHttpUrlError(form.whishPaymentLink);
+    setWhishPaymentLinkError(paymentLinkError);
+    if (paymentLinkError) {
+      setSubmitError("Enter a valid Whish payment link, or leave it blank.");
       return;
     }
 
@@ -209,6 +227,8 @@ export default function EditVenuePage() {
           normalizePhoneForSubmit(form.contactPhone, form.countryCode) ??
           undefined,
         contactEmail: form.contactEmail.trim() || undefined,
+        // An empty field explicitly clears the VM venue's stored payment link.
+        whishPaymentLink: form.whishPaymentLink.trim() || null,
         allowRecurringBookings: form.allowRecurringBookings,
         maxAdvanceBookingDays: form.maxAdvanceBookingDays,
         facilities: form.facilities,
@@ -238,6 +258,9 @@ export default function EditVenuePage() {
       toast.success(`Venue "${updated.name}" updated`);
       router.push(`/dashboard/venues/${params.venueId}`);
     } catch (err: unknown) {
+      setWhishPaymentLinkError(
+        getApiFieldErrorMap(err).whishPaymentLink ?? null,
+      );
       setSubmitError(getApiErrorMessage(err, "Failed to update venue"));
       toast.error("Failed to update venue");
     } finally {
@@ -489,13 +512,62 @@ export default function EditVenuePage() {
               <div>
                 <CardTitle className="text-base">Settings</CardTitle>
                 <CardDescription className="text-[var(--text-4)]">
-                  Booking and facilities
+                  Payment, booking, and facilities
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
+            <div className="space-y-2">
+              <Label htmlFor="whishPaymentLink" className={LABEL_CLASS}>
+                Whish Payment Link
+              </Label>
+              <Input
+                id="whishPaymentLink"
+                inputMode="url"
+                autoComplete="url"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={MAX_HTTP_URL_LENGTH}
+                value={form.whishPaymentLink}
+                onChange={(e) => {
+                  updateField("whishPaymentLink", e.target.value);
+                  if (whishPaymentLinkError) setWhishPaymentLinkError(null);
+                }}
+                onBlur={(e) =>
+                  setWhishPaymentLinkError(
+                    getOptionalHttpUrlError(e.target.value),
+                  )
+                }
+                placeholder="https://whish.example/pay/venue-owner"
+                aria-invalid={whishPaymentLinkError ? true : undefined}
+                aria-describedby={
+                  whishPaymentLinkError
+                    ? "whishPaymentLink-help whishPaymentLink-error"
+                    : "whishPaymentLink-help"
+                }
+                className={`${INPUT_CLASS} ${
+                  whishPaymentLinkError
+                    ? "border-[var(--semantic-red)] focus:border-[var(--semantic-red)]"
+                    : ""
+                }`}
+              />
+              <p
+                id="whishPaymentLink-help"
+                className="text-xs text-[var(--text-4)]"
+              >
+                Use a full http:// or https:// URL. Leave blank to clear it.
+              </p>
+              {whishPaymentLinkError && (
+                <p
+                  id="whishPaymentLink-error"
+                  className="text-xs text-[var(--semantic-red)]"
+                >
+                  {whishPaymentLinkError}
+                </p>
+              )}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="maxAdvanceBookingDays" className={LABEL_CLASS}>
                 Max Advance Booking (days) *
