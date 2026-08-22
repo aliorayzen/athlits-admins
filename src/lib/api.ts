@@ -576,17 +576,17 @@ export async function getEditableVenue(
   };
 }
 
-// PUT /api/vm/v1/venues/{venueId} (application/json).
+// PUT /api/admin/v1/venues/{venueId} (application/json).
 export async function updateVenue(
   venueId: string,
   payload: UpdateVenueRequest,
 ): Promise<VenueResponse> {
   const { data } = await apiClient.put<VenueResponse>(
-    `/api/vm/v1/venues/${venueId}`,
+    `/api/admin/v1/venues/${venueId}`,
     {
       ...payload,
-      // The VM endpoint clears the stored link when this field is omitted, so
-      // make that wire contract explicit for every caller.
+      // Always send the optional link explicitly so clearing the field is
+      // represented as null rather than depending on omission semantics.
       whishPaymentLink: normalizeOptionalHttpUrl(payload.whishPaymentLink),
       // Strip the legacy `"City: <Name>"` fold, but only when a city is sent —
       // `city` is optional here and must stay omitted when absent.

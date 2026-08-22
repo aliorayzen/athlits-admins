@@ -227,11 +227,10 @@ export interface CreateVenueRequest {
   availability?: VenueAvailabilitySchedule;
 }
 
-// PUT /api/vm/v1/venues/{venueId} (application/json). Every field is optional —
-// only the provided fields are updated. The admin API has no venue-edit
-// endpoint, so the admin dashboard targets this venue-manager endpoint. Note:
-// currency, payment mode, manager, and cover image are NOT editable here (the
-// backend manages those via create / separate endpoints).
+// PUT /api/admin/v1/venues/{venueId} (application/json). Every field is optional —
+// only the provided fields are updated. Currency, payment mode, manager, and
+// cover image are NOT editable here (the backend manages those via create /
+// separate endpoints).
 export interface UpdateVenueRequest {
   nameEn?: string;
   nameAr?: string;
@@ -260,7 +259,7 @@ export interface VenueBookingPreferencesResponse {
   autoConfirmation: boolean;
 }
 
-// GET /api/admin/v1/venues/{venueId} and PUT /api/vm/v1/venues/{venueId} return
+// GET and PUT /api/admin/v1/venues/{venueId} return
 // VenueResponse. It is richer than VenueDetailResponse and notably carries
 // `availability` and `paymentMode`. Used to prefill and save the edit form.
 export interface VenueResponse {
