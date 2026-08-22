@@ -22,9 +22,17 @@ import { getOptionalHttpUrlError } from "@/lib/http-url";
 
 const MAX_QR_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_SCAN_DIMENSION = 2400;
-const ACCEPTED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+const ACCEPTED_EXTENSIONS = new Set([
+  "jpg",
+  "jpeg",
+  "jfif",
+  "png",
+  "webp",
+]);
 const ACCEPTED_MIME_TYPES = new Set([
   "image/jpeg",
+  "image/jfif",
+  "image/pjpeg",
   "image/png",
   "image/webp",
 ]);
@@ -52,7 +60,7 @@ function validateQrImage(file: File): string | null {
   const extension = extensionOf(file.name);
   const acceptedType = !file.type || ACCEPTED_MIME_TYPES.has(file.type);
   if (!ACCEPTED_EXTENSIONS.has(extension) || !acceptedType) {
-    return "Choose a JPEG, PNG, or WebP QR image.";
+    return "Choose a JPG, JFIF, PNG, or WebP QR image.";
   }
 
   return null;
@@ -175,7 +183,7 @@ export function WhishPaymentQrField({
         ref={inputRef}
         id={inputId}
         type="file"
-        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+        accept=".jpg,.jpeg,.jfif,.png,.webp,image/jpeg,image/jfif,image/pjpeg,image/png,image/webp"
         className="sr-only"
         onChange={handleFileInput}
         aria-describedby={describedBy}
@@ -268,7 +276,7 @@ export function WhishPaymentQrField({
               {isScanning ? "Reading QR code..." : "Upload payment QR"}
             </span>
             <span className="mt-0.5 block text-xs leading-5 text-[var(--text-4)]">
-              Choose or drop a JPEG, PNG, or WebP image. Maximum 5 MB.
+              Choose or drop a JPG, JFIF, PNG, or WebP image. Maximum 5 MB.
             </span>
           </span>
           {!isScanning && (
