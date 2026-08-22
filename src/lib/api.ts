@@ -40,6 +40,7 @@ import type {
   AuditEventQuery,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
+import { normalizeOptionalHttpUrl } from "@/lib/http-url";
 
 // ── Error helpers ────────────────────────────
 // Type-narrow an `unknown` thrown from the API layer into a user-facing message.
@@ -499,6 +500,9 @@ export async function createVenue(
   const trimmedDescription = payload.description?.trim();
   const trimmedContactPhone = payload.contactPhone?.trim();
   const trimmedContactEmail = payload.contactEmail?.trim();
+  const trimmedWhishPaymentLink = normalizeOptionalHttpUrl(
+    payload.whishPaymentLink,
+  );
 
   const body = new FormData();
   body.append("managerId", payload.managerId);
@@ -526,6 +530,9 @@ export async function createVenue(
   if (trimmedDescription) body.append("description", trimmedDescription);
   if (trimmedContactPhone) body.append("contactPhone", trimmedContactPhone);
   if (trimmedContactEmail) body.append("contactEmail", trimmedContactEmail);
+  if (trimmedWhishPaymentLink) {
+    body.append("whishPaymentLink", trimmedWhishPaymentLink);
+  }
   if (coverImage) body.append("coverImage", coverImage, coverImage.name);
 
   for (const facility of payload.facilities ?? []) {
@@ -569,15 +576,18 @@ export async function getEditableVenue(
   };
 }
 
-// PUT /api/admin/v1/venues/{venueId} (application/json).
+// PUT /api/vm/v1/venues/{venueId} (application/json).
 export async function updateVenue(
   venueId: string,
   payload: UpdateVenueRequest,
 ): Promise<VenueResponse> {
   const { data } = await apiClient.put<VenueResponse>(
-    `/api/admin/v1/venues/${venueId}`,
+    `/api/vm/v1/venues/${venueId}`,
     {
       ...payload,
+      // The VM endpoint clears the stored link when this field is omitted, so
+      // make that wire contract explicit for every caller.
+      whishPaymentLink: normalizeOptionalHttpUrl(payload.whishPaymentLink),
       // Strip the legacy `"City: <Name>"` fold, but only when a city is sent —
       // `city` is optional here and must stay omitted when absent.
       ...(payload.city !== undefined ? { city: cityName(payload.city) } : {}),

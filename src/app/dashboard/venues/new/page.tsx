@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   createVenue,
   getApiErrorMessage,
+  getApiFieldErrorMap,
   getVenueManagers,
 } from "@/lib/api";
 import type {
@@ -29,6 +30,10 @@ import { VenueCoverImageField } from "@/components/venue-cover-image-field";
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
+import {
+  getOptionalHttpUrlError,
+  MAX_HTTP_URL_LENGTH,
+} from "@/lib/http-url";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -103,6 +108,7 @@ export default function NewVenuePage() {
     longitude: 0,
     contactPhone: "",
     contactEmail: "",
+    whishPaymentLink: "",
     currencyCode: DEFAULT_CURRENCY,
     paymentMode: "CASH",
     autoConfirmation: false,
@@ -114,6 +120,9 @@ export default function NewVenuePage() {
     availability: { days: defaultAvailabilityDays() },
   });
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [whishPaymentLinkError, setWhishPaymentLinkError] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,6 +191,12 @@ export default function NewVenuePage() {
       setSubmitError("Enter a valid contact phone number for the venue.");
       return;
     }
+    const paymentLinkError = getOptionalHttpUrlError(form.whishPaymentLink);
+    setWhishPaymentLinkError(paymentLinkError);
+    if (paymentLinkError) {
+      setSubmitError("Enter a valid Whish payment link, or leave it blank.");
+      return;
+    }
     if (
       form.courtLimit === undefined ||
       !Number.isFinite(form.courtLimit) ||
@@ -218,6 +233,9 @@ export default function NewVenuePage() {
       toast.success(`Venue "${venue.name}" created`);
       router.push(`/dashboard/venues/${venue.id}`);
     } catch (err: unknown) {
+      setWhishPaymentLinkError(
+        getApiFieldErrorMap(err).whishPaymentLink ?? null,
+      );
       const message = getApiErrorMessage(err, "Failed to create venue");
       setSubmitError(message);
       toast.error("Failed to create venue");
@@ -332,6 +350,55 @@ export default function NewVenuePage() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="whishPaymentLink" className={LABEL_CLASS}>
+                Whish Payment Link
+              </Label>
+              <Input
+                id="whishPaymentLink"
+                inputMode="url"
+                autoComplete="url"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={MAX_HTTP_URL_LENGTH}
+                value={form.whishPaymentLink ?? ""}
+                onChange={(e) => {
+                  updateField("whishPaymentLink", e.target.value);
+                  if (whishPaymentLinkError) setWhishPaymentLinkError(null);
+                }}
+                onBlur={(e) =>
+                  setWhishPaymentLinkError(
+                    getOptionalHttpUrlError(e.target.value),
+                  )
+                }
+                placeholder="https://whish.example/pay/venue-owner"
+                aria-invalid={whishPaymentLinkError ? true : undefined}
+                aria-describedby={
+                  whishPaymentLinkError
+                    ? "whishPaymentLink-help whishPaymentLink-error"
+                    : "whishPaymentLink-help"
+                }
+                className={`${INPUT_CLASS} ${
+                  whishPaymentLinkError
+                    ? "border-[var(--semantic-red)] focus:border-[var(--semantic-red)]"
+                    : ""
+                }`}
+              />
+              <p
+                id="whishPaymentLink-help"
+                className="text-xs text-[var(--text-4)]"
+              >
+                Optional. Use a full http:// or https:// payment URL.
+              </p>
+              {whishPaymentLinkError && (
+                <p
+                  id="whishPaymentLink-error"
+                  className="text-xs text-[var(--semantic-red)]"
+                >
+                  {whishPaymentLinkError}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
