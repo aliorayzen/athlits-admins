@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import type {
   ContractResponse,
+  VenueAvailabilityDay,
   VenueDetailResponse,
   VenueStatus,
 } from "@/types/api";
@@ -69,6 +70,11 @@ import {
   formatContractFee,
   type ContractDraft,
 } from "@/lib/contracts";
+import {
+  availabilityTimeLabel,
+  decodeVenueAvailabilityDays,
+  VENUE_WEEKDAYS,
+} from "@/components/venue-availability-editor";
 
 const CONTRACT_INPUT_CLASS =
   "border-[var(--border)] bg-[var(--bg-0)] text-white placeholder:text-white/25 focus:border-[var(--teal)]/40 focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
@@ -228,6 +234,9 @@ export default function VenueDetailPage() {
     venue.courtLimit != null
       ? `${venue.courtCount ?? courts.length} / ${venue.courtLimit}`
       : `${venue.courtCount ?? courts.length}`;
+  const operatingDays = decodeVenueAvailabilityDays(
+    venue.availability?.days ?? [],
+  );
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
@@ -579,6 +588,11 @@ export default function VenueDetailPage() {
             </ConfigRow>
           </div>
 
+          <VenueOperatingHours
+            days={operatingDays}
+            timeZoneId={venue.timeZoneId}
+          />
+
           {venue.facilities.length > 0 && (
             <div className="border-t border-[var(--border)] px-5 py-4">
               <p className="mb-2.5 text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--text-4)]">
@@ -695,6 +709,83 @@ function ConfigRow({
     <div className="flex items-center justify-between px-5 py-3">
       <span className="text-sm text-[var(--text-3)]">{label}</span>
       {children}
+    </div>
+  );
+}
+
+function VenueOperatingHours({
+  days,
+  timeZoneId,
+}: {
+  days: VenueAvailabilityDay[];
+  timeZoneId?: string;
+}) {
+  const hoursByWeekday = new Map<
+    VenueAvailabilityDay["weekday"],
+    VenueAvailabilityDay[]
+  >();
+  for (const day of days) {
+    hoursByWeekday.set(day.weekday, [
+      ...(hoursByWeekday.get(day.weekday) ?? []),
+      day,
+    ]);
+  }
+
+  return (
+    <div className="border-t border-[var(--border)] px-5 py-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--text-4)]">
+            Operating hours
+          </p>
+          <p className="mt-1 text-[11px] text-[var(--text-4)]">
+            {timeZoneId ?? "Venue local time"}
+          </p>
+        </div>
+        <Clock className="h-3.5 w-3.5 text-[var(--teal-text)]/70" aria-hidden="true" />
+      </div>
+
+      {days.length === 0 ? (
+        <p className="rounded-md bg-[var(--bg-0)] px-3 py-2.5 text-[11.5px] leading-5 text-[var(--text-4)]">
+          No operating hours were returned for this venue.
+        </p>
+      ) : (
+        <dl className="space-y-1.5">
+          {VENUE_WEEKDAYS.map(({ value, label }) => {
+            const windows = hoursByWeekday.get(value) ?? [];
+            return (
+              <div
+                key={value}
+                className="flex items-baseline justify-between gap-4 text-[11.5px]"
+              >
+                <dt className="text-[var(--text-3)]">{label}</dt>
+                <dd
+                  className={
+                    windows.length > 0
+                      ? "font-mono tabular-nums text-[var(--text-2)]"
+                      : "text-[var(--text-4)]"
+                  }
+                >
+                  {windows.length > 0 ? (
+                    <span className="flex flex-col items-end gap-0.5">
+                      {windows.map((window, index) => (
+                        <span
+                          key={`${window.openMinutes}-${window.closeMinutes}-${index}`}
+                        >
+                          {availabilityTimeLabel(window.openMinutes)} to{" "}
+                          {availabilityTimeLabel(window.closeMinutes)}
+                        </span>
+                      ))}
+                    </span>
+                  ) : (
+                    "Closed"
+                  )}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      )}
     </div>
   );
 }

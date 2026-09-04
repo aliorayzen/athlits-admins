@@ -188,6 +188,7 @@ export interface VenueDetailResponse {
   coverImageUrl?: string;
   currencyCode: string;
   status: VenueStatus;
+  paymentMode?: PaymentMode;
   venueRating?: number;
   autoConfirmation: boolean;
   allowRecurringBookings: boolean;
@@ -195,6 +196,7 @@ export interface VenueDetailResponse {
   courtLimit?: number;
   courtCount?: number;
   facilities: string[];
+  availability?: VenueAvailabilitySchedule;
   managerId?: string;
   createdByAdminId?: string;
   courts: CourtResponse[];
@@ -217,8 +219,9 @@ export type Facility =
   | "SEATING"
   | "CHANGING_ROOMS";
 
-// Weekly operating hours (backend AvailabilityScheduleRequest). Weekdays use
-// Java DayOfWeek names; open/close are minutes from midnight (e.g. 480 = 08:00).
+// Weekly operating hours. The backend may return either full Java DayOfWeek
+// names or three-letter codes; the client normalizes both to these full names.
+// Minutes are venue-local. An overnight close may exceed 1440.
 export type Weekday =
   | "MONDAY"
   | "TUESDAY"

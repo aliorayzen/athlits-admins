@@ -220,7 +220,7 @@ export default function NewVenuePage() {
             form.countryCode,
           ),
           // Backend rejects an availability object with zero days; omit instead.
-          // Times are entered in local time and stored in UTC.
+          // The backend expects venue-local wall-clock minutes unchanged.
           availability:
             availabilityDays.length > 0
               ? { days: availabilityDaysToUtc(availabilityDays) }

@@ -137,8 +137,8 @@ export default function EditVenuePage() {
           allowRecurringBookings: venue.allowRecurringBookings,
           maxAdvanceBookingDays: venue.maxAdvanceBookingDays,
           facilities: venue.facilities ?? [],
-          // Backend stores availability in UTC; the form edits normalized
-          // local-time rows and supplies valid defaults for legacy venues.
+          // The venue detail endpoint returns venue-local operating hours.
+          // Missing data stays empty rather than displaying invented defaults.
           availabilityDays: availabilityDaysForEdit(
             venue.availability?.days,
           ),
@@ -235,7 +235,7 @@ export default function EditVenuePage() {
         maxAdvanceBookingDays: form.maxAdvanceBookingDays,
         facilities: form.facilities,
         // Backend rejects an availability object with zero days; omit instead.
-        // Times are entered in local time and stored in UTC.
+        // The backend expects venue-local wall-clock minutes unchanged.
         availability:
           form.availabilityDays.length > 0
             ? { days: availabilityDaysToUtc(form.availabilityDays) }
