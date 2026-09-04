@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { VenueAvailabilityDay, Weekday } from "@/types/api";
 
-const WEEKDAYS: { value: Weekday; label: string }[] = [
+export const VENUE_WEEKDAYS: { value: Weekday; label: string }[] = [
   { value: "MONDAY", label: "Monday" },
   { value: "TUESDAY", label: "Tuesday" },
   { value: "WEDNESDAY", label: "Wednesday" },
@@ -17,7 +17,23 @@ const WEEKDAYS: { value: Weekday; label: string }[] = [
   { value: "SUNDAY", label: "Sunday" },
 ];
 
-const WEEKDAY_ORDER = WEEKDAYS.map((d) => d.value);
+const WEEKDAY_ORDER = VENUE_WEEKDAYS.map((d) => d.value);
+const WEEKDAY_ALIASES: Record<string, Weekday> = {
+  MON: "MONDAY",
+  MONDAY: "MONDAY",
+  TUE: "TUESDAY",
+  TUESDAY: "TUESDAY",
+  WED: "WEDNESDAY",
+  WEDNESDAY: "WEDNESDAY",
+  THU: "THURSDAY",
+  THURSDAY: "THURSDAY",
+  FRI: "FRIDAY",
+  FRIDAY: "FRIDAY",
+  SAT: "SATURDAY",
+  SATURDAY: "SATURDAY",
+  SUN: "SUNDAY",
+  SUNDAY: "SUNDAY",
+};
 
 export const DEFAULT_OPEN_MINUTES = 8 * 60; // 08:00
 export const DEFAULT_CLOSE_MINUTES = 22 * 60; // 22:00
@@ -35,20 +51,20 @@ export function defaultAvailabilityDays(): VenueAvailabilityDay[] {
 // Availability data has existed across multiple backend versions. Normalize it
 // before it reaches the editor so legacy aliases, numeric strings, duplicate
 // weekdays, or malformed hidden rows cannot block the entire venue form.
-export function normalizeAvailabilityDays(
+export function decodeVenueAvailabilityDays(
   value: unknown,
 ): VenueAvailabilityDay[] {
   if (!Array.isArray(value)) return [];
 
-  const byWeekday = new Map<Weekday, VenueAvailabilityDay>();
+  const days: VenueAvailabilityDay[] = [];
   for (const candidate of value) {
     if (!candidate || typeof candidate !== "object") continue;
     const raw = candidate as Record<string, unknown>;
     const weekdayValue = raw.weekday ?? raw.dayOfWeek;
     if (typeof weekdayValue !== "string") continue;
 
-    const weekday = weekdayValue.trim().toUpperCase() as Weekday;
-    if (!WEEKDAY_ORDER.includes(weekday)) continue;
+    const weekday = WEEKDAY_ALIASES[weekdayValue.trim().toUpperCase()];
+    if (!weekday) continue;
 
     const openMinutes = Number(raw.openMinutes);
     const closeMinutes = Number(raw.closeMinutes);
@@ -57,13 +73,28 @@ export function normalizeAvailabilityDays(
       !Number.isInteger(closeMinutes) ||
       openMinutes < 0 ||
       openMinutes >= 24 * 60 ||
-      closeMinutes < 0 ||
-      closeMinutes >= 24 * 60
+      closeMinutes <= openMinutes ||
+      closeMinutes > openMinutes + 24 * 60
     ) {
       continue;
     }
 
-    byWeekday.set(weekday, { weekday, openMinutes, closeMinutes });
+    days.push({ weekday, openMinutes, closeMinutes });
+  }
+
+  return [...days].sort(
+    (a, b) =>
+      WEEKDAY_ORDER.indexOf(a.weekday) - WEEKDAY_ORDER.indexOf(b.weekday) ||
+      a.openMinutes - b.openMinutes,
+  );
+}
+
+export function normalizeAvailabilityDays(
+  value: unknown,
+): VenueAvailabilityDay[] {
+  const byWeekday = new Map<Weekday, VenueAvailabilityDay>();
+  for (const day of decodeVenueAvailabilityDays(value)) {
+    byWeekday.set(day.weekday, day);
   }
 
   return sortDays([...byWeekday.values()]);
@@ -72,8 +103,16 @@ export function normalizeAvailabilityDays(
 export function availabilityDaysWithErrors(
   days: VenueAvailabilityDay[],
 ): Weekday[] {
-  return normalizeAvailabilityDays(days)
-    .filter((day) => day.closeMinutes <= day.openMinutes)
+  return days
+    .filter(
+      (day) =>
+        !Number.isInteger(day.openMinutes) ||
+        !Number.isInteger(day.closeMinutes) ||
+        day.openMinutes < 0 ||
+        day.openMinutes >= MINUTES_PER_DAY ||
+        day.closeMinutes <= day.openMinutes ||
+        day.closeMinutes > day.openMinutes + MINUTES_PER_DAY,
+    )
     .map((day) => day.weekday);
 }
 
@@ -83,44 +122,26 @@ function wrapMinutes(minutes: number): number {
   return ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
 }
 
-// The editor and validation work in the operator's local wall-clock time, but
-// the backend stores availability minutes in UTC. These two convert at the API
-// boundary using the browser's current UTC offset (getTimezoneOffset() is
-// minutes to ADD to local time to get UTC, e.g. -180 for UTC+3).
-// Minutes wrap within the same weekday; a window whose UTC equivalent crosses
-// midnight (local open earlier than the UTC offset) cannot be represented by
-// the per-day open<close model and will be rejected by backend validation.
-function shiftAvailabilityDays(
-  days: VenueAvailabilityDay[],
-  offsetMinutes: number,
-): VenueAvailabilityDay[] {
-  return normalizeAvailabilityDays(days).map((day) => ({
-    ...day,
-    openMinutes: wrapMinutes(day.openMinutes + offsetMinutes),
-    closeMinutes: wrapMinutes(day.closeMinutes + offsetMinutes),
-  }));
-}
-
+// Kept under the existing names for call-site compatibility. The backend owns
+// timezone conversion and expects venue-local wall-clock minutes unchanged.
 export function availabilityDaysToUtc(
   days: VenueAvailabilityDay[],
 ): VenueAvailabilityDay[] {
-  return shiftAvailabilityDays(days, new Date().getTimezoneOffset());
+  return normalizeAvailabilityDays(days);
 }
 
 export function availabilityDaysFromUtc(
   days: VenueAvailabilityDay[],
 ): VenueAvailabilityDay[] {
-  return shiftAvailabilityDays(days, -new Date().getTimezoneOffset());
+  return normalizeAvailabilityDays(days);
 }
 
-// Existing venues created before schedules were required may return no usable
-// availability. Use the same valid working defaults as venue creation instead
-// of presenting seven closed days that cannot be saved reliably.
+// Never invent operating hours for an existing venue. Missing or malformed
+// data stays empty so the UI cannot disguise it as the creation default.
 export function availabilityDaysForEdit(
   days: VenueAvailabilityDay[] | null | undefined,
 ): VenueAvailabilityDay[] {
-  const localDays = availabilityDaysFromUtc(days ?? []);
-  return localDays.length > 0 ? localDays : defaultAvailabilityDays();
+  return availabilityDaysFromUtc(days ?? []);
 }
 
 // Selectable times are offered on a 30-minute grid. Operators pick from a
@@ -129,22 +150,31 @@ export function availabilityDaysForEdit(
 const TIME_STEP_MINUTES = 30;
 
 // 12-hour AM/PM label for a minutes-since-midnight value, e.g. 480 -> "8:00 AM".
-function minutesToLabel(minutes: number): string {
+export function availabilityTimeLabel(minutes: number): string {
   const m = wrapMinutes(minutes);
   const hour24 = Math.floor(m / 60);
   const mm = m % 60;
   const period = hour24 < 12 ? "AM" : "PM";
   const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
-  return `${hour12}:${String(mm).padStart(2, "0")} ${period}`;
+  const dayOffset = Math.floor(minutes / MINUTES_PER_DAY);
+  const suffix = dayOffset > 0 ? " next day" : "";
+  return `${hour12}:${String(mm).padStart(2, "0")} ${period}${suffix}`;
 }
 
 // The 30-minute grid (00:00–23:30). Any off-grid stored value (e.g. an existing
 // 08:15 returned by the backend) is injected so the select represents it
 // faithfully rather than silently snapping it to the nearest slot.
-function buildTimeOptions(current: number): number[] {
+function buildTimeOptions(
+  current: number,
+  minMinutes = 0,
+  maxMinutes = MINUTES_PER_DAY - 1,
+): number[] {
   const options: number[] = [];
-  for (let m = 0; m < MINUTES_PER_DAY; m += TIME_STEP_MINUTES) options.push(m);
-  if (current >= 0 && current < MINUTES_PER_DAY && !options.includes(current)) {
+  const firstGridMinute = Math.ceil(minMinutes / TIME_STEP_MINUTES) * TIME_STEP_MINUTES;
+  for (let m = firstGridMinute; m <= maxMinutes; m += TIME_STEP_MINUTES) {
+    options.push(m);
+  }
+  if (current >= 0 && current <= 2 * MINUTES_PER_DAY && !options.includes(current)) {
     options.push(current);
     options.sort((a, b) => a - b);
   }
@@ -253,11 +283,13 @@ export function VenueAvailabilityEditor({
         aria-labelledby={sectionId}
         className="overflow-hidden rounded-lg border border-[var(--border)]"
       >
-        {WEEKDAYS.map(({ value, label }, index) => {
+        {VENUE_WEEKDAYS.map(({ value, label }, index) => {
           const entry = dayEntry(value);
           const isOpen = Boolean(entry);
           const invalid =
-            entry !== undefined && entry.closeMinutes <= entry.openMinutes;
+            entry !== undefined &&
+            (entry.closeMinutes <= entry.openMinutes ||
+              entry.closeMinutes > entry.openMinutes + MINUTES_PER_DAY);
 
           return (
             <div
@@ -302,6 +334,8 @@ export function VenueAvailabilityEditor({
                       }
                       ariaLabel={`${label} closing time`}
                       invalid={invalid}
+                      minMinutes={entry.openMinutes + 1}
+                      maxMinutes={entry.openMinutes + MINUTES_PER_DAY}
                       className={inputClassName}
                     />
                     <button
@@ -350,6 +384,8 @@ interface TimeSelectProps {
   onChange: (minutes: number) => void;
   ariaLabel: string;
   invalid: boolean;
+  minMinutes?: number;
+  maxMinutes?: number;
   className?: string;
 }
 
@@ -358,6 +394,8 @@ function TimeSelect({
   onChange,
   ariaLabel,
   invalid,
+  minMinutes,
+  maxMinutes,
   className,
 }: TimeSelectProps) {
   return (
@@ -373,9 +411,9 @@ function TimeSelect({
           "border-[rgba(244,63,94,0.45)] focus:border-[rgba(244,63,94,0.6)]",
       )}
     >
-      {buildTimeOptions(value).map((minutes) => (
+      {buildTimeOptions(value, minMinutes, maxMinutes).map((minutes) => (
         <option key={minutes} value={minutes}>
-          {minutesToLabel(minutes)}
+          {availabilityTimeLabel(minutes)}
         </option>
       ))}
     </select>
