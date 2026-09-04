@@ -8,8 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
-import { Mail, Table as TableIcon, User } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, Mail, Table as TableIcon, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -17,6 +17,7 @@ import { PhoneNumberField } from "@/components/phone-number-field";
 import { VenueAvailabilityEditor } from "@/components/venue-availability-editor";
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { VenueLocationFields } from "@/components/venue-location-fields";
+import { GoogleMapsLocationField } from "@/components/google-maps-location-field";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -34,6 +35,7 @@ import {
   type ContractDraft,
 } from "@/lib/contracts";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { findNearestLebanonLocation } from "@/lib/lebanon-locations";
 import {
   DEFAULT_COUNTRY_CODE,
   isValidPhoneForCountry,
@@ -60,6 +62,7 @@ import {
   TempPasswordField,
 } from "../_components/temp-password-field";
 import { useSubmitShortcut } from "../_components/use-submit-shortcut";
+import { CredentialsMessage } from "../_components/credentials-message";
 
 const ACCENT = "amber" as const;
 const FORM_ID = "create-vm-form";
@@ -137,7 +140,6 @@ function emptyVenue(): CreateVenueRequest {
 }
 
 export default function CreateVenueManagerPage() {
-  const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -146,12 +148,20 @@ export default function CreateVenueManagerPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [tempPassword, setTempPassword] = useState("");
   const [venue, setVenue] = useState<CreateVenueRequest>(emptyVenue);
+  const [locationSeed, setLocationSeed] = useState(0);
   const [contractDraft, setContractDraft] = useState<ContractDraft>(
     defaultContractDraft(DEFAULT_CURRENCY),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<VmCreateFieldErrors>({});
+  const [creationResult, setCreationResult] = useState<{
+    name: string;
+    email: string;
+    tempPassword: string;
+    venueId: string;
+    venueName: string;
+  } | null>(null);
   const inFlight = useRef(false);
 
   useSubmitShortcut(FORM_ID);
@@ -284,7 +294,13 @@ export default function CreateVenueManagerPage() {
         toast.success(
           `Venue Manager ${firstName.trim()} ${lastName.trim()} onboarded`,
         );
-        router.push(`/dashboard/venues/${createdVenue.id}`);
+        setCreationResult({
+          name: `${firstName.trim()} ${lastName.trim()}`,
+          email: email.trim(),
+          tempPassword,
+          venueId: createdVenue.id,
+          venueName: createdVenue.name,
+        });
       } catch (err: unknown) {
         setFieldErrors(venueManagerFieldErrors(err));
         const message = getApiErrorMessage(
@@ -306,7 +322,6 @@ export default function CreateVenueManagerPage() {
       lastName,
       phoneCountryCode,
       phoneNumber,
-      router,
       tempPassword,
       venue,
     ],
@@ -332,6 +347,40 @@ export default function CreateVenueManagerPage() {
         ? `${contractDraft.currencyCode} ${contractDraft.perReservationFee} / reservation`
         : `${contractDraft.currencyCode} ${contractDraft.fixedMonthlyFee} monthly`,
   };
+
+  if (creationResult) {
+    return (
+      <div className="users-create-v2 max-w-3xl space-y-5">
+        <BackLink href="/dashboard/users/venue-managers" label="Venue managers" />
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgba(16,185,129,0.12)] text-[var(--semantic-green)]">
+            <CheckCircle2 className="h-4.5 w-4.5" />
+          </span>
+          <div>
+            <h1 className="text-[26px] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--text-1)]">
+              Venue manager created
+            </h1>
+            <p className="mt-1.5 text-[13.5px] text-[var(--text-3)]">
+              {creationResult.name} can now manage {creationResult.venueName}.
+            </p>
+          </div>
+        </div>
+        <CredentialsMessage
+          name={creationResult.name}
+          email={creationResult.email}
+          tempPassword={creationResult.tempPassword}
+          accountType="venue-manager"
+        />
+        <Link
+          href={`/dashboard/venues/${creationResult.venueId}`}
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 text-[13px] font-semibold text-[#06100d] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
+        >
+          Open venue
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="users-create-v2 space-y-0">
@@ -470,6 +519,27 @@ export default function CreateVenueManagerPage() {
               desc="The venue is assigned to the manager returned by the account API."
             >
               <div className="grid gap-3.5 sm:grid-cols-2">
+                <GoogleMapsLocationField
+                  className="sm:col-span-2 rounded-lg border border-[var(--border)] bg-[var(--bg-0)] p-4"
+                  onResolved={(location) => {
+                    const locality = findNearestLebanonLocation(
+                      location.latitude,
+                      location.longitude,
+                    );
+                    setVenue((current) => ({
+                      ...current,
+                      latitude: location.latitude,
+                      longitude: location.longitude,
+                      city: current.city || locality?.name || "",
+                      nameEn: current.nameEn || location.placeName || "",
+                      addressLine:
+                        current.addressLine || location.placeLabel || "",
+                    }));
+                    setLocationSeed((current) => current + 1);
+                  }}
+                  inputClassName={INPUT_CLASS}
+                  labelClassName={LABEL_CLASS}
+                />
                 <Field label="Venue name (English)" required>
                   <input
                     value={venue.nameEn}
@@ -529,6 +599,7 @@ export default function CreateVenueManagerPage() {
                   />
                 </Field>
                 <VenueLocationFields
+                  key={locationSeed}
                   className="sm:col-span-2"
                   city={venue.city}
                   latitude={venue.latitude}

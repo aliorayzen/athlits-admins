@@ -99,7 +99,29 @@ export interface UpdateVenueManagerRequest {
   phoneNumber: string;
 }
 
-export type StaffPermission = "BOOKINGS_READ" | "BOOKINGS_WRITE";
+export type StaffPermission =
+  | "VENUE_READ"
+  | "VENUE_WRITE"
+  | "COURTS_READ"
+  | "COURTS_WRITE"
+  | "COURTS_DELETE"
+  | "BOOKINGS_READ"
+  | "BOOKINGS_WRITE"
+  | "BOOKINGS_APPROVE"
+  | "BOOKINGS_CANCEL"
+  | "BOOKINGS_DELETE"
+  | "CUSTOMERS_READ"
+  | "CUSTOMERS_WRITE"
+  | "CUSTOMERS_BLOCK"
+  | "PROMOTIONS_READ"
+  | "PROMOTIONS_WRITE"
+  | "PROMOTIONS_DELETE"
+  | "FINANCE_READ"
+  | "FINANCE_WRITE"
+  | "REPORTS_READ"
+  | "NOTIFICATIONS_READ"
+  | "NOTIFICATIONS_WRITE"
+  | "NOTIFICATIONS_SEND";
 
 export interface VenueStaffAssignmentRequest {
   venueId: number;
