@@ -65,3 +65,45 @@ export function findLebanonLocation(
   if (!candidate) return undefined;
   return locations.find((location) => matchesLocation(location, candidate));
 }
+
+function distanceInKilometers(
+  latitudeA: number,
+  longitudeA: number,
+  latitudeB: number,
+  longitudeB: number,
+): number {
+  const radians = (degrees: number) => (degrees * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const latitudeDelta = radians(latitudeB - latitudeA);
+  const longitudeDelta = radians(longitudeB - longitudeA);
+  const a =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(radians(latitudeA)) *
+      Math.cos(radians(latitudeB)) *
+      Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+export function findNearestLebanonLocation(
+  latitude: number,
+  longitude: number,
+  maxDistanceKm = 25,
+): LebanonLocation | undefined {
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return undefined;
+
+  let nearest: LebanonLocation | undefined;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (const location of locations) {
+    const distance = distanceInKilometers(
+      latitude,
+      longitude,
+      location.latitude,
+      location.longitude,
+    );
+    if (distance < nearestDistance) {
+      nearest = location;
+      nearestDistance = distance;
+    }
+  }
+  return nearestDistance <= maxDistanceKm ? nearest : undefined;
+}

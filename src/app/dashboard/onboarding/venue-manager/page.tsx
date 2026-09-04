@@ -60,6 +60,7 @@ import {
   VenueAvailabilityEditor,
 } from "@/components/venue-availability-editor";
 import { VenueLocationFields } from "@/components/venue-location-fields";
+import { GoogleMapsLocationField } from "@/components/google-maps-location-field";
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
@@ -83,6 +84,8 @@ import {
   isContractDraftValid,
   type ContractDraft,
 } from "@/lib/contracts";
+import { findNearestLebanonLocation } from "@/lib/lebanon-locations";
+import { CredentialsMessage } from "../../users/create/_components/credentials-message";
 
 type StepKey = "manager" | "venue" | "contract" | "review";
 type ManagerMode = "existing" | "new";
@@ -594,6 +597,15 @@ export default function OnboardingVenueManagerPage() {
         />
 
         <main className="min-w-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
+          {createdManager && managerMode === "new" && (
+            <CredentialsMessage
+              className="mx-5 mt-5"
+              name={managerName(createdManager)}
+              email={createdManager.email}
+              tempPassword={managerDraft.tempPassword}
+              accountType="venue-manager"
+            />
+          )}
           <div key={step} className="onboarding-vm-step-panel min-h-[560px]">
             {step === "manager" && (
               <ManagerStep
@@ -949,6 +961,7 @@ function VenueStep({
   const recurringBookingsHelpId = useId();
   const facilitiesLabelId = useId();
   const timeZoneId = useId();
+  const [locationSeed, setLocationSeed] = useState(0);
 
   return (
     <section className="space-y-5 p-5">
@@ -985,6 +998,29 @@ function VenueStep({
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
+        <GoogleMapsLocationField
+          className="sm:col-span-2 rounded-lg border border-[var(--border)] bg-[var(--bg-0)] p-4"
+          onResolved={(location) => {
+            const locality = findNearestLebanonLocation(
+              location.latitude,
+              location.longitude,
+            );
+            onUpdateVenue("latitude", location.latitude);
+            onUpdateVenue("longitude", location.longitude);
+            if (!venue.city.trim() && locality) {
+              onUpdateVenue("city", locality.name);
+            }
+            if (!venue.nameEn.trim() && location.placeName) {
+              onUpdateVenue("nameEn", location.placeName);
+            }
+            if (!venue.addressLine.trim() && location.placeLabel) {
+              onUpdateVenue("addressLine", location.placeLabel);
+            }
+            setLocationSeed((current) => current + 1);
+          }}
+          inputClassName={fieldClass}
+          labelClassName={labelClass}
+        />
         <Field label="Venue name (English)" required>
           <Input
             value={venue.nameEn}
@@ -1030,6 +1066,7 @@ function VenueStep({
           />
         </Field>
         <VenueLocationFields
+          key={locationSeed}
           className="sm:col-span-2"
           city={venue.city}
           latitude={venue.latitude}
