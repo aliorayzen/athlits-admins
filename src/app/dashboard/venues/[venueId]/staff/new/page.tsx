@@ -61,7 +61,19 @@ import { CredentialsMessage } from "@/app/dashboard/users/create/_components/cre
 const ACCENT = "amber" as const;
 const FORM_ID = "create-venue-staff-form";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const STAFF_EMAIL_DOMAIN = "@athlits.app";
 const MIN_PASSWORD_LENGTH = 8;
+
+function buildStaffEmail(localPart: string): string {
+  const normalizedLocalPart = normalizeEmail(localPart);
+  return normalizedLocalPart
+    ? `${normalizedLocalPart}${STAFF_EMAIL_DOMAIN}`
+    : "";
+}
+
+function getEmailLocalPart(value: string): string {
+  return value.split("@", 1)[0];
+}
 
 interface PermissionOption {
   value: StaffPermission;
@@ -208,7 +220,7 @@ type FieldErrors = Partial<Record<FieldName, string>>;
 function validateFields(values: {
   firstName: string;
   lastName: string;
-  email: string;
+  emailLocalPart: string;
   tempPassword: string;
   permissions: StaffPermission[];
 }): FieldErrors {
@@ -216,11 +228,12 @@ function validateFields(values: {
   if (!values.firstName.trim()) errors.firstName = "First name is required.";
   if (!values.lastName.trim()) errors.lastName = "Last name is required.";
 
-  const email = normalizeEmail(values.email);
-  if (!email) {
+  const emailLocalPart = normalizeEmail(values.emailLocalPart);
+  const email = buildStaffEmail(emailLocalPart);
+  if (!emailLocalPart) {
     errors.email = "Email is required.";
-  } else if (!EMAIL_PATTERN.test(email)) {
-    errors.email = "Enter a valid email address.";
+  } else if (emailLocalPart.includes("@") || !EMAIL_PATTERN.test(email)) {
+    errors.email = "Enter a valid Athlits email username.";
   }
 
   if (!values.tempPassword) {
@@ -259,7 +272,7 @@ export default function CreateVenueStaffPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
+  const [emailLocalPart, setEmailLocalPart] = useState("");
   const [tempPassword, setTempPassword] = useState("");
   const [permissions, setPermissions] = useState<StaffPermission[]>([]);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -348,7 +361,7 @@ export default function CreateVenueStaffPage() {
       const nextErrors = validateFields({
         firstName,
         lastName,
-        email,
+        emailLocalPart,
         tempPassword,
         permissions,
       });
@@ -378,7 +391,7 @@ export default function CreateVenueStaffPage() {
         const created = await createVenueStaff(venue.managerId, {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
-          email: normalizeEmail(email),
+          email: buildStaffEmail(emailLocalPart),
           tempPassword,
           venueAssignments: [
             { venueId: numericVenueId, permissions: [...permissions] },
@@ -417,7 +430,7 @@ export default function CreateVenueStaffPage() {
         setIsSubmitting(false);
       }
     },
-    [email, firstName, lastName, permissions, tempPassword, venue],
+    [emailLocalPart, firstName, lastName, permissions, tempPassword, venue],
   );
 
   if (isLoading) {
@@ -508,7 +521,7 @@ export default function CreateVenueStaffPage() {
   );
   const previewName =
     `${firstName.trim() || "First"} ${lastName.trim() || "Last"}`.trim();
-  const previewEmail = normalizeEmail(email) || "staff@venue.com";
+  const previewEmail = buildStaffEmail(emailLocalPart) || "staff@athlits.app";
 
   return (
     <div className="users-create-v2 space-y-0">
@@ -564,17 +577,22 @@ export default function CreateVenueStaffPage() {
               </div>
               <div className="mt-3.5">
                 <TextField
-                  label="Email address"
+                  label="Athlits email"
                   required
                   icon={Mail}
-                  type="email"
                   accent={ACCENT}
-                  value={email}
+                  value={emailLocalPart}
                   onChange={(value) => {
-                    setEmail(value);
+                    setEmailLocalPart(getEmailLocalPart(value));
                     clearFieldError("email");
                   }}
-                  placeholder="maya@example.com"
+                  placeholder="maya.haddad"
+                  suffix={STAFF_EMAIL_DOMAIN}
+                  hint={{
+                    tone: "info",
+                    icon: Info,
+                    text: "The @athlits.app domain is fixed for staff accounts.",
+                  }}
                   error={fieldErrors.email}
                 />
               </div>

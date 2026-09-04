@@ -130,6 +130,7 @@ export function TextField({
   accent = "teal",
   hint,
   error,
+  suffix,
 }: {
   label: string;
   required?: boolean;
@@ -141,6 +142,7 @@ export function TextField({
   accent?: Accent;
   hint?: FieldHint;
   error?: string;
+  suffix?: string;
 }) {
   const HintIcon = hint?.icon;
   const inputId = useId();
@@ -161,25 +163,54 @@ export function TextField({
           )}
         </span>
       </label>
-      <div className="relative">
-        <Icon className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)] transition-colors" />
-        <input
-          id={inputId}
-          type={type}
-          required={required}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          aria-invalid={Boolean(error) || undefined}
-          aria-describedby={error ? errorId : hint ? hintId : undefined}
+      {suffix ? (
+        <div
           className={cn(
-            "h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)]",
+            "relative flex h-[38px] overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)] transition-all",
             error
-              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
-              : ACCENT[accent].inputFocus,
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus-within:border-[var(--semantic-red)]"
+              : accent === "amber"
+                ? "focus-within:border-[var(--semantic-amber)] focus-within:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]"
+                : "focus-within:border-[var(--teal)] focus-within:shadow-[0_0_0_3px_var(--teal-subtle)]",
           )}
-        />
-      </div>
+        >
+          <Icon className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)] transition-colors" />
+          <input
+            id={inputId}
+            type={type}
+            required={required}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            aria-invalid={Boolean(error) || undefined}
+            aria-describedby={error ? errorId : hint ? hintId : undefined}
+            className="min-w-0 flex-1 bg-transparent pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none placeholder:text-[var(--text-4)]"
+          />
+          <span className="flex shrink-0 items-center border-l border-[var(--border)] bg-[var(--bg-2)] px-3 font-mono text-[12.5px] text-[var(--text-2)]">
+            {suffix}
+          </span>
+        </div>
+      ) : (
+        <div className="relative">
+          <Icon className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)] transition-colors" />
+          <input
+            id={inputId}
+            type={type}
+            required={required}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            aria-invalid={Boolean(error) || undefined}
+            aria-describedby={error ? errorId : hint ? hintId : undefined}
+            className={cn(
+              "h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)]",
+              error
+                ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
+                : ACCENT[accent].inputFocus,
+            )}
+          />
+        </div>
+      )}
       {error ? (
         <p
           id={errorId}
