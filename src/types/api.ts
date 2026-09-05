@@ -288,11 +288,11 @@ export interface CreateVenueRequest {
   availability?: VenueAvailabilitySchedule;
 }
 
-// PUT /api/admin/v1/venues/{venueId} (application/json). Every field is optional —
-// only the provided fields are updated. Currency, payment mode, manager, and
-// cover image are NOT editable here (the backend manages those via create /
-// separate endpoints).
+// PUT /api/admin/v1/venues/{venueId} (application/json). Payment mode is
+// required; the remaining fields are partial updates. Currency, manager, and
+// cover image are managed via create / separate endpoints.
 export interface UpdateVenueRequest {
+  paymentMode: PaymentMode;
   nameEn?: string;
   nameAr?: string;
   description?: string;

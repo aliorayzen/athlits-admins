@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import type {
   Facility,
+  PaymentMode,
   UpdateVenueRequest,
   VenueAvailabilityDay,
 } from "@/types/api";
@@ -66,6 +67,12 @@ const FACILITIES: { value: Facility; label: string }[] = [
   { value: "SEATING", label: "Seating" },
 ];
 
+const PAYMENT_MODES: { value: PaymentMode; label: string }[] = [
+  { value: "CASH", label: "Cash only" },
+  { value: "ONLINE", label: "Online only" },
+  { value: "BOTH", label: "Cash & online" },
+];
+
 const INPUT_CLASS =
   "border-[var(--border)] bg-[var(--bg-hover)] text-white placeholder:text-white/25 focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_rgba(0,212,170,0.06)]";
 
@@ -85,6 +92,7 @@ interface EditForm {
   longitude: number;
   contactPhone: string;
   contactEmail: string;
+  paymentMode: PaymentMode;
   whishPaymentLink: string;
   autoConfirmation: boolean;
   allowRecurringBookings: boolean;
@@ -101,7 +109,6 @@ export default function EditVenuePage() {
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [venueName, setVenueName] = useState("");
-  const [onlinePaymentsEnabled, setOnlinePaymentsEnabled] = useState(false);
   const [form, setForm] = useState<EditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -116,11 +123,6 @@ export default function EditVenuePage() {
       .then((venue) => {
         if (cancelled) return;
         setVenueName(venue.name);
-        setOnlinePaymentsEnabled(
-          venue.paymentMode === "ONLINE" ||
-            venue.paymentMode === "BOTH" ||
-            Boolean(venue.whishPaymentLink),
-        );
         setForm({
           nameEn: venue.nameEn ?? "",
           nameAr: venue.nameAr ?? "",
@@ -132,6 +134,7 @@ export default function EditVenuePage() {
           longitude: venue.longitude,
           contactPhone: venue.contactPhone ?? "",
           contactEmail: venue.contactEmail ?? "",
+          paymentMode: venue.paymentMode ?? "CASH",
           whishPaymentLink: venue.whishPaymentLink ?? "",
           autoConfirmation: venue.autoConfirmation ?? false,
           allowRecurringBookings: venue.allowRecurringBookings,
@@ -199,7 +202,10 @@ export default function EditVenuePage() {
       return;
     }
 
-    const paymentLinkError = getOptionalHttpUrlError(form.whishPaymentLink);
+    const paymentLinkError =
+      form.paymentMode === "CASH"
+        ? null
+        : getOptionalHttpUrlError(form.whishPaymentLink);
     setWhishPaymentLinkError(paymentLinkError);
     if (paymentLinkError) {
       setSubmitError("Enter a valid Whish payment link, or leave it blank.");
@@ -216,6 +222,7 @@ export default function EditVenuePage() {
     setIsSaving(true);
     try {
       const payload: UpdateVenueRequest = {
+        paymentMode: form.paymentMode,
         nameEn: form.nameEn.trim(),
         nameAr: form.nameAr.trim(),
         description: form.description.trim() || undefined,
@@ -228,8 +235,12 @@ export default function EditVenuePage() {
           normalizePhoneForSubmit(form.contactPhone, form.countryCode) ??
           undefined,
         contactEmail: form.contactEmail.trim() || undefined,
-        // An empty field explicitly clears the venue's stored payment link.
-        whishPaymentLink: form.whishPaymentLink.trim() || null,
+        // Cash-only venues cannot use the online payment link. An empty field
+        // explicitly clears a previously stored link.
+        whishPaymentLink:
+          form.paymentMode === "CASH"
+            ? null
+            : form.whishPaymentLink.trim() || null,
         autoConfirmation: form.autoConfirmation,
         allowRecurringBookings: form.allowRecurringBookings,
         maxAdvanceBookingDays: form.maxAdvanceBookingDays,
@@ -506,7 +517,35 @@ export default function EditVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
-            {onlinePaymentsEnabled && (
+            <div className="space-y-2">
+              <Label htmlFor="paymentMode" className={LABEL_CLASS}>
+                Payment Mode *
+              </Label>
+              <select
+                id="paymentMode"
+                required
+                value={form.paymentMode}
+                onChange={(event) => {
+                  const paymentMode = event.target.value as PaymentMode;
+                  updateField("paymentMode", paymentMode);
+                  if (paymentMode === "CASH") {
+                    setWhishPaymentLinkError(null);
+                  }
+                }}
+                disabled={isSaving}
+                className={`h-9 w-full rounded-md border px-3 text-sm outline-none transition-all disabled:cursor-not-allowed disabled:opacity-50 ${INPUT_CLASS}`}
+              >
+                {PAYMENT_MODES.map((mode) => (
+                  <option key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs leading-5 text-[var(--text-4)]">
+                Choose how customers can pay when booking this venue.
+              </p>
+            </div>
+            {form.paymentMode !== "CASH" && (
               <WhishPaymentQrField
                 value={form.whishPaymentLink}
                 onChange={(value) => updateField("whishPaymentLink", value)}

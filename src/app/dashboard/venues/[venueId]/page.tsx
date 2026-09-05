@@ -14,6 +14,7 @@ import {
 } from "@/lib/api";
 import type {
   ContractResponse,
+  PaymentMode,
   VenueAvailabilityDay,
   VenueDetailResponse,
   VenueStatus,
@@ -80,6 +81,12 @@ const CONTRACT_INPUT_CLASS =
   "border-[var(--border)] bg-[var(--bg-0)] text-white placeholder:text-white/25 focus:border-[var(--teal)]/40 focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
 const CONTRACT_LABEL_CLASS =
   "text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--text-4)]";
+
+const PAYMENT_MODE_LABELS: Record<PaymentMode, string> = {
+  CASH: "Cash only",
+  ONLINE: "Online only",
+  BOTH: "Cash & online",
+};
 
 export default function VenueDetailPage() {
   const params = useParams<{ venueId: string }>();
@@ -564,6 +571,13 @@ export default function VenueDetailPage() {
             </p>
           </header>
           <div className="divide-y divide-[var(--border)]">
+            <ConfigRow label="Payment mode">
+              <span className="text-xs font-medium text-[var(--text-2)]">
+                {venue.paymentMode
+                  ? PAYMENT_MODE_LABELS[venue.paymentMode]
+                  : "Not set"}
+              </span>
+            </ConfigRow>
             <ConfigRow label="Auto confirm">
               <BoolBadge on={venue.autoConfirmation} />
             </ConfigRow>
