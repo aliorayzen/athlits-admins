@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { Ban, Edit3, Loader2, Mail, Power, Save, User } from "lucide-react";
+import Link from "next/link";
+import { Ban, Edit3, Loader2, Mail, Power, Save, User, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { PhoneNumberField } from "@/components/phone-number-field";
@@ -104,6 +105,14 @@ function ManagerActions({
 }) {
   return (
     <div className="flex items-center justify-end gap-2">
+      <Link
+        href={`/dashboard/users/venue-managers/${manager.id}/staff`}
+        aria-label={`View staff managed by ${manager.firstName} ${manager.lastName}`}
+        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--text-3)] transition-colors hover:border-[rgba(245,158,11,0.25)] hover:bg-[var(--semantic-amber-subtle)] hover:text-[var(--semantic-amber)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
+      >
+        <Users className="h-[13px] w-[13px]" />
+        Staff
+      </Link>
       <EditManagerDialog
         manager={manager}
         isPending={isPending}

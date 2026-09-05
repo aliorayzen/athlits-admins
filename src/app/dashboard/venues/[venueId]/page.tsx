@@ -344,13 +344,22 @@ export default function VenueDetailPage() {
           </Dialog>
 
           {venue.managerId && (
-            <Link
-              href={`/dashboard/venues/${venue.id}/staff/new`}
-              className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 text-sm font-medium text-[var(--semantic-amber)] transition-all outline-none hover:bg-[rgba(245,158,11,0.16)] focus-visible:ring-3 focus-visible:ring-[rgba(245,158,11,0.18)] active:translate-y-px"
-            >
-              <Users className="h-3.5 w-3.5" />
-              Create staff
-            </Link>
+            <>
+              <Link
+                href={`/dashboard/users/venue-managers/${venue.managerId}/staff?venueId=${venue.id}`}
+                className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[var(--border-strong)] bg-[var(--bg-2)] px-2.5 text-sm font-medium text-[var(--text-2)] transition-colors outline-none hover:bg-[var(--bg-hover)] focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
+              >
+                <Users className="h-3.5 w-3.5" />
+                View staff
+              </Link>
+              <Link
+                href={`/dashboard/venues/${venue.id}/staff/new`}
+                className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 text-sm font-medium text-[var(--semantic-amber)] transition-colors outline-none hover:bg-[rgba(245,158,11,0.16)] focus-visible:ring-3 focus-visible:ring-[rgba(245,158,11,0.18)] active:translate-y-px"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                Create staff
+              </Link>
+            </>
           )}
 
           {/* Status toggle */}

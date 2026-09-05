@@ -13,6 +13,7 @@ import type {
   AssignManagerRequest,
   SetVenueStatusRequest,
   StaffUserDto,
+  UpdateVenueStaffRequest,
   UpdateVenueManagerRequest,
   UpdateVenueRequest,
   VenueDetailResponse,
@@ -188,6 +189,14 @@ function normalizeUser(user: UserDto): UserDto {
   return {
     ...user,
     id: ensureStringId(user.id),
+  };
+}
+
+function normalizeStaffUser(user: StaffUserDto): StaffUserDto {
+  return {
+    ...user,
+    id: ensureStringId(user.id),
+    venueAccess: user.venueAccess ?? [],
   };
 }
 
@@ -657,13 +666,29 @@ export async function createVenueStaff(
     { preserveEnvelope: true },
   );
   return {
-    user: {
-      ...data.data,
-      id: ensureStringId(data.data.id),
-      venueAccess: data.data.venueAccess ?? [],
-    },
+    user: normalizeStaffUser(data.data),
     message: data.message ?? "Staff user created",
   };
+}
+
+export async function getVenueManagerStaff(
+  managerId: string,
+): Promise<StaffUserDto[]> {
+  const { data } = await apiClient.get<StaffUserDto[]>(
+    `/api/admin/v1/users/venue-managers/${managerId}/staff`,
+  );
+  return (data ?? []).map(normalizeStaffUser);
+}
+
+export async function updateVenueStaff(
+  managerId: string,
+  staffId: string,
+  payload: UpdateVenueStaffRequest,
+): Promise<void> {
+  await apiClient.put(
+    `/api/admin/v1/users/venue-managers/${managerId}/staff/${staffId}`,
+    payload,
+  );
 }
 
 export async function updateVenueManager(

@@ -136,10 +136,25 @@ export interface CreateVenueStaffRequest {
   venueAssignments: VenueStaffAssignmentRequest[];
 }
 
+export interface VenueStaffAccess {
+  venueId: number;
+  venueName: string;
+  relationship: "STAFF";
+  permissions: StaffPermission[];
+  canManageUsers: boolean;
+  immutableOwner: boolean;
+}
+
 export interface StaffUserDto extends Omit<UserDto, "role"> {
-  role: "STAFF";
+  // Staff accounts currently inherit the VENUE_MANAGER backend role while
+  // their venue relationship and permissions identify them as staff.
+  role: "STAFF" | "VENUE_MANAGER";
   forcePasswordChange: boolean;
-  venueAccess: unknown[];
+  venueAccess: VenueStaffAccess[];
+}
+
+export interface UpdateVenueStaffRequest {
+  venueAssignments: VenueStaffAssignmentRequest[];
 }
 
 // Venues

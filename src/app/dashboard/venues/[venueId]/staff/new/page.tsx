@@ -42,6 +42,12 @@ import type {
   StaffPermission,
   VenueDetailResponse,
 } from "@/types/api";
+import {
+  ALL_STAFF_PERMISSIONS,
+  STAFF_PERMISSION_GROUPS as PERMISSION_GROUPS,
+  STAFF_PERMISSION_PRESETS as PERMISSION_PRESETS,
+  type StaffPermissionOption,
+} from "@/lib/staff-permissions";
 import { BackLink } from "@/app/dashboard/users/create/_components/back-link";
 import {
   FormFooter,
@@ -75,129 +81,16 @@ function getEmailLocalPart(value: string): string {
   return value.split("@", 1)[0];
 }
 
-interface PermissionOption {
-  value: StaffPermission;
-  label: string;
-  description: string;
-}
-
-const PERMISSION_GROUPS: Array<{
-  label: string;
-  icon: typeof Eye;
-  options: PermissionOption[];
-}> = [
-  {
-    label: "Venue",
-    icon: Building2,
-    options: [
-      { value: "VENUE_READ", label: "View venue", description: "See venue details and settings." },
-      { value: "VENUE_WRITE", label: "Edit venue", description: "Update venue details and settings." },
-    ],
-  },
-  {
-    label: "Courts",
-    icon: Grid2X2,
-    options: [
-      { value: "COURTS_READ", label: "View courts", description: "See courts, schedules, and pricing." },
-      { value: "COURTS_WRITE", label: "Manage courts", description: "Create and update court setup." },
-      { value: "COURTS_DELETE", label: "Delete courts", description: "Remove courts from the venue." },
-    ],
-  },
-  {
-    label: "Bookings",
-    icon: CalendarCheck,
-    options: [
-      { value: "BOOKINGS_READ", label: "View bookings", description: "See booking details and schedules." },
-      { value: "BOOKINGS_WRITE", label: "Manage bookings", description: "Create and update bookings." },
-      { value: "BOOKINGS_APPROVE", label: "Approve bookings", description: "Approve pending booking requests." },
-      { value: "BOOKINGS_CANCEL", label: "Cancel bookings", description: "Cancel existing bookings." },
-      { value: "BOOKINGS_DELETE", label: "Delete bookings", description: "Permanently remove bookings." },
-    ],
-  },
-  {
-    label: "Customers",
-    icon: ContactRound,
-    options: [
-      { value: "CUSTOMERS_READ", label: "View customers", description: "See customer profiles and activity." },
-      { value: "CUSTOMERS_WRITE", label: "Manage customers", description: "Update customer information." },
-      { value: "CUSTOMERS_BLOCK", label: "Block customers", description: "Restrict customers from booking." },
-    ],
-  },
-  {
-    label: "Promotions",
-    icon: BadgePercent,
-    options: [
-      { value: "PROMOTIONS_READ", label: "View promotions", description: "See promotions and eligibility." },
-      { value: "PROMOTIONS_WRITE", label: "Manage promotions", description: "Create and update promotions." },
-      { value: "PROMOTIONS_DELETE", label: "Delete promotions", description: "Remove promotions." },
-    ],
-  },
-  {
-    label: "Finance",
-    icon: WalletCards,
-    options: [
-      { value: "FINANCE_READ", label: "View finance", description: "See financial records and balances." },
-      { value: "FINANCE_WRITE", label: "Manage finance", description: "Update financial records." },
-    ],
-  },
-  {
-    label: "Reports",
-    icon: ChartNoAxesCombined,
-    options: [
-      { value: "REPORTS_READ", label: "View reports", description: "Open operational reports." },
-    ],
-  },
-  {
-    label: "Notifications",
-    icon: BellRing,
-    options: [
-      { value: "NOTIFICATIONS_READ", label: "View notifications", description: "See venue notifications." },
-      { value: "NOTIFICATIONS_WRITE", label: "Manage notifications", description: "Create and update notifications." },
-      { value: "NOTIFICATIONS_SEND", label: "Send notifications", description: "Send notifications to recipients." },
-    ],
-  },
-];
-
-const ALL_STAFF_PERMISSIONS = PERMISSION_GROUPS.flatMap((group) =>
-  group.options.map((option) => option.value),
-);
-
-const PERMISSION_PRESETS: Array<{
-  label: string;
-  description: string;
-  permissions: StaffPermission[];
-}> = [
-  {
-    label: "Basic",
-    description: "Daily venue operations",
-    permissions: [
-      "VENUE_READ",
-      "COURTS_READ",
-      "COURTS_WRITE",
-      "BOOKINGS_READ",
-      "BOOKINGS_WRITE",
-      "BOOKINGS_APPROVE",
-      "FINANCE_READ",
-      "REPORTS_READ",
-    ],
-  },
-  {
-    label: "Bookings only",
-    description: "Booking desk access",
-    permissions: [
-      "BOOKINGS_READ",
-      "BOOKINGS_WRITE",
-      "BOOKINGS_APPROVE",
-      "BOOKINGS_CANCEL",
-      "CUSTOMERS_READ",
-    ],
-  },
-  {
-    label: "Manager",
-    description: "All 22 permissions",
-    permissions: ALL_STAFF_PERMISSIONS,
-  },
-];
+const PERMISSION_GROUP_ICONS: Record<string, typeof Eye> = {
+  Venue: Building2,
+  Courts: Grid2X2,
+  Bookings: CalendarCheck,
+  Customers: ContactRound,
+  Promotions: BadgePercent,
+  Finance: WalletCards,
+  Reports: ChartNoAxesCombined,
+  Notifications: BellRing,
+};
 
 function hasSamePermissions(
   current: StaffPermission[],
@@ -338,7 +231,7 @@ export default function CreateVenueStaffPage() {
     clearFieldError("permissions");
   }
 
-  function setPermissionGroup(group: PermissionOption[], checked: boolean) {
+  function setPermissionGroup(group: StaffPermissionOption[], checked: boolean) {
     const groupPermissions = group.map((option) => option.value);
     setPermissions((current) =>
       checked
@@ -682,7 +575,7 @@ export default function CreateVenueStaffPage() {
                 }
               >
                 {PERMISSION_GROUPS.map((group) => {
-                  const Icon = group.icon;
+                  const Icon = PERMISSION_GROUP_ICONS[group.label];
                   const selectedInGroup = group.options.filter((option) =>
                     permissions.includes(option.value),
                   ).length;
