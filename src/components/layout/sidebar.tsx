@@ -18,6 +18,7 @@ import {
   UserRound,
   RotateCcw,
   ScrollText,
+  CalendarPlus2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -68,6 +69,12 @@ function buildNavSections(stats: {
           href: "/dashboard/onboarding/venue-manager",
           label: "Onboarding VM",
           icon: UserPlus,
+        },
+        {
+          href: "/dashboard/bookings",
+          label: "Bookings",
+          icon: CalendarPlus2,
+          kbd: "3",
         },
         {
           href: "/dashboard/invoices",

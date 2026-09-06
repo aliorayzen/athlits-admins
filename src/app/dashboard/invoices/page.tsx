@@ -48,6 +48,7 @@ import { downloadCSV, downloadPDF } from "@/lib/export";
 import { invoiceAmountDue } from "@/lib/invoice-view";
 import { cn } from "@/lib/utils";
 import { InvoicePdfDialog } from "./_components/invoice-pdf-dialog";
+import { InvoiceBreakdownSheet } from "./_components/invoice-breakdown-sheet";
 import { SuspendVmDialog } from "./_components/invoice-suspend-dialog";
 import { InvoiceExportMenu } from "./_components/invoice-export-menu";
 import {
@@ -224,6 +225,8 @@ function InvoicesContent() {
   const [bulkVoidReason, setBulkVoidReason] = useState("");
   const [bulkBusy, setBulkBusy] = useState(false);
   const [pdfInvoice, setPdfInvoice] = useState<InvoiceResponse | null>(null);
+  const [breakdownInvoice, setBreakdownInvoice] =
+    useState<InvoiceResponse | null>(null);
   const bulkPaidRefId = useId();
   const bulkVoidReasonId = useId();
 
@@ -969,6 +972,7 @@ function InvoicesContent() {
                           void loadKpis();
                         }}
                         onPdf={() => setPdfInvoice(inv)}
+                        onBreakdown={() => setBreakdownInvoice(inv)}
                       />
                     ))}
                   </tbody>
@@ -1095,6 +1099,12 @@ function InvoicesContent() {
         invoice={pdfInvoice}
         onOpenChange={(open) => {
           if (!open) setPdfInvoice(null);
+        }}
+      />
+      <InvoiceBreakdownSheet
+        invoice={breakdownInvoice}
+        onOpenChange={(open) => {
+          if (!open) setBreakdownInvoice(null);
         }}
       />
     </div>
@@ -1478,6 +1488,7 @@ function InvoiceRow({
   onPaid,
   onChanged,
   onPdf,
+  onBreakdown,
 }: {
   invoice: InvoiceResponse;
   isSelected: boolean;
@@ -1486,6 +1497,7 @@ function InvoiceRow({
   onPaid: () => void;
   onChanged: () => void;
   onPdf: () => void;
+  onBreakdown: () => void;
 }) {
   const urgency = computeUrgency(invoice);
   const venueName = invoice.venueName ?? invoice.venueId;
@@ -1576,6 +1588,7 @@ function InvoiceRow({
           onPaid={onPaid}
           onChanged={onChanged}
           onPdf={onPdf}
+          onBreakdown={onBreakdown}
         />
       </td>
     </tr>
@@ -1712,16 +1725,27 @@ function RowActions({
   onPaid,
   onChanged,
   onPdf,
+  onBreakdown,
 }: {
   invoice: InvoiceResponse;
   onVoid: () => void;
   onPaid: () => void;
   onChanged: () => void;
   onPdf: () => void;
+  onBreakdown: () => void;
 }) {
   const isTerminal = invoice.status === "PAID" || invoice.status === "VOID";
   return (
     <div className="flex items-center justify-end gap-1">
+      <button
+        type="button"
+        onClick={onBreakdown}
+        title="View charge breakdown"
+        aria-label={`View invoice ${invoice.id.slice(0, 8)} charge breakdown`}
+        className="grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+      >
+        <Receipt className="h-[13px] w-[13px]" />
+      </button>
       <button
         type="button"
         onClick={onPdf}

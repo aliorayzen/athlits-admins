@@ -64,6 +64,9 @@ export interface UserDto {
   latitude?: number | null;
   longitude?: number | null;
   sportsInterests?: string[];
+  // Admin deployments may expose granular authorities on the self endpoint.
+  // When omitted, the ADMIN role remains the platform-wide authority.
+  permissions?: StaffPermission[];
 }
 
 // Player reporting
@@ -453,6 +456,127 @@ export interface CourtResponse {
   sports: string[];
 }
 
+// Admin booking creation
+export type BookingPaymentMethod = "CASH" | "ONLINE";
+
+export interface BookingOptionResponse {
+  id: string;
+  durationMinutes: number;
+  isDefault: boolean;
+  active: boolean;
+}
+
+export interface BookableCourtSportResponse {
+  id: string;
+  sportType: string;
+  capacity: number;
+  sessionDurationMinutes: number;
+  startIntervalMinutes?: number | null;
+  bookingOptions: BookingOptionResponse[];
+  supportedPaymentMethods: BookingPaymentMethod[];
+}
+
+export interface BookableCourtResponse {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). */
+  name: string;
+  surfaceType: SurfaceType;
+  environment: CourtEnvironment;
+  courtSports: BookableCourtSportResponse[];
+}
+
+/** Public venue detail used to populate authoritative court/session choices. */
+export interface BookableVenueResponse {
+  id: string;
+  nameEn: string;
+  nameAr: string;
+  /** Client-derived display name (nameEn ?? nameAr). */
+  name: string;
+  slug: string;
+  currencyCode: string;
+  allowRecurringBookings: boolean;
+  maxAdvanceBookingDays: number;
+  maxRecurringBookingWeeks?: number;
+  courts: BookableCourtResponse[];
+}
+
+export interface AdminBookingRecurrenceRequest {
+  frequency: "WEEKLY";
+  occurrences?: number;
+  endDate?: string;
+}
+
+export interface AdminBookingRequest {
+  venueId: number;
+  courtId: number;
+  courtSportId: number;
+  bookingOptionId: number;
+  bookingDate: string;
+  startTime: string;
+  playerName?: string;
+  playerPhoneE164?: string;
+  paymentMethod: BookingPaymentMethod;
+  notes?: string;
+  recurring?: AdminBookingRecurrenceRequest;
+}
+
+export interface AdminBookingConflict {
+  code?: string;
+  message?: string;
+  reason?: string;
+  [key: string]: unknown;
+}
+
+export interface AdminBookingOccurrencePreview {
+  bookingDate: string;
+  startTime: string;
+  endTime?: string | null;
+  endsNextDay?: boolean;
+  durationMinutes?: number;
+  bookingOptionId?: string;
+  priceAmount: number | null;
+  currencyCode?: string | null;
+  conflict?: AdminBookingConflict | string | null;
+}
+
+export interface AdminBookingPreviewResponse {
+  occurrences: AdminBookingOccurrencePreview[];
+  conflicts: unknown[];
+  occurrenceCount?: number;
+  totalPriceAmount?: number | null;
+  totalAmount?: number | null;
+  currencyCode?: string | null;
+  startDate?: string;
+  endDate?: string;
+  dates?: string[];
+}
+
+export interface AdminCreatedBookingOccurrence
+  extends Omit<AdminBookingOccurrencePreview, "priceAmount" | "conflict"> {
+  id?: string;
+  reference?: string;
+  reservationId?: string;
+  status?: string;
+  priceAmount?: number | null;
+  totalAmount?: number | null;
+  recurringSeriesId?: string | null;
+}
+
+export interface AdminBookingCreateResponse {
+  seriesId?: string | null;
+  recurringSeriesId?: string | null;
+  occurrenceCount?: number;
+  totalPriceAmount?: number | null;
+  totalAmount?: number | null;
+  currencyCode?: string | null;
+  startDate?: string;
+  endDate?: string;
+  dates?: string[];
+  occurrences: AdminCreatedBookingOccurrence[];
+}
+
 // Invoices
 export type InvoiceStatus = "GENERATED" | "PAID" | "OVERDUE" | "VOID";
 
@@ -507,6 +631,68 @@ export interface InvoiceResponse {
   // Optional during the backend rollout. The API normalization boundary
   // defaults an absent value to [] for consumers.
   lines?: InvoiceLineResponse[];
+}
+
+export interface InvoiceBreakdownPeriod {
+  contractId: string;
+  servicePeriodStart: string;
+  servicePeriodEnd: string;
+  feeModel: InvoiceFeeModel;
+  rate: number;
+  coveredDays: number;
+  daysInMonth: number;
+  totalBookings: number;
+  billingUnits: number;
+  subtotal: number;
+  currencyCode: string;
+}
+
+export interface InvoiceBreakdownSession {
+  bookingId: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  endsNextDay: boolean;
+  durationMinutes: number;
+  status: string;
+}
+
+export type InvoiceBreakdownChargeType = "COURT" | "RESERVATION";
+
+export interface InvoiceBreakdownCharge {
+  id: string;
+  type: InvoiceBreakdownChargeType;
+  contractId?: string | null;
+  venueId?: string | null;
+  venueNameEn?: string | null;
+  venueNameAr?: string | null;
+  venueName?: string;
+  courtId: string;
+  courtNameEn?: string | null;
+  courtNameAr?: string | null;
+  courtName?: string;
+  reservationId?: string | null;
+  servicePeriodStart?: string | null;
+  servicePeriodEnd?: string | null;
+  coveredDays?: number | null;
+  daysInMonth?: number | null;
+  proration?: number | null;
+  combinedDurationMinutes?: number | null;
+  billingUnits?: number | null;
+  rate: number;
+  amount: number;
+  currencyCode: string;
+  sessions: InvoiceBreakdownSession[];
+}
+
+export interface InvoiceBreakdownResponse {
+  invoiceId: string;
+  currencyCode: string;
+  amountDue: number;
+  detailAvailable: boolean;
+  detailUnavailableReason: string | null;
+  periods: InvoiceBreakdownPeriod[];
+  charges: PageResponse<InvoiceBreakdownCharge>;
 }
 
 export interface MarkPaidRequest {

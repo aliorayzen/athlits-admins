@@ -23,6 +23,7 @@ import type {
   DuePaymentsResponse,
   InvoiceKpisResponse,
   InvoiceKpiSummary,
+  InvoiceBreakdownResponse,
   InvoiceResponse,
   InvoiceStatus,
   InvoiceFilters,
@@ -44,6 +45,12 @@ import type {
   AuditEventFilters,
   AuditEventOutcome,
   AuditEventQuery,
+  AdminBookingCreateResponse,
+  AdminBookingOccurrencePreview,
+  AdminBookingPreviewResponse,
+  AdminBookingRequest,
+  AdminCreatedBookingOccurrence,
+  BookableVenueResponse,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
 import { normalizeOptionalHttpUrl } from "@/lib/http-url";
@@ -233,6 +240,64 @@ function normalizeVenueDetail(v: VenueDetailResponse): VenueDetailResponse {
   };
 }
 
+function normalizeBookableVenue(v: BookableVenueResponse): BookableVenueResponse {
+  return {
+    ...v,
+    id: ensureStringId(v.id),
+    name: displayName(v.nameEn, v.nameAr),
+    courts: (v.courts ?? []).map((court) => ({
+      ...court,
+      id: ensureStringId(court.id),
+      name: displayName(court.nameEn, court.nameAr),
+      courtSports: (court.courtSports ?? []).map((sport) => ({
+        ...sport,
+        id: ensureStringId(sport.id),
+        bookingOptions: (sport.bookingOptions ?? []).map((option) => ({
+          ...option,
+          id: ensureStringId(option.id),
+        })),
+        supportedPaymentMethods: sport.supportedPaymentMethods ?? [],
+      })),
+    })),
+  };
+}
+
+function optionalAmount(
+  value: number | null | undefined,
+): number | null | undefined {
+  return value == null ? value : Number(value);
+}
+
+function normalizeAdminBookingPreviewOccurrence(
+  occurrence: AdminBookingOccurrencePreview,
+): AdminBookingOccurrencePreview {
+  return {
+    ...occurrence,
+    bookingOptionId: occurrence.bookingOptionId
+      ? ensureStringId(occurrence.bookingOptionId)
+      : occurrence.bookingOptionId,
+    priceAmount:
+      occurrence.priceAmount == null ? null : Number(occurrence.priceAmount),
+  };
+}
+
+function normalizeAdminCreatedBookingOccurrence(
+  occurrence: AdminCreatedBookingOccurrence,
+): AdminCreatedBookingOccurrence {
+  return {
+    ...occurrence,
+    id: occurrence.id ? ensureStringId(occurrence.id) : occurrence.id,
+    recurringSeriesId: occurrence.recurringSeriesId
+      ? ensureStringId(occurrence.recurringSeriesId)
+      : occurrence.recurringSeriesId,
+    bookingOptionId: occurrence.bookingOptionId
+      ? ensureStringId(occurrence.bookingOptionId)
+      : occurrence.bookingOptionId,
+    priceAmount: optionalAmount(occurrence.priceAmount),
+    totalAmount: optionalAmount(occurrence.totalAmount),
+  };
+}
+
 function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
   const now = new Date().toISOString();
   const id = ensureStringId(i.id);
@@ -267,6 +332,52 @@ function normalizeInvoice(i: InvoiceResponse): InvoiceResponse {
       ...line,
       contractId: ensureStringId(line.contractId),
     })),
+  };
+}
+
+function normalizeInvoiceBreakdown(
+  breakdown: InvoiceBreakdownResponse,
+): InvoiceBreakdownResponse {
+  return {
+    ...breakdown,
+    invoiceId: ensureStringId(breakdown.invoiceId),
+    periods: (breakdown.periods ?? []).map((period) => ({
+      ...period,
+      contractId: ensureStringId(period.contractId),
+    })),
+    charges: {
+      ...breakdown.charges,
+      content: (breakdown.charges?.content ?? []).map((charge) => ({
+        ...charge,
+        id: ensureStringId(charge.id),
+        contractId:
+          charge.contractId === null || charge.contractId === undefined
+            ? charge.contractId
+            : ensureStringId(charge.contractId),
+        venueId:
+          charge.venueId === null || charge.venueId === undefined
+            ? charge.venueId
+            : ensureStringId(charge.venueId),
+        venueName:
+          displayName(charge.venueNameEn, charge.venueNameAr) ||
+          charge.venueName?.trim() ||
+          undefined,
+        courtId: ensureStringId(charge.courtId),
+        courtName:
+          displayName(charge.courtNameEn, charge.courtNameAr) ||
+          charge.courtName?.trim() ||
+          undefined,
+        reservationId:
+          charge.reservationId === null ||
+          charge.reservationId === undefined
+            ? charge.reservationId
+            : ensureStringId(charge.reservationId),
+        sessions: (charge.sessions ?? []).map((session) => ({
+          ...session,
+          bookingId: ensureStringId(session.bookingId),
+        })),
+      })),
+    },
   };
 }
 
@@ -502,6 +613,55 @@ export async function getVenue(venueId: string): Promise<VenueDetailResponse> {
     `/api/admin/v1/venues/${venueId}`,
   );
   return normalizeVenueDetail(data);
+}
+
+/** Active courts, court-sport ids, session options, and payment methods. */
+export async function getBookableVenue(
+  venueSlug: string,
+): Promise<BookableVenueResponse> {
+  const { data } = await apiClient.get<BookableVenueResponse>(
+    `/api/v1/venues/${encodeURIComponent(venueSlug)}`,
+  );
+  return normalizeBookableVenue(data);
+}
+
+export async function previewAdminBooking(
+  payload: AdminBookingRequest,
+): Promise<AdminBookingPreviewResponse> {
+  const { data } = await apiClient.post<AdminBookingPreviewResponse>(
+    "/api/admin/v1/bookings/preview",
+    payload,
+  );
+  return {
+    ...data,
+    occurrences: (data.occurrences ?? []).map(
+      normalizeAdminBookingPreviewOccurrence,
+    ),
+    conflicts: data.conflicts ?? [],
+    totalPriceAmount: optionalAmount(data.totalPriceAmount),
+    totalAmount: optionalAmount(data.totalAmount),
+  };
+}
+
+export async function createAdminBooking(
+  payload: AdminBookingRequest,
+): Promise<AdminBookingCreateResponse> {
+  const { data } = await apiClient.post<AdminBookingCreateResponse>(
+    "/api/admin/v1/bookings",
+    payload,
+  );
+  return {
+    ...data,
+    seriesId: data.seriesId ? ensureStringId(data.seriesId) : data.seriesId,
+    recurringSeriesId: data.recurringSeriesId
+      ? ensureStringId(data.recurringSeriesId)
+      : data.recurringSeriesId,
+    occurrences: (data.occurrences ?? []).map(
+      normalizeAdminCreatedBookingOccurrence,
+    ),
+    totalPriceAmount: optionalAmount(data.totalPriceAmount),
+    totalAmount: optionalAmount(data.totalAmount),
+  };
 }
 
 export async function createVenue(
@@ -952,6 +1112,17 @@ export async function getInvoice(id: string): Promise<InvoiceResponse> {
     `/api/admin/v1/invoices/${id}`,
   );
   return normalizeInvoice(data);
+}
+
+export async function getInvoiceBreakdown(
+  id: string,
+  params: { page?: number; size?: number } = {},
+): Promise<InvoiceBreakdownResponse> {
+  const { data } = await apiClient.get<InvoiceBreakdownResponse>(
+    `/api/admin/v1/invoices/${encodeURIComponent(id)}/breakdown`,
+    { params },
+  );
+  return normalizeInvoiceBreakdown(data);
 }
 
 // ── Audit events ─────────────────────────────────────────────────────────────
