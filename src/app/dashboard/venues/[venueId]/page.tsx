@@ -61,6 +61,7 @@ import {
   FileText,
   Loader2,
   ExternalLink,
+  CalendarPlus2,
 } from "lucide-react";
 import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -648,7 +649,7 @@ export default function VenueDetailPage() {
             </h2>
             <p className="text-xs text-[var(--text-4)]">
               {courts.length} court{courts.length === 1 ? "" : "s"} registered
-              &middot; managed by venue managers
+              &middot; select an active court to create a booking
             </p>
           </div>
         </header>
@@ -663,26 +664,58 @@ export default function VenueDetailPage() {
             </div>
           ) : (
             <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-              {courts.map((court) => (
-                <div
-                  key={court.id}
-                  className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 transition-colors hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)]"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-[var(--text-1)]">
-                      {court.name}
-                    </p>
-                    <p className="truncate text-xs text-[var(--text-4)]">
-                      {court.surfaceType} &middot; {court.environment}
-                    </p>
+              {courts.map((court) => {
+                const content = (
+                  <>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-[var(--text-1)]">
+                        {court.name}
+                      </p>
+                      <p className="truncate text-xs text-[var(--text-4)]">
+                        {court.surfaceType} &middot; {court.environment}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2.5">
+                      <BoolBadge
+                        on={court.active}
+                        onLabel="Active"
+                        offLabel="Inactive"
+                      />
+                      {venue.status === "ACTIVE" && court.active && (
+                        <CalendarPlus2 className="h-4 w-4 text-[var(--teal-text)] opacity-70 transition-opacity group-hover:opacity-100" />
+                      )}
+                    </div>
+                  </>
+                );
+
+                if (venue.status === "ACTIVE" && court.active) {
+                  return (
+                    <Link
+                      key={court.id}
+                      href={`/dashboard/venues/${venue.id}/courts/${court.id}/bookings/new`}
+                      aria-label={`Create a booking for ${court.name}`}
+                      className="group flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 outline-none transition-colors hover:border-[rgba(0,212,170,0.22)] hover:bg-[var(--teal-subtle)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+
+                return (
+                  <div
+                    key={court.id}
+                    aria-disabled="true"
+                    title={
+                      venue.status !== "ACTIVE"
+                        ? "Activate the venue before creating bookings"
+                        : "Activate the court before creating bookings"
+                    }
+                    className="flex cursor-not-allowed items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 opacity-60"
+                  >
+                    {content}
                   </div>
-                  <BoolBadge
-                    on={court.active}
-                    onLabel="Active"
-                    offLabel="Inactive"
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
