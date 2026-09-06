@@ -29,9 +29,14 @@ import type {
   InvoiceExportFormat,
   VenueManagerSuspensionResult,
   MarkPaidRequest,
+  MoneyAmount,
   BulkInvoiceResult,
   PageResponse,
   PageQuery,
+  PlayerBookingGroup,
+  PlayerBookingHistoryQuery,
+  PlayerDirectoryQuery,
+  PlayerReportItem,
   RestorableAccountDto,
   ContractResponse,
   CreateContractRequest,
@@ -736,6 +741,120 @@ export async function getCustomers(
     { params },
   );
   return { ...data, content: (data?.content ?? []).map(normalizeUser) };
+}
+
+function appendQueryValue(
+  params: URLSearchParams,
+  key: string,
+  value: string | number | boolean | undefined,
+): void {
+  if (value === undefined || value === "") return;
+  params.append(key, String(value));
+}
+
+/** Spring expects repeated keys, not Axios's default `key[]=value` arrays. */
+function playerQueryParams(
+  query: PlayerDirectoryQuery | PlayerBookingHistoryQuery,
+): URLSearchParams {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      for (const item of value) appendQueryValue(params, key, item);
+    } else {
+      appendQueryValue(params, key, value);
+    }
+  }
+  return params;
+}
+
+function normalizeMoney(
+  amounts: MoneyAmount[] | null | undefined,
+): MoneyAmount[] {
+  return (amounts ?? []).map((amount) => ({
+    currencyCode: String(amount.currencyCode ?? "").toUpperCase(),
+    amount: Number(amount.amount ?? 0),
+  }));
+}
+
+function normalizePlayer(player: PlayerReportItem): PlayerReportItem {
+  return {
+    ...player,
+    playerId: ensureStringId(player.playerId),
+    grossPaid: normalizeMoney(player.grossPaid),
+    netPaid: normalizeMoney(player.netPaid),
+  };
+}
+
+function normalizePlayerBooking(
+  booking: PlayerBookingGroup,
+): PlayerBookingGroup {
+  return {
+    ...booking,
+    reservationId: ensureStringId(booking.reservationId),
+    venueId: ensureStringId(booking.venueId),
+    courtId: ensureStringId(booking.courtId),
+    statuses: booking.statuses ?? [],
+    paymentStatuses: booking.paymentStatuses ?? [],
+    paymentMethods: booking.paymentMethods ?? [],
+    totalAmounts: normalizeMoney(booking.totalAmounts),
+    grossPaid: normalizeMoney(booking.grossPaid),
+    netPaid: normalizeMoney(booking.netPaid),
+  };
+}
+
+function normalizeReportingPage<T>(
+  data: PageResponse<T>,
+  requestedPage: number,
+  requestedSize: number,
+): PageResponse<T> {
+  const totalElements = Number(data?.totalElements ?? 0);
+  const size = Number(data?.size ?? requestedSize);
+  const number = Number(data?.number ?? requestedPage);
+  const content = data?.content ?? [];
+  const totalPages = Number(
+    data?.totalPages ?? Math.ceil(totalElements / Math.max(1, size)),
+  );
+  return {
+    ...data,
+    content,
+    totalElements,
+    totalPages,
+    number,
+    size,
+    numberOfElements: data?.numberOfElements ?? content.length,
+    first: data?.first ?? number === 0,
+    last: data?.last ?? number + 1 >= Math.max(1, totalPages),
+    empty: data?.empty ?? content.length === 0,
+  };
+}
+
+/** Rich platform-admin player directory with reporting filters and totals. */
+export async function getAdminPlayers(
+  query: PlayerDirectoryQuery = {},
+): Promise<PageResponse<PlayerReportItem>> {
+  const requestedPage = query.page ?? 0;
+  const requestedSize = query.size ?? 20;
+  const { data } = await apiClient.get<PageResponse<PlayerReportItem>>(
+    "/api/admin/v1/players",
+    { params: playerQueryParams(query) },
+  );
+  const page = normalizeReportingPage(data, requestedPage, requestedSize);
+  return { ...page, content: page.content.map(normalizePlayer) };
+}
+
+/** Reservation-grouped booking history for one player. */
+export async function getAdminPlayerBookings(
+  playerId: string,
+  query: PlayerBookingHistoryQuery = {},
+): Promise<PageResponse<PlayerBookingGroup>> {
+  const requestedPage = query.page ?? 0;
+  const requestedSize = query.size ?? 20;
+  const { data } = await apiClient.get<PageResponse<PlayerBookingGroup>>(
+    `/api/admin/v1/players/${encodeURIComponent(playerId)}/bookings`,
+    { params: playerQueryParams(query) },
+  );
+  const page = normalizeReportingPage(data, requestedPage, requestedSize);
+  return { ...page, content: page.content.map(normalizePlayerBooking) };
 }
 
 export async function getRestorableAccounts(

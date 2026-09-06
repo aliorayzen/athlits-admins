@@ -66,6 +66,87 @@ export interface UserDto {
   sportsInterests?: string[];
 }
 
+// Player reporting
+export interface MoneyAmount {
+  currencyCode: string;
+  amount: number;
+}
+
+export type PlayerSortBy =
+  | "NAME"
+  | "EMAIL"
+  | "REGISTRATION_DATE"
+  | "TOTAL_RESERVATIONS"
+  | "PAID_RESERVATIONS"
+  | "LAST_BOOKING_DATE";
+
+export type SortDirection = "ASC" | "DESC";
+
+/** Stable client model returned by the admin player-reporting directory. */
+export interface PlayerReportItem {
+  playerId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string | null;
+  accountStatus: UserStatus;
+  registrationDate: string;
+  totalReservations: number;
+  confirmedReservations: number;
+  completedReservations: number;
+  cancelledReservations: number;
+  noShowReservations: number;
+  paidReservations: number;
+  grossPaid: MoneyAmount[];
+  netPaid: MoneyAmount[];
+  lastBookingDate?: string | null;
+}
+
+export interface PlayerDirectoryQuery {
+  q?: string;
+  accountStatus?: UserStatus[];
+  registeredFrom?: string;
+  registeredTo?: string;
+  reservationStatus?: string[];
+  paid?: boolean;
+  sortBy?: PlayerSortBy;
+  direction?: SortDirection;
+  page?: number;
+  size?: number;
+}
+
+/** One reservation aggregate in a player's grouped booking history. */
+export interface PlayerBookingGroup {
+  reservationId: string;
+  overallStatus: string;
+  statuses: string[];
+  paid: boolean;
+  paymentStatuses: string[];
+  paymentMethods: string[];
+  sessionsCount: number;
+  durationMinutes: number;
+  totalAmounts: MoneyAmount[];
+  grossPaid: MoneyAmount[];
+  netPaid: MoneyAmount[];
+  venueId: string;
+  venueName: string;
+  courtId: string;
+  courtName: string;
+  startAt: string;
+  endAt: string;
+}
+
+export interface PlayerBookingHistoryQuery {
+  from?: string;
+  to?: string;
+  reservationStatus?: string[];
+  paymentStatus?: string[];
+  venueId?: string;
+  direction?: SortDirection;
+  page?: number;
+  size?: number;
+}
+
 /** Account that is still inside the backend's one-month restoration window. */
 export interface RestorableAccountDto {
   id: string;
