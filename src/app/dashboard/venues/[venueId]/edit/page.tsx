@@ -17,6 +17,13 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PhoneNumberField } from "@/components/phone-number-field";
 import { Textarea } from "@/components/ui/textarea";
@@ -74,7 +81,7 @@ const PAYMENT_MODES: { value: PaymentMode; label: string }[] = [
 ];
 
 const INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-hover)] text-white placeholder:text-white/25 focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_rgba(0,212,170,0.06)]";
+  "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_rgba(0,212,170,0.06)]";
 
 const LABEL_CLASS =
   "text-xs font-medium uppercase tracking-wider text-[var(--text-3)]";
@@ -521,26 +528,42 @@ export default function EditVenuePage() {
               <Label htmlFor="paymentMode" className={LABEL_CLASS}>
                 Payment Mode *
               </Label>
-              <select
+              <Select
                 id="paymentMode"
                 required
                 value={form.paymentMode}
-                onChange={(event) => {
-                  const paymentMode = event.target.value as PaymentMode;
+                onValueChange={(value) => {
+                  if (!value) return;
+                  const paymentMode = value as PaymentMode;
                   updateField("paymentMode", paymentMode);
                   if (paymentMode === "CASH") {
                     setWhishPaymentLinkError(null);
                   }
                 }}
                 disabled={isSaving}
-                className={`h-9 w-full rounded-md border px-3 text-sm outline-none transition-all disabled:cursor-not-allowed disabled:opacity-50 ${INPUT_CLASS}`}
               >
-                {PAYMENT_MODES.map((mode) => (
-                  <option key={mode.value} value={mode.value}>
-                    {mode.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  className={`h-9 w-full rounded-md px-3 ${INPUT_CLASS}`}
+                >
+                  <SelectValue>
+                    {(value) =>
+                      PAYMENT_MODES.find((mode) => mode.value === value)
+                        ?.label ?? "Select payment mode"
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)]">
+                  {PAYMENT_MODES.map((mode) => (
+                    <SelectItem
+                      key={mode.value}
+                      value={mode.value}
+                      className="px-3 py-2 text-[var(--text-2)] focus:bg-[var(--bg-3)] focus:text-[var(--text-1)]"
+                    >
+                      {mode.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <p className="text-xs leading-5 text-[var(--text-4)]">
                 Choose how customers can pay when booking this venue.
               </p>
