@@ -293,7 +293,16 @@ function PlayersBody({
       )}
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1100px] border-separate border-spacing-0">
+        <table className="w-full min-w-[880px] table-fixed border-separate border-spacing-0">
+          <colgroup>
+            <col className="w-[20%]" />
+            <col className="w-[13%]" />
+            <col className="w-[16%]" />
+            <col className="w-[8%]" />
+            <col className="w-[15%]" />
+            <col className="w-[15%]" />
+            <col className="w-[13%]" />
+          </colgroup>
           <thead className="bg-white/[0.012]">
             <tr>
               {["Player", "Account", "Reservations", "Paid", "Net paid", "Last booking", ""].map(
@@ -354,10 +363,10 @@ function PlayerRow({
       )}
     >
       <td className="border-t border-white/[0.035] px-4 py-3 align-top">
-        <div className="min-w-56 text-[13px] font-medium text-[var(--text-1)]">
+        <div className="truncate text-[13px] font-medium text-[var(--text-1)]">
           {fullName}
         </div>
-        <div className="mt-0.5 font-mono text-[10.5px] text-[var(--text-4)]">
+        <div className="mt-0.5 truncate font-mono text-[10.5px] text-[var(--text-4)]">
           {player.email}
         </div>
         <div className="mt-0.5 flex gap-2 font-mono text-[9.5px] text-[var(--text-4)]">

@@ -7,11 +7,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getApiErrorStatus } from "@/lib/api";
 import { resetVenueAccountPassword, type PasswordResetResult } from "@/lib/admin-password-reset";
 
-export function AdminPasswordResetDialog({ managerId, staffUserId, email, disabled, onReset }: {
+export function AdminPasswordResetDialog({ managerId, staffUserId, email, disabled, compact = false, onReset }: {
   managerId: string;
   staffUserId?: string;
   email: string;
   disabled?: boolean;
+  compact?: boolean;
   onReset?: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -94,8 +95,9 @@ export function AdminPasswordResetDialog({ managerId, staffUserId, email, disabl
 
   return (
     <Dialog open={open} onOpenChange={(next) => next ? changeOpen(true) : close()}>
-      <DialogTrigger render={<Button type="button" variant="outline" size="sm" disabled={disabled} aria-label={`Reset password for ${email}`} />}>
-        <KeyRound className="h-3.5 w-3.5" /> Reset password
+      <DialogTrigger render={<Button type="button" variant="outline" size={compact ? "icon-sm" : "sm"} disabled={disabled} aria-label={`Reset password for ${email}`} title={compact ? "Reset password" : undefined} />}>
+        <KeyRound className="h-3.5 w-3.5" />
+        {!compact && "Reset password"}
       </DialogTrigger>
       <DialogContent showCloseButton={!pending} className="border border-[var(--border)] bg-[var(--bg-1)] sm:max-w-lg">
         <DialogHeader className="pr-6">

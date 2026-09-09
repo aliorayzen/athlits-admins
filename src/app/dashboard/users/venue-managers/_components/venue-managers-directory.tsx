@@ -119,7 +119,12 @@ function ManagerActions({
         isPending={isPending}
         onUpdate={onUpdate}
       />
-      <AdminPasswordResetDialog managerId={manager.id} email={manager.email} disabled={isPending} />
+      <AdminPasswordResetDialog
+        managerId={manager.id}
+        email={manager.email}
+        disabled={isPending}
+        compact
+      />
       <ManagerStatusAction
         manager={manager}
         isPending={isPending}
