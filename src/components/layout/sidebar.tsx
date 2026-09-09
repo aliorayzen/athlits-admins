@@ -18,6 +18,7 @@ import {
   UserRound,
   RotateCcw,
   ScrollText,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -196,6 +197,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     venuesTotal: stats.venuesTotal,
     invoicesOverdue: stats.invoicesOverdue,
   });
+  if (user?.role === "ADMIN") {
+    navSections.splice(1, 0, {
+      label: "Analytics",
+      dotTone: "teal",
+      items: [{ href: "/dashboard/analytics", label: "Store Analytics", icon: BarChart3 }],
+    });
+  }
 
   // Overview matches exactly (it's a prefix of every other route); the rest
   // match by prefix so deeper sub-pages keep their nav item highlighted.
