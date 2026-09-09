@@ -31,7 +31,11 @@ export const STAFF_PERMISSION_GROUPS: StaffPermissionGroup[] = [
     label: "Bookings",
     options: [
       { value: "BOOKINGS_READ", label: "View bookings", description: "See booking details and schedules." },
-      { value: "BOOKINGS_WRITE", label: "Manage bookings", description: "Create and update bookings." },
+      {
+        value: "BOOKINGS_WRITE",
+        label: "Manage bookings",
+        description: "Create and update bookings. Includes viewing bookings and courts.",
+      },
       { value: "BOOKINGS_APPROVE", label: "Approve bookings", description: "Approve pending booking requests." },
       { value: "BOOKINGS_CANCEL", label: "Cancel bookings", description: "Cancel existing bookings." },
       { value: "BOOKINGS_DELETE", label: "Delete bookings", description: "Permanently remove bookings." },
@@ -86,7 +90,7 @@ const STAFF_PERMISSION_DEPENDENCIES: Partial<
   VENUE_WRITE: ["VENUE_READ"],
   COURTS_WRITE: ["COURTS_READ"],
   COURTS_DELETE: ["COURTS_READ"],
-  BOOKINGS_WRITE: ["BOOKINGS_READ"],
+  BOOKINGS_WRITE: ["BOOKINGS_READ", "COURTS_READ"],
   BOOKINGS_DELETE: ["BOOKINGS_READ"],
   BOOKINGS_APPROVE: ["BOOKINGS_READ"],
   BOOKINGS_CANCEL: ["BOOKINGS_READ"],
@@ -176,6 +180,7 @@ export const STAFF_PERMISSION_PRESETS: Array<{
     label: "Bookings only",
     description: "Booking desk access",
     permissions: [
+      "COURTS_READ",
       "BOOKINGS_READ",
       "BOOKINGS_WRITE",
       "BOOKINGS_APPROVE",
