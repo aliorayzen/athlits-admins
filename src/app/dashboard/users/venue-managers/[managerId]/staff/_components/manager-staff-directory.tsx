@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { AdminPasswordResetDialog } from "@/components/admin-password-reset-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -345,12 +346,20 @@ function StaffRow({
         </span>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 text-right align-middle">
-        <EditPermissionsDialog
-          managerId={managerId}
-          staff={staff}
-          preferredVenueId={preferredVenueId}
-          onUpdated={onUpdated}
-        />
+        <div className="flex items-center justify-end gap-2">
+          <AdminPasswordResetDialog
+            managerId={managerId}
+            staffUserId={staff.id}
+            email={staff.email}
+            onReset={() => onUpdated({ ...staff, forcePasswordChange: true })}
+          />
+          <EditPermissionsDialog
+            managerId={managerId}
+            staff={staff}
+            preferredVenueId={preferredVenueId}
+            onUpdated={onUpdated}
+          />
+        </div>
       </td>
     </tr>
   );

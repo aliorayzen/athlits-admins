@@ -6,6 +6,7 @@ import { Ban, Edit3, Loader2, Mail, Power, Save, User, Users } from "lucide-reac
 import { toast } from "sonner";
 
 import { PhoneNumberField } from "@/components/phone-number-field";
+import { AdminPasswordResetDialog } from "@/components/admin-password-reset-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -118,6 +119,7 @@ function ManagerActions({
         isPending={isPending}
         onUpdate={onUpdate}
       />
+      <AdminPasswordResetDialog managerId={manager.id} email={manager.email} disabled={isPending} />
       <ManagerStatusAction
         manager={manager}
         isPending={isPending}
