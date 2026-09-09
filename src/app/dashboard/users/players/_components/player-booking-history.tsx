@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
+  ArrowLeft,
   CalendarDays,
   ChevronUp,
   Copy,
   Loader2,
   RefreshCw,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,7 +25,6 @@ import type {
   PageResponse,
   PlayerBookingGroup,
   PlayerBookingHistoryQuery,
-  PlayerReportItem,
   SortDirection,
   VenueSummaryResponse,
 } from "@/types/api";
@@ -71,11 +71,11 @@ const EMPTY_HISTORY_FILTERS: HistoryFilters = {
 };
 
 export function PlayerBookingHistory({
-  player,
-  onClose,
+  playerId,
+  playerName,
 }: {
-  player: PlayerReportItem;
-  onClose: () => void;
+  playerId: string;
+  playerName?: string;
 }) {
   const [draft, setDraft] = useState(EMPTY_HISTORY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_HISTORY_FILTERS);
@@ -121,7 +121,7 @@ export function PlayerBookingHistory({
       setIsFetching(true);
       if (!hasLoadedOnce.current) setIsLoading(true);
       try {
-        const response = await getAdminPlayerBookings(player.playerId, query);
+        const response = await getAdminPlayerBookings(playerId, query);
         if (sequence !== requestSequence.current) return;
         setData(response);
         setError("");
@@ -143,9 +143,9 @@ export function PlayerBookingHistory({
     }
 
     void load();
-  }, [player.playerId, query, reloadToken]);
+  }, [playerId, query, reloadToken]);
 
-  const fullName = `${player.firstName} ${player.lastName}`.trim() || player.email;
+  const displayName = playerName?.trim() || `Player #${playerId}`;
 
   function applyFilters() {
     if (draft.from && draft.to && draft.from > draft.to) {
@@ -175,10 +175,10 @@ export function PlayerBookingHistory({
               id="player-history-title"
               className="truncate text-[16px] font-semibold tracking-[-0.01em] text-[var(--text-1)]"
             >
-              {fullName}
+              {displayName}
             </h2>
             <span className="font-mono text-[10.5px] text-[var(--text-4)]">
-              #{player.playerId}
+              #{playerId}
             </span>
           </div>
           <p className="mt-1 text-[12px] text-[var(--text-3)]">
@@ -198,14 +198,13 @@ export function PlayerBookingHistory({
             <RefreshCw className={isFetching ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
           </Button>
           <Button
-            type="button"
             variant="ghost"
-            size="icon"
-            aria-label="Close booking history"
-            onClick={onClose}
-            className="h-8 w-8 text-[var(--text-3)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
+            size="sm"
+            render={<Link href="/dashboard/users/players" />}
+            className="h-8 gap-1.5 text-[var(--text-3)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
           >
-            <X className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to players
           </Button>
         </div>
       </header>

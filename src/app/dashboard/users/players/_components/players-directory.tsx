@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   ArrowDown,
@@ -18,7 +18,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { PlayerReportItem, PlayerSortBy } from "@/types/api";
 
-import { PlayerBookingHistory } from "./player-booking-history";
 import {
   countPlayerFilters,
   PlayerReportFiltersPanel,
@@ -43,12 +42,7 @@ const SORT_OPTIONS: { value: PlayerSortBy; label: string }[] = [
 /** Platform-admin player reporting with server filters and grouped history. */
 export function PlayersDirectory() {
   const report = usePlayersReport();
-  const [selectedPlayer, setSelectedPlayer] =
-    useState<PlayerReportItem | null>(null);
   const rows = report.data?.content ?? [];
-  const visibleSelection = selectedPlayer
-    ? rows.find((player) => player.playerId === selectedPlayer.playerId) ?? null
-    : null;
 
   return (
     <div className="players-report-v2 space-y-5">
@@ -178,8 +172,6 @@ export function PlayersDirectory() {
         hasFilters={
           countPlayerFilters(report.filters) > 0 || report.search.trim() !== ""
         }
-        selectedId={visibleSelection?.playerId ?? null}
-        onSelect={setSelectedPlayer}
         onClear={() => {
           report.setSearch("");
           report.setFilters({
@@ -194,13 +186,6 @@ export function PlayersDirectory() {
         onPage={report.goToPage}
       />
 
-      {visibleSelection && (
-        <PlayerBookingHistory
-          key={visibleSelection.playerId}
-          player={visibleSelection}
-          onClose={() => setSelectedPlayer(null)}
-        />
-      )}
     </div>
   );
 }
@@ -212,8 +197,6 @@ function PlayersBody({
   isLoading,
   isFetching,
   hasFilters,
-  selectedId,
-  onSelect,
   onClear,
   onRetry,
   onPage,
@@ -224,8 +207,6 @@ function PlayersBody({
   isLoading: boolean;
   isFetching: boolean;
   hasFilters: boolean;
-  selectedId: string | null;
-  onSelect: (player: PlayerReportItem) => void;
   onClear: () => void;
   onRetry: () => void;
   onPage: (page: number) => void;
@@ -322,8 +303,6 @@ function PlayersBody({
               <PlayerRow
                 key={player.playerId}
                 player={player}
-                selected={selectedId === player.playerId}
-                onSelect={() => onSelect(player)}
               />
             ))}
           </tbody>
@@ -336,12 +315,8 @@ function PlayersBody({
 
 function PlayerRow({
   player,
-  selected,
-  onSelect,
 }: {
   player: PlayerReportItem;
-  selected: boolean;
-  onSelect: () => void;
 }) {
   const fullName =
     `${player.firstName} ${player.lastName}`.trim() || "Unnamed player";
@@ -356,12 +331,7 @@ function PlayerRow({
   ].filter(Boolean);
 
   return (
-    <tr
-      className={cn(
-        "group hover:bg-white/[0.015]",
-        selected && "bg-[var(--teal-subtle)]",
-      )}
-    >
+    <tr className="group hover:bg-white/[0.015]">
       <td className="border-t border-white/[0.035] px-4 py-3 align-top">
         <div className="truncate text-[13px] font-medium text-[var(--text-1)]">
           {fullName}
@@ -414,25 +384,17 @@ function PlayerRow({
         </span>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 text-right align-middle">
-        <button
-          type="button"
-          aria-pressed={selected}
-          onClick={onSelect}
-          className={cn(
-            "inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-[11.5px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]",
-            selected
-              ? "border-[rgba(0,212,170,0.2)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
-              : "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]",
-          )}
+        <Link
+          href={{
+            pathname: `/dashboard/users/players/${player.playerId}/history`,
+            query: { name: fullName },
+          }}
+          aria-label={`View booking history for ${fullName}`}
+          className="inline-flex h-8 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 text-[11.5px] font-medium text-[var(--text-3)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
         >
           History
-          <ChevronRight
-            className={cn(
-              "h-3 w-3 transition-transform",
-              selected && "rotate-90",
-            )}
-          />
-        </button>
+          <ChevronRight className="h-3 w-3" />
+        </Link>
       </td>
     </tr>
   );
