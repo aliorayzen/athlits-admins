@@ -44,8 +44,10 @@ import type {
 } from "@/types/api";
 import {
   ALL_STAFF_PERMISSIONS,
+  expandStaffPermissionDependencies,
   STAFF_PERMISSION_GROUPS as PERMISSION_GROUPS,
   STAFF_PERMISSION_PRESETS as PERMISSION_PRESETS,
+  updateStaffPermissionSelection,
   type StaffPermissionOption,
 } from "@/lib/staff-permissions";
 import { BackLink } from "@/app/dashboard/users/create/_components/back-link";
@@ -224,25 +226,29 @@ export default function CreateVenueStaffPage() {
 
   function togglePermission(permission: StaffPermission, checked: boolean) {
     setPermissions((current) =>
-      checked
-        ? [...new Set([...current, permission])]
-        : current.filter((item) => item !== permission),
+      updateStaffPermissionSelection(current, permission, checked),
     );
     clearFieldError("permissions");
   }
 
   function setPermissionGroup(group: StaffPermissionOption[], checked: boolean) {
     const groupPermissions = group.map((option) => option.value);
-    setPermissions((current) =>
-      checked
-        ? [...new Set([...current, ...groupPermissions])]
-        : current.filter((permission) => !groupPermissions.includes(permission)),
-    );
+    setPermissions((current) => {
+      if (checked) {
+        return expandStaffPermissionDependencies([...current, ...groupPermissions]);
+      }
+
+      return groupPermissions.reduce(
+        (next, permission) =>
+          updateStaffPermissionSelection(next, permission, false),
+        current,
+      );
+    });
     clearFieldError("permissions");
   }
 
   function applyPreset(preset: StaffPermission[]) {
-    setPermissions([...preset]);
+    setPermissions(expandStaffPermissionDependencies(preset));
     clearFieldError("permissions");
   }
 
@@ -287,7 +293,10 @@ export default function CreateVenueStaffPage() {
           email: buildStaffEmail(emailLocalPart),
           tempPassword,
           venueAssignments: [
-            { venueId: numericVenueId, permissions: [...permissions] },
+            {
+              venueId: numericVenueId,
+              permissions: expandStaffPermissionDependencies(permissions),
+            },
           ],
         });
         const displayName =
@@ -634,6 +643,8 @@ export default function CreateVenueStaffPage() {
                 })}
               </div>
               <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-4)]">
+                Selecting an action automatically includes its required view permission.
+                Removing a view permission also removes the actions that depend on it.
                 Staff administration and non-assignable mobile permissions are intentionally excluded.
               </p>
               {fieldErrors.permissions && (

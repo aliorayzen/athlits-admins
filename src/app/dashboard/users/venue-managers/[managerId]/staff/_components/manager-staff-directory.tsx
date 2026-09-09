@@ -39,8 +39,10 @@ import {
 } from "@/lib/api";
 import {
   ALL_STAFF_PERMISSIONS,
+  expandStaffPermissionDependencies,
   STAFF_PERMISSION_GROUPS,
   STAFF_PERMISSION_PRESETS,
+  updateStaffPermissionSelection,
 } from "@/lib/staff-permissions";
 import { cn } from "@/lib/utils";
 import type {
@@ -66,7 +68,10 @@ function accessKey(access: VenueStaffAccess): string {
 
 function permissionDraftFor(staff: StaffUserDto): PermissionDraft {
   return Object.fromEntries(
-    staff.venueAccess.map((access) => [accessKey(access), [...access.permissions]]),
+    staff.venueAccess.map((access) => [
+      accessKey(access),
+      expandStaffPermissionDependencies(access.permissions),
+    ]),
   );
 }
 
@@ -408,13 +413,18 @@ function EditPermissionsDialog({
 
   function setSelectedPermissions(permissions: StaffPermission[]) {
     setSaveError("");
-    setDraft((current) => ({ ...current, [selectedVenueId]: permissions }));
+    setDraft((current) => ({
+      ...current,
+      [selectedVenueId]: expandStaffPermissionDependencies(permissions),
+    }));
   }
 
   function togglePermission(permission: StaffPermission, checked: boolean) {
-    const nextPermissions = checked
-      ? [...new Set([...selectedPermissions, permission])]
-      : selectedPermissions.filter((value) => value !== permission);
+    const nextPermissions = updateStaffPermissionSelection(
+      selectedPermissions,
+      permission,
+      checked,
+    );
     setSelectedPermissions(nextPermissions);
   }
 
@@ -426,7 +436,9 @@ function EditPermissionsDialog({
       await updateVenueStaff(managerId, staff.id, {
         venueAssignments: staff.venueAccess.map((access) => ({
           venueId: access.venueId,
-          permissions: draft[accessKey(access)] ?? [],
+          permissions: expandStaffPermissionDependencies(
+            draft[accessKey(access)] ?? [],
+          ),
         })),
       });
 
@@ -434,7 +446,9 @@ function EditPermissionsDialog({
         ...staff,
         venueAccess: staff.venueAccess.map((access) => ({
           ...access,
-          permissions: draft[accessKey(access)] ?? [],
+          permissions: expandStaffPermissionDependencies(
+            draft[accessKey(access)] ?? [],
+          ),
         })),
       };
       onUpdated(updated);
@@ -579,6 +593,10 @@ function EditPermissionsDialog({
                 </fieldset>
               ))}
             </div>
+            <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-4)]">
+              Selecting an action automatically includes its required view permission.
+              Removing a view permission also removes the actions that depend on it.
+            </p>
           </div>
         )}
 

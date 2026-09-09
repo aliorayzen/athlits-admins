@@ -80,6 +80,79 @@ export const ALL_STAFF_PERMISSIONS = STAFF_PERMISSION_GROUPS.flatMap((group) =>
   group.options.map((option) => option.value),
 );
 
+const STAFF_PERMISSION_DEPENDENCIES: Partial<
+  Record<StaffPermission, StaffPermission[]>
+> = {
+  VENUE_WRITE: ["VENUE_READ"],
+  COURTS_WRITE: ["COURTS_READ"],
+  COURTS_DELETE: ["COURTS_READ"],
+  BOOKINGS_WRITE: ["BOOKINGS_READ"],
+  BOOKINGS_DELETE: ["BOOKINGS_READ"],
+  BOOKINGS_APPROVE: ["BOOKINGS_READ"],
+  BOOKINGS_CANCEL: ["BOOKINGS_READ"],
+  CUSTOMERS_WRITE: ["CUSTOMERS_READ"],
+  CUSTOMERS_BLOCK: ["CUSTOMERS_READ"],
+  PROMOTIONS_WRITE: ["PROMOTIONS_READ"],
+  PROMOTIONS_DELETE: ["PROMOTIONS_READ"],
+  FINANCE_WRITE: ["FINANCE_READ"],
+  NOTIFICATIONS_WRITE: ["NOTIFICATIONS_READ"],
+  NOTIFICATIONS_SEND: ["NOTIFICATIONS_READ"],
+};
+
+/** Adds every prerequisite required by the selected staff permissions. */
+export function expandStaffPermissionDependencies(
+  permissions: StaffPermission[],
+): StaffPermission[] {
+  const expanded = new Set(permissions);
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    for (const permission of expanded) {
+      for (const dependency of STAFF_PERMISSION_DEPENDENCIES[permission] ?? []) {
+        if (!expanded.has(dependency)) {
+          expanded.add(dependency);
+          changed = true;
+        }
+      }
+    }
+  }
+
+  return ALL_STAFF_PERMISSIONS.filter((permission) => expanded.has(permission));
+}
+
+/**
+ * Applies a checkbox change while preserving the permission dependency model.
+ * Removing a prerequisite also removes every permission that depends on it.
+ */
+export function updateStaffPermissionSelection(
+  permissions: StaffPermission[],
+  permission: StaffPermission,
+  checked: boolean,
+): StaffPermission[] {
+  if (checked) {
+    return expandStaffPermissionDependencies([...permissions, permission]);
+  }
+
+  const next = new Set(permissions);
+  next.delete(permission);
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const selected of next) {
+      if ((STAFF_PERMISSION_DEPENDENCIES[selected] ?? []).some(
+        (dependency) => !next.has(dependency),
+      )) {
+        next.delete(selected);
+        changed = true;
+      }
+    }
+  }
+
+  return ALL_STAFF_PERMISSIONS.filter((selected) => next.has(selected));
+}
+
 export const STAFF_PERMISSION_PRESETS: Array<{
   label: string;
   description: string;
