@@ -27,10 +27,8 @@ import {
   getApiErrorMessage,
   getApiErrorStatus,
   getApiFieldErrorMap,
-  getVenue,
-  getVenues,
 } from "@/lib/api";
-import type { UpdateVenueManagerRequest, UserDto, VenueDetailResponse } from "@/types/api";
+import type { UpdateVenueManagerRequest, UserDto } from "@/types/api";
 import { cn } from "@/lib/utils";
 
 import {
@@ -66,33 +64,6 @@ function venueManagerEditFieldErrors(err: unknown): VmEditFieldErrors {
 
 export function VenueManagersDirectory({ initialSearch = "" }: { initialSearch?: string }) {
   const vm = useVenueManagers(initialSearch);
-  const [venuesByManager, setVenuesByManager] = useState<
-    Map<string, VenueDetailResponse[]>
-  >(new Map());
-
-  useEffect(() => {
-    let cancelled = false;
-    async function loadManagedVenues() {
-      const summaries = await getVenues();
-      const details = await Promise.all(
-        summaries.map((venue) => getVenue(venue.id)),
-      );
-      if (cancelled) return;
-      const grouped = new Map<string, VenueDetailResponse[]>();
-      for (const venue of details) {
-        if (!venue.managerId) continue;
-        grouped.set(venue.managerId, [
-          ...(grouped.get(venue.managerId) ?? []),
-          venue,
-        ]);
-      }
-      setVenuesByManager(grouped);
-    }
-    void loadManagedVenues().catch(() => undefined);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   return (
     <DirectoryView
@@ -110,7 +81,6 @@ export function VenueManagersDirectory({ initialSearch = "" }: { initialSearch?:
       renderActions={(manager) => (
         <ManagerActions
           manager={manager}
-          venues={venuesByManager.get(manager.id) ?? []}
           isPending={vm.pendingIds.has(manager.id)}
           onToggle={vm.toggleActive}
           onUpdate={vm.updateDetails}
@@ -122,13 +92,11 @@ export function VenueManagersDirectory({ initialSearch = "" }: { initialSearch?:
 
 function ManagerActions({
   manager,
-  venues,
   isPending,
   onToggle,
   onUpdate,
 }: {
   manager: UserDto;
-  venues: VenueDetailResponse[];
   isPending: boolean;
   onToggle: (m: UserDto) => Promise<void>;
   onUpdate: (
@@ -136,20 +104,18 @@ function ManagerActions({
     payload: UpdateVenueManagerRequest,
   ) => Promise<UserDto>;
 }) {
+  const managerName = `${manager.firstName ?? ""} ${manager.lastName ?? ""}`.trim();
+
   return (
-    <div className="flex items-center justify-end gap-2">
-      {venues.map((venue) => (
-        <Link
-          key={venue.id}
-          href={`/dashboard/venues/${venue.id}`}
-          aria-label={`Open ${venue.name}`}
-          title={venue.name}
-          className="inline-flex max-w-40 items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-colors hover:bg-[rgba(245,158,11,0.16)]"
-        >
-          <Building2 className="h-[13px] w-[13px] shrink-0" />
-          <span className="truncate">{venue.name}</span>
-        </Link>
-      ))}
+    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
+      <Link
+        href={`/dashboard/users/venue-managers/${manager.id}/venues?name=${encodeURIComponent(managerName)}`}
+        aria-label={`View venues managed by ${managerName || manager.email}`}
+        className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-colors hover:bg-[rgba(245,158,11,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
+      >
+        <Building2 className="h-[13px] w-[13px]" />
+        Venues
+      </Link>
       <Link
         href={`/dashboard/users/venue-managers/${manager.id}/staff`}
         aria-label={`View staff managed by ${manager.firstName} ${manager.lastName}`}
