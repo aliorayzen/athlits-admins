@@ -51,6 +51,9 @@ import type {
   AdminBookingRequest,
   AdminCreatedBookingOccurrence,
   BookableVenueResponse,
+  CourtResponse,
+  CourtSummaryResponse,
+  CreateCourtRequest,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
 import { normalizeOptionalHttpUrl } from "@/lib/http-url";
@@ -237,6 +240,18 @@ function normalizeVenueDetail(v: VenueDetailResponse): VenueDetailResponse {
       venueId: c.venueId ? ensureStringId(c.venueId) : c.venueId,
       name: displayName(c.nameEn, c.nameAr),
     })),
+  };
+}
+
+function normalizeCourt(court: CourtResponse): CourtResponse {
+  return {
+    ...court,
+    id: ensureStringId(court.id),
+    venueId: ensureStringId(court.venueId),
+    name: displayName(court.nameEn, court.nameAr),
+    sports: court.sports ?? [],
+    amenityIds: court.amenityIds ?? [],
+    imageUrls: court.imageUrls ?? [],
   };
 }
 
@@ -613,6 +628,72 @@ export async function getVenue(venueId: string): Promise<VenueDetailResponse> {
     `/api/admin/v1/venues/${venueId}`,
   );
   return normalizeVenueDetail(data);
+}
+
+export async function getCourts(
+  venueId: string,
+): Promise<CourtSummaryResponse[]> {
+  const { data } = await apiClient.get<CourtSummaryResponse[]>(
+    `/api/admin/v1/venues/${venueId}/courts`,
+  );
+  return (data ?? []).map(normalizeCourt);
+}
+
+export async function getCourt(
+  venueId: string,
+  courtId: string,
+): Promise<CourtResponse> {
+  const { data } = await apiClient.get<CourtResponse>(
+    `/api/admin/v1/venues/${venueId}/courts/${courtId}`,
+  );
+  return normalizeCourt(data);
+}
+
+export async function createCourt(
+  venueId: string,
+  payload: CreateCourtRequest,
+): Promise<CourtResponse> {
+  const { data } = await apiClient.post<CourtResponse>(
+    `/api/admin/v1/venues/${venueId}/courts`,
+    payload,
+  );
+  return normalizeCourt(data);
+}
+
+export async function uploadCourtImages(
+  venueId: string,
+  courtId: string,
+  images: File[],
+): Promise<string[]> {
+  const formData = new FormData();
+  images.forEach((image) => formData.append("images", image));
+  const { data } = await apiClient.put<string[]>(
+    `/api/admin/v1/venues/${venueId}/courts/${courtId}/images`,
+    formData,
+  );
+  return data ?? [];
+}
+
+export async function deleteCourtImage(
+  venueId: string,
+  courtId: string,
+  imageId: string,
+): Promise<void> {
+  await apiClient.delete(
+    `/api/admin/v1/venues/${venueId}/courts/${courtId}/images/${encodeURIComponent(imageId)}`,
+  );
+}
+
+export async function setCourtActive(
+  venueId: string,
+  courtId: string,
+  active: boolean,
+): Promise<CourtResponse> {
+  const action = active ? "activate" : "deactivate";
+  const { data } = await apiClient.post<CourtResponse>(
+    `/api/admin/v1/venues/${venueId}/courts/${courtId}/${action}`,
+  );
+  return normalizeCourt(data);
 }
 
 /** Active courts, court-sport ids, session options, and payment methods. */

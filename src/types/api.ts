@@ -439,8 +439,56 @@ export interface AssignManagerRequest {
 
 // Courts
 export type SurfaceType =
-  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF";
+  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF" | "PADEL";
 export type CourtEnvironment = "INDOOR" | "OUTDOOR";
+
+export type CourtDivisionLayout = "FULL" | "HALVES" | "THIRDS" | "QUARTERS";
+
+export interface CourtPeakWindow {
+  startMinutes: number;
+  endMinutes: number;
+}
+
+export interface CourtPricingRequest {
+  currencyCode: string;
+  offPeakCentsPerHour: number;
+  peakCentsPerHour: number;
+  peakWindow?: CourtPeakWindow;
+}
+
+export interface CourtEquipmentRequest {
+  nameEn: string;
+  nameAr: string;
+  stockQuantity: number;
+  perReservationLimit: number;
+  active: boolean;
+}
+
+export interface CourtSportRequest {
+  sportType: string;
+  capacity: number;
+  sessionDurationMinutes: number;
+  courtAreaCode: string;
+  pricing: CourtPricingRequest;
+  equipment: CourtEquipmentRequest[];
+}
+
+export interface CreateCourtRequest {
+  nameEn: string;
+  nameAr: string;
+  surfaceType: SurfaceType;
+  environment: CourtEnvironment;
+  divisionLayout: CourtDivisionLayout;
+  sports: CourtSportRequest[];
+  amenityIds: CourtAmenityId[];
+}
+
+export type CourtAmenityId =
+  | "parking"
+  | "lighting"
+  | "showers"
+  | "lockers"
+  | "spectator_seating";
 
 export interface CourtResponse {
   id: string;
@@ -454,7 +502,12 @@ export interface CourtResponse {
   active: boolean;
   // Backend returns sport identifiers as plain strings (e.g. "FOOTBALL").
   sports: string[];
+  divisionLayout?: CourtDivisionLayout;
+  amenityIds?: CourtAmenityId[];
+  imageUrls?: string[];
 }
+
+export type CourtSummaryResponse = CourtResponse;
 
 // Admin booking creation
 export type BookingPaymentMethod = "CASH" | "ONLINE";

@@ -63,6 +63,7 @@ import {
   Loader2,
   ExternalLink,
   CalendarPlus2,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -666,7 +667,8 @@ export default function VenueDetailPage() {
 
       {/* Courts — full width */}
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--bg-1)]">
-        <header className="flex items-center gap-3 border-b border-[var(--border)] px-5 py-4">
+        <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+          <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-2)]">
             <Layers className="h-4 w-4 text-[var(--text-3)]" />
           </div>
@@ -676,9 +678,16 @@ export default function VenueDetailPage() {
             </h2>
             <p className="text-xs text-[var(--text-4)]">
               {courts.length} court{courts.length === 1 ? "" : "s"} registered
-              &middot; select an active court to create a booking
+              &middot; select a court to manage it
             </p>
           </div>
+          </div>
+          <Link href={`/dashboard/venues/${venue.id}/courts/new`}>
+            <Button className="bg-[var(--teal)] font-semibold text-[var(--bg-0)] hover:brightness-110">
+              <Plus className="mr-2 h-4 w-4" />
+              Add court
+            </Button>
+          </Link>
         </header>
         <div className="px-5 py-5">
           {courts.length === 0 ? (
@@ -686,7 +695,7 @@ export default function VenueDetailPage() {
               <Layers className="h-5 w-5 text-[var(--text-4)]" />
               <p className="text-sm text-[var(--text-3)]">No courts yet</p>
               <p className="text-xs text-[var(--text-4)]">
-                Courts appear here once a venue manager adds them.
+                Add the venue&apos;s first active, bookable court.
               </p>
             </div>
           ) : (
@@ -715,32 +724,15 @@ export default function VenueDetailPage() {
                   </>
                 );
 
-                if (venue.status === "ACTIVE" && court.active) {
-                  return (
-                    <Link
-                      key={court.id}
-                      href={`/dashboard/venues/${venue.id}/courts/${court.id}/bookings/new`}
-                      aria-label={`Create a booking for ${court.name}`}
-                      className="group flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 outline-none transition-colors hover:border-[rgba(0,212,170,0.22)] hover:bg-[var(--teal-subtle)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
-                    >
-                      {content}
-                    </Link>
-                  );
-                }
-
                 return (
-                  <div
+                  <Link
                     key={court.id}
-                    aria-disabled="true"
-                    title={
-                      venue.status !== "ACTIVE"
-                        ? "Activate the venue before creating bookings"
-                        : "Activate the court before creating bookings"
-                    }
-                    className="flex cursor-not-allowed items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 opacity-60"
+                    href={`/dashboard/venues/${venue.id}/courts/${court.id}`}
+                    aria-label={`Manage ${court.name}`}
+                    className="group flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 outline-none transition-colors hover:border-[rgba(0,212,170,0.22)] hover:bg-[var(--teal-subtle)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
                   >
                     {content}
-                  </div>
+                  </Link>
                 );
               })}
             </div>
