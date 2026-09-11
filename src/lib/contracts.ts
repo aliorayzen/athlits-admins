@@ -33,6 +33,36 @@ export function defaultContractDraft(
   };
 }
 
+export function contractDraftFromResponse(
+  contract: ContractResponse,
+): ContractDraft {
+  return {
+    feeModel: contract.feeModel,
+    perReservationFee: Number(contract.perReservationFee ?? 0).toFixed(2),
+    fixedMonthlyFee: Number(contract.fixedMonthlyFee ?? 0).toFixed(2),
+    currencyCode: contract.currencyCode,
+    gracePeriodDays: contract.gracePeriodDays,
+    startDate: contract.startDate,
+    endDate: contract.endDate ?? "",
+  };
+}
+
+export function contractDraftMatches(
+  draft: ContractDraft,
+  contract: ContractResponse,
+): boolean {
+  const payload = contractDraftToPayload(draft);
+  return (
+    payload.feeModel === contract.feeModel &&
+    payload.perReservationFee === (contract.perReservationFee ?? null) &&
+    payload.fixedMonthlyFee === (contract.fixedMonthlyFee ?? null) &&
+    payload.currencyCode === contract.currencyCode &&
+    payload.gracePeriodDays === contract.gracePeriodDays &&
+    payload.startDate === contract.startDate &&
+    payload.endDate === (contract.endDate ?? null)
+  );
+}
+
 function parseMoney(value: string): number {
   const parsed = Number.parseFloat(value);
   return Number.isFinite(parsed) ? parsed : Number.NaN;
@@ -56,7 +86,7 @@ export function contractDraftError(draft: ContractDraft): string | null {
 
   if (!Number.isFinite(fee) || fee <= 0) {
     return draft.feeModel === "PER_RESERVATION"
-      ? "Enter a per-reservation fee greater than zero."
+      ? "Enter a per-court fee greater than zero."
       : "Enter a fixed monthly fee greater than zero.";
   }
 
@@ -90,7 +120,7 @@ export function formatContractFee(contract: ContractResponse): string {
   if (contract.feeModel === "PER_RESERVATION") {
     return `${contract.currencyCode} ${Number(
       contract.perReservationFee ?? 0,
-    ).toFixed(2)} per reservation`;
+    ).toFixed(2)} per court`;
   }
 
   return `${contract.currencyCode} ${Number(

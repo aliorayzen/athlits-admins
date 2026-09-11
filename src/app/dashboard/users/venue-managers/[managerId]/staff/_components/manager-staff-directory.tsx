@@ -15,6 +15,7 @@ import {
   Search,
   ShieldCheck,
   UserRound,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -190,9 +191,19 @@ export function ManagerStaffDirectory({
           </p>
         </div>
 
-        <div className="relative w-full sm:max-w-[320px]">
-          <Search className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)]" />
-          <input
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          {venueId && (
+            <Link
+              href={`/dashboard/venues/${venueId}/staff/new`}
+              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-3 text-[12px] font-medium text-[var(--semantic-amber)] hover:bg-[rgba(245,158,11,0.16)]"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Create staff
+            </Link>
+          )}
+          <div className="relative w-full sm:w-[320px]">
+            <Search className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)]" />
+            <input
             type="search"
             aria-label="Search staff"
             placeholder="Search staff or venue..."
@@ -200,7 +211,8 @@ export function ManagerStaffDirectory({
             disabled={phase !== "ready"}
             onChange={(event) => setSearch(event.target.value)}
             className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-1)] pl-[34px] pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_var(--semantic-amber-subtle)] disabled:cursor-not-allowed disabled:opacity-50"
-          />
+            />
+          </div>
         </div>
       </header>
 
@@ -209,7 +221,7 @@ export function ManagerStaffDirectory({
         <LoadError message={errorMessage} onRetry={retry} />
       )}
       {phase === "ready" && filteredStaff.length === 0 && !search.trim() && (
-        <EmptyStaff isVenueScoped={Boolean(venueId)} />
+        <EmptyStaff venueId={venueId} />
       )}
       {phase === "ready" && filteredStaff.length === 0 && search.trim() && (
         <NoSearchResults onClear={() => setSearch("")} />
@@ -684,7 +696,8 @@ function LoadError({ message, onRetry }: { message: string; onRetry: () => void 
   );
 }
 
-function EmptyStaff({ isVenueScoped }: { isVenueScoped: boolean }) {
+function EmptyStaff({ venueId }: { venueId?: string }) {
+  const isVenueScoped = Boolean(venueId);
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-1)] px-6 text-center">
       <div className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--semantic-amber-subtle)]">
@@ -699,10 +712,12 @@ function EmptyStaff({ isVenueScoped }: { isVenueScoped: boolean }) {
           : "Create staff from a managed venue to give them scoped operational access."}
       </p>
       <Link
-        href="/dashboard/venues"
+        href={
+          venueId ? `/dashboard/venues/${venueId}/staff/new` : "/dashboard/venues"
+        }
         className="mt-4 text-[12px] font-medium text-[var(--semantic-amber)] hover:underline hover:underline-offset-2"
       >
-        Browse venues
+        {isVenueScoped ? "Create staff" : "Browse venues"}
       </Link>
     </div>
   );

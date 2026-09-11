@@ -53,6 +53,7 @@ export interface UseUserDirectoryOptions {
   fetcher: (query: PageQuery) => Promise<PageResponse<UserDto>>;
   sortOptions: SortOption[];
   fallbackMessage: string;
+  initialSearch?: string;
 }
 
 /** Generic, role-agnostic directory engine: server-side search, sort, paging,
@@ -62,9 +63,10 @@ export function useUserDirectory({
   fetcher,
   sortOptions,
   fallbackMessage,
+  initialSearch = "",
 }: UseUserDirectoryOptions): UserDirectory {
   const [page, setPage] = useState(0);
-  const [search, setSearchValue] = useState("");
+  const [search, setSearchValue] = useState(initialSearch);
   const [sort, setSortValue] = useState(sortOptions[0]?.key ?? "");
   const debouncedSearch = useDebounced(search.trim(), 300);
 

@@ -15,8 +15,8 @@ const FEE_MODELS: Array<{
 }> = [
   {
     value: "PER_RESERVATION",
-    label: "Per reservation",
-    note: "Charge every completed reservation.",
+    label: "Per court",
+    note: "Charge for each court included in a completed reservation.",
   },
   {
     value: "FIXED_MONTHLY",
@@ -102,7 +102,7 @@ export function ContractTermsEditor({
         <div className="space-y-2">
           <label htmlFor={feeInputId} className={labelClassName}>
             {draft.feeModel === "PER_RESERVATION"
-              ? "Per-reservation fee"
+              ? "Per-court fee"
               : "Fixed monthly fee"}
             <span className="ml-1 text-[var(--semantic-red)]">*</span>
           </label>

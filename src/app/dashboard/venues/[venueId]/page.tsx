@@ -10,6 +10,7 @@ import {
   getApiErrorStatus,
   getContracts,
   getVenue,
+  getVenueManagers,
   setVenueStatus,
 } from "@/lib/api";
 import type {
@@ -67,6 +68,8 @@ import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
 import {
   contractDraftError,
+  contractDraftFromResponse,
+  contractDraftMatches,
   contractDraftToPayload,
   defaultContractDraft,
   formatContractFee,
@@ -95,6 +98,7 @@ export default function VenueDetailPage() {
   const [venue, setVenue] = useState<VenueDetailResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [managerId, setManagerId] = useState("");
+  const [managerName, setManagerName] = useState("");
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [activeContract, setActiveContract] = useState<ContractResponse | null>(
@@ -131,6 +135,22 @@ export default function VenueDetailPage() {
           if (cancelled) return;
           setActiveContract(active);
           setContractHistory(history);
+          if (active) setContractDraft(contractDraftFromResponse(active));
+          if (data.managerId) {
+            const managers = await getVenueManagers({
+              page: 0,
+              size: 100,
+            }).catch(() => null);
+            if (!managers) return;
+            const manager = managers.content.find(
+              (candidate) => candidate.id === data.managerId,
+            );
+            if (manager) {
+              setManagerName(
+                `${manager.firstName ?? ""} ${manager.lastName ?? ""}`.trim(),
+              );
+            }
+          }
         } catch (err: unknown) {
           if (!cancelled) {
             setContractError(
@@ -205,6 +225,7 @@ export default function VenueDetailPage() {
         contractDraftToPayload(contractDraft),
       );
       setActiveContract(created);
+      setContractDraft(contractDraftFromResponse(created));
       setContractHistory(await getContracts(venue.id));
       toast.success("Contract terms saved");
     } catch (err: unknown) {
@@ -245,6 +266,9 @@ export default function VenueDetailPage() {
   const operatingDays = decodeVenueAvailabilityDays(
     venue.availability?.days ?? [],
   );
+  const contractIsUnchanged = activeContract
+    ? contractDraftMatches(contractDraft, activeContract)
+    : false;
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
@@ -541,7 +565,7 @@ export default function VenueDetailPage() {
                   <Button
                     type="button"
                     onClick={handleCreateContract}
-                    disabled={contractSaving}
+                    disabled={contractSaving || contractIsUnchanged}
                     className="bg-[linear-gradient(135deg,var(--teal),#00b894)] font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
                   >
                     {contractSaving ? (
@@ -603,9 +627,12 @@ export default function VenueDetailPage() {
             </ConfigRow>
             <ConfigRow label="Manager">
               {venue.managerId ? (
-                <span className="rounded-md bg-[var(--bg-2)] px-2 py-0.5 font-mono text-xs text-[var(--text-2)]">
-                  {venue.managerId.slice(0, 8)}
-                </span>
+                <Link
+                  href={`/dashboard/users/venue-managers?search=${encodeURIComponent(managerName || venue.managerId)}`}
+                  className="rounded-md bg-[var(--bg-2)] px-2 py-0.5 text-xs font-medium text-[var(--semantic-amber)] hover:underline hover:underline-offset-2"
+                >
+                  {managerName || `Manager #${venue.managerId}`}
+                </Link>
               ) : (
                 <span className="text-xs text-[var(--text-4)]">Unassigned</span>
               )}

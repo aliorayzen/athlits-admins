@@ -37,11 +37,12 @@ export interface VenueManagersState extends UserDirectory {
 
 /** Venue-manager directory: the generic engine plus the VM-only activate /
  *  deactivate mutation layered on top of its optimistic helpers. */
-export function useVenueManagers(): VenueManagersState {
+export function useVenueManagers(initialSearch = ""): VenueManagersState {
   const dir = useUserDirectory({
     fetcher: getVenueManagers,
     sortOptions: SORT_OPTIONS,
     fallbackMessage: FETCH_FALLBACK,
+    initialSearch,
   });
 
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());

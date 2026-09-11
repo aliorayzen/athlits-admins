@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Ban, Edit3, Loader2, Mail, Power, Save, User, Users } from "lucide-react";
+import { Ban, Building2, Edit3, Loader2, Mail, Power, Save, User, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { PhoneNumberField } from "@/components/phone-number-field";
@@ -27,8 +27,10 @@ import {
   getApiErrorMessage,
   getApiErrorStatus,
   getApiFieldErrorMap,
+  getVenue,
+  getVenues,
 } from "@/lib/api";
-import type { UpdateVenueManagerRequest, UserDto } from "@/types/api";
+import type { UpdateVenueManagerRequest, UserDto, VenueDetailResponse } from "@/types/api";
 import { cn } from "@/lib/utils";
 
 import {
@@ -62,8 +64,35 @@ function venueManagerEditFieldErrors(err: unknown): VmEditFieldErrors {
   return fieldErrors;
 }
 
-export function VenueManagersDirectory() {
-  const vm = useVenueManagers();
+export function VenueManagersDirectory({ initialSearch = "" }: { initialSearch?: string }) {
+  const vm = useVenueManagers(initialSearch);
+  const [venuesByManager, setVenuesByManager] = useState<
+    Map<string, VenueDetailResponse[]>
+  >(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadManagedVenues() {
+      const summaries = await getVenues();
+      const details = await Promise.all(
+        summaries.map((venue) => getVenue(venue.id)),
+      );
+      if (cancelled) return;
+      const grouped = new Map<string, VenueDetailResponse[]>();
+      for (const venue of details) {
+        if (!venue.managerId) continue;
+        grouped.set(venue.managerId, [
+          ...(grouped.get(venue.managerId) ?? []),
+          venue,
+        ]);
+      }
+      setVenuesByManager(grouped);
+    }
+    void loadManagedVenues().catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <DirectoryView
@@ -81,6 +110,7 @@ export function VenueManagersDirectory() {
       renderActions={(manager) => (
         <ManagerActions
           manager={manager}
+          venues={venuesByManager.get(manager.id) ?? []}
           isPending={vm.pendingIds.has(manager.id)}
           onToggle={vm.toggleActive}
           onUpdate={vm.updateDetails}
@@ -92,11 +122,13 @@ export function VenueManagersDirectory() {
 
 function ManagerActions({
   manager,
+  venues,
   isPending,
   onToggle,
   onUpdate,
 }: {
   manager: UserDto;
+  venues: VenueDetailResponse[];
   isPending: boolean;
   onToggle: (m: UserDto) => Promise<void>;
   onUpdate: (
@@ -106,6 +138,18 @@ function ManagerActions({
 }) {
   return (
     <div className="flex items-center justify-end gap-2">
+      {venues.map((venue) => (
+        <Link
+          key={venue.id}
+          href={`/dashboard/venues/${venue.id}`}
+          aria-label={`Open ${venue.name}`}
+          title={venue.name}
+          className="inline-flex max-w-40 items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-colors hover:bg-[rgba(245,158,11,0.16)]"
+        >
+          <Building2 className="h-[13px] w-[13px] shrink-0" />
+          <span className="truncate">{venue.name}</span>
+        </Link>
+      ))}
       <Link
         href={`/dashboard/users/venue-managers/${manager.id}/staff`}
         aria-label={`View staff managed by ${manager.firstName} ${manager.lastName}`}

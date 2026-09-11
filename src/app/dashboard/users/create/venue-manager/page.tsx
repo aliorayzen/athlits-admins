@@ -344,7 +344,7 @@ export default function CreateVenueManagerPage() {
     venue: venue.nameEn.trim() || "Venue name",
     fee:
       contractDraft.feeModel === "PER_RESERVATION"
-        ? `${contractDraft.currencyCode} ${contractDraft.perReservationFee} / reservation`
+        ? `${contractDraft.currencyCode} ${contractDraft.perReservationFee} / court`
         : `${contractDraft.currencyCode} ${contractDraft.fixedMonthlyFee} monthly`,
   };
 

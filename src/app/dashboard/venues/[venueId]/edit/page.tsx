@@ -60,7 +60,6 @@ import {
   MapPin,
   Settings,
 } from "lucide-react";
-import Link from "next/link";
 
 const FACILITIES: { value: Facility; label: string }[] = [
   { value: "PARKING", label: "Parking" },
@@ -292,15 +291,15 @@ export default function EditVenuePage() {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="flex items-center gap-3">
-          <Link href={`/dashboard/venues/${params.venueId}`}>
-            <Button
+          <Button
+              type="button"
+              onClick={() => router.back()}
               variant="ghost"
               size="icon"
               className="text-[var(--text-4)] hover:text-[var(--text-1)]"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-          </Link>
           <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
         </div>
         <div
@@ -324,15 +323,15 @@ export default function EditVenuePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
-        <Link href={`/dashboard/venues/${params.venueId}`}>
-          <Button
+        <Button
+            type="button"
+            onClick={() => router.back()}
             variant="ghost"
             size="icon"
             className="text-[var(--text-4)] hover:text-[var(--text-1)]"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-        </Link>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
           <p className="text-sm text-[var(--text-3)]">
@@ -667,15 +666,14 @@ export default function EditVenuePage() {
         )}
 
         <div className="flex justify-end gap-3">
-          <Link href={`/dashboard/venues/${params.venueId}`}>
-            <Button
-              variant="outline"
-              type="button"
+          <Button
+                variant="outline"
+                type="button"
+                onClick={() => router.back()}
               className="border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-1)]"
             >
               Cancel
             </Button>
-          </Link>
           <Button
             type="submit"
             disabled={isSaving}
