@@ -449,6 +449,72 @@ export interface CourtPeakWindow {
   endMinutes: number;
 }
 
+export type VenueStatisticsPeriodType = "WTD" | "MTD" | "YTD" | "CUSTOM";
+
+export interface VenueStatisticsPeriod {
+  type: VenueStatisticsPeriodType | null;
+  start: string;
+  end: string;
+}
+
+export interface VenueStatisticsComparison {
+  previous: number;
+  change: number;
+  changePct: number | null;
+}
+
+export interface VenueBookingStatistics {
+  total: number;
+  confirmed: number;
+  completed: number;
+  pending: number;
+  cancelled: number;
+  noShow: number;
+  rejected: number;
+  expired: number;
+  other: number;
+  comparison: VenueStatisticsComparison;
+}
+
+export interface VenueRevenueStatistics {
+  currencyCode: string;
+  grossCourt: number;
+  grossEquipment: number;
+  gross: number;
+  discounts: number;
+  refunds: number;
+  net: number;
+  comparison: VenueStatisticsComparison;
+}
+
+export interface VenueOccupancyStatistics {
+  pct: number;
+  bookedMinutes: number;
+  availableMinutes: number;
+  comparison: VenueStatisticsComparison;
+}
+
+export interface VenueStatisticsResponse {
+  venueId: string;
+  venueName: string;
+  timeZoneId: string;
+  currencyCode: string;
+  period: VenueStatisticsPeriod;
+  previousPeriod: VenueStatisticsPeriod;
+  bookings: VenueBookingStatistics;
+  revenue: VenueRevenueStatistics;
+  occupancy: VenueOccupancyStatistics;
+  trend: Array<{ date: string; bookings: number; netRevenue: number; occupancyPct: number }>;
+  courts: Array<{ courtId: string; courtName: string; bookings: number; netRevenue: number; occupancyPct: number }>;
+  sports: Array<{ sport: string; bookings: number; netRevenue: number }>;
+}
+
+export interface VenueStatisticsQuery {
+  period: VenueStatisticsPeriodType;
+  start?: string;
+  end?: string;
+}
+
 export interface CourtPricingRequest {
   currencyCode: string;
   offPeakCentsPerHour: number;

@@ -64,6 +64,7 @@ import {
   ExternalLink,
   CalendarPlus2,
   Plus,
+  ChartNoAxesCombined,
 } from "lucide-react";
 import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -314,6 +315,15 @@ export default function VenueDetailPage() {
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
+          <Link href={`/dashboard/venues/${venue.id}/statistics`}>
+            <Button
+              variant="outline"
+              className="border-[var(--border-strong)] bg-[var(--bg-2)] text-[var(--text-2)] hover:bg-[var(--bg-hover)]"
+            >
+              <ChartNoAxesCombined className="mr-2 h-3.5 w-3.5" />
+              Statistics
+            </Button>
+          </Link>
           {/* Edit */}
           <Link href={`/dashboard/venues/${venue.id}/edit`}>
             <Button

@@ -55,6 +55,8 @@ import type {
   CourtSummaryResponse,
   CreateCourtRequest,
   CourtRecord,
+  VenueStatisticsQuery,
+  VenueStatisticsResponse,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
 import { normalizeOptionalHttpUrl } from "@/lib/http-url";
@@ -646,6 +648,26 @@ export async function getVenue(venueId: string): Promise<VenueDetailResponse> {
     `/api/admin/v1/venues/${venueId}`,
   );
   return normalizeVenueDetail(data);
+}
+
+export async function getVenueStatistics(
+  venueId: string,
+  query: VenueStatisticsQuery,
+): Promise<VenueStatisticsResponse> {
+  const { data } = await apiClient.get<VenueStatisticsResponse>(
+    `/api/admin/v1/venues/${venueId}/statistics`,
+    { params: query },
+  );
+  return {
+    ...data,
+    venueId: ensureStringId(data.venueId),
+    courts: (data.courts ?? []).map((court) => ({
+      ...court,
+      courtId: ensureStringId(court.courtId),
+    })),
+    trend: data.trend ?? [],
+    sports: data.sports ?? [],
+  };
 }
 
 export async function getCourts(
