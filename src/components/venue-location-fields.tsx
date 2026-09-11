@@ -275,7 +275,6 @@ export function VenueLocationFields({
             setCityDistrict("");
             setSelectedLocationKey("");
             onCityChange("");
-            onCoordinatesChange({ latitude: 0, longitude: 0 });
           }}
           required
           inputClassName={inputClassName}
@@ -292,7 +291,6 @@ export function VenueLocationFields({
             setCityDistrict(value);
             setSelectedLocationKey("");
             onCityChange("");
-            onCoordinatesChange({ latitude: 0, longitude: 0 });
           }}
           disabled={!governorate}
           required
