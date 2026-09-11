@@ -439,7 +439,7 @@ export interface AssignManagerRequest {
 
 // Courts
 export type SurfaceType =
-  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF" | "PADEL";
+  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF" | "PADEL" | "CONCRETE";
 export type CourtEnvironment = "INDOOR" | "OUTDOOR";
 
 export type CourtDivisionLayout = "FULL" | "HALVES" | "THIRDS" | "QUARTERS";
@@ -508,6 +508,83 @@ export interface CourtResponse {
 }
 
 export type CourtSummaryResponse = CourtResponse;
+
+export interface CourtRecordBookingOption {
+  id: number;
+  durationMinutes: number;
+  default: boolean;
+  active: boolean;
+}
+
+export interface CourtRecordPricingRule {
+  id?: number;
+  name: string;
+  ruleType?: string;
+  bookingOptionId?: number | null;
+  dayOfWeek?: Weekday | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  endsNextDay?: boolean;
+  priceAmount: number;
+  currencyCode: string;
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+}
+
+export interface CourtEquipmentPriceTier {
+  minimumQuantity: number;
+  maximumQuantity: number;
+  flatPrice: number;
+}
+
+export interface CourtRecordEquipment extends CourtEquipmentRequest {
+  id?: number;
+  priceTiers: CourtEquipmentPriceTier[];
+}
+
+export interface CourtRecordSport {
+  id: number;
+  courtAreaCode: string;
+  sportType: string;
+  capacity: number;
+  sessionDurationMinutes: number;
+  startIntervalMinutes: number;
+  active: boolean;
+  bookingOptions: CourtRecordBookingOption[];
+  pricingRules: CourtRecordPricingRule[];
+  equipment: CourtRecordEquipment[];
+}
+
+export interface CourtAvailabilityRecord {
+  inheritsVenueSchedule: boolean;
+  rules: unknown[];
+}
+
+export interface CourtRuleRecord {
+  id?: number;
+  title: string;
+  description: string;
+}
+
+export interface CourtRecord {
+  id?: string;
+  venueId?: string;
+  name?: string;
+  version: number;
+  nameEn: string;
+  nameAr: string;
+  surfaceType: SurfaceType;
+  environment: CourtEnvironment;
+  active: boolean;
+  dimensionsLabel: string;
+  amenityIds: CourtAmenityId[];
+  cancellationPolicyId: number | null;
+  divisionLayout: CourtDivisionLayout;
+  sports: CourtRecordSport[];
+  availability: CourtAvailabilityRecord;
+  imageIds: number[];
+  rules: CourtRuleRecord[];
+}
 
 // Admin booking creation
 export type BookingPaymentMethod = "CASH" | "ONLINE";

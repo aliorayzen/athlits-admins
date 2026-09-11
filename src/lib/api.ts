@@ -54,6 +54,7 @@ import type {
   CourtResponse,
   CourtSummaryResponse,
   CreateCourtRequest,
+  CourtRecord,
 } from "@/types/api";
 import { normalizeEmail } from "@/lib/email";
 import { normalizeOptionalHttpUrl } from "@/lib/http-url";
@@ -252,6 +253,23 @@ function normalizeCourt(court: CourtResponse): CourtResponse {
     sports: court.sports ?? [],
     amenityIds: court.amenityIds ?? [],
     imageUrls: court.imageUrls ?? [],
+  };
+}
+
+function normalizeCourtRecord(record: CourtRecord): CourtRecord {
+  return {
+    ...record,
+    id: record.id ? ensureStringId(record.id) : record.id,
+    venueId: record.venueId ? ensureStringId(record.venueId) : record.venueId,
+    name: displayName(record.nameEn, record.nameAr),
+    amenityIds: record.amenityIds ?? [],
+    sports: record.sports ?? [],
+    imageIds: record.imageIds ?? [],
+    rules: record.rules ?? [],
+    availability: record.availability ?? {
+      inheritsVenueSchedule: true,
+      rules: [],
+    },
   };
 }
 
@@ -642,11 +660,34 @@ export async function getCourts(
 export async function getCourt(
   venueId: string,
   courtId: string,
-): Promise<CourtResponse> {
-  const { data } = await apiClient.get<CourtResponse>(
+): Promise<CourtRecord> {
+  const { data } = await apiClient.get<CourtRecord>(
     `/api/admin/v1/venues/${venueId}/courts/${courtId}`,
+    {
+      headers: { Accept: "application/vnd.arena.court-record+json" },
+    },
   );
-  return normalizeCourt(data);
+  return normalizeCourtRecord(data);
+}
+
+export async function saveCourtRecord(
+  venueId: string,
+  courtId: string,
+  record: CourtRecord,
+): Promise<CourtRecord> {
+  const mediaType = "application/vnd.arena.court-record+json";
+  const { data } = await apiClient.put<CourtRecord>(
+    `/api/admin/v1/venues/${venueId}/courts/${courtId}`,
+    record,
+    {
+      headers: {
+        Accept: mediaType,
+        "Content-Type": mediaType,
+        "Idempotency-Key": crypto.randomUUID(),
+      },
+    },
+  );
+  return normalizeCourtRecord(data);
 }
 
 export async function createCourt(
