@@ -19,6 +19,7 @@ import {
   RotateCcw,
   ScrollText,
   BarChart3,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -198,6 +199,11 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     invoicesOverdue: stats.invoicesOverdue,
   });
   if (user?.role === "ADMIN") {
+    navSections[0].items.push({
+      href: "/dashboard/broadcasts",
+      label: "Broadcasts",
+      icon: Megaphone,
+    });
     navSections.splice(1, 0, {
       label: "Analytics",
       dotTone: "teal",
