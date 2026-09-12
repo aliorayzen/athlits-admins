@@ -20,6 +20,7 @@ import {
   ScrollText,
   BarChart3,
   Megaphone,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -199,6 +200,12 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     invoicesOverdue: stats.invoicesOverdue,
   });
   if (user?.role === "ADMIN") {
+    navSections[0].items.splice(2, 0, {
+      href: "/dashboard/bookings",
+      label: "Bookings",
+      icon: CalendarDays,
+      kbd: "3",
+    });
     navSections[0].items.push({
       href: "/dashboard/broadcasts",
       label: "Broadcasts",

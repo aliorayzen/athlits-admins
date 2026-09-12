@@ -49,6 +49,8 @@ import type {
   AdminBookingOccurrencePreview,
   AdminBookingPreviewResponse,
   AdminBookingRequest,
+  AdminBookingsQuery,
+  AdminBookingsResponse,
   AdminCreatedBookingOccurrence,
   BookableVenueResponse,
   CourtResponse,
@@ -805,6 +807,28 @@ export async function createAdminBooking(
     ),
     totalPriceAmount: optionalAmount(data.totalPriceAmount),
     totalAmount: optionalAmount(data.totalAmount),
+  };
+}
+
+export async function getAdminBookings(
+  params: AdminBookingsQuery = {},
+): Promise<AdminBookingsResponse> {
+  const { data } = await apiClient.get<AdminBookingsResponse>(
+    "/api/admin/v1/bookings",
+    { params },
+  );
+  return {
+    bookings: {
+      ...data.bookings,
+      content: data.bookings?.content ?? [],
+    },
+    summary: {
+      ...data.summary,
+      countsByStatus: data.summary?.countsByStatus ?? {},
+      grossRevenueByCurrency: data.summary?.grossRevenueByCurrency ?? {},
+      averageBookingValueByCurrency:
+        data.summary?.averageBookingValueByCurrency ?? {},
+    },
   };
 }
 

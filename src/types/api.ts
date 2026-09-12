@@ -655,6 +655,62 @@ export interface CourtRecord {
 // Admin booking creation
 export type BookingPaymentMethod = "CASH" | "ONLINE";
 
+export type AdminBookingStatus =
+  | "PENDING"
+  | "PENDING_APPROVAL"
+  | "CONFIRMED"
+  | "REJECTED"
+  | "CANCELLED"
+  | "BLOCKED"
+  | "EXPIRED"
+  | "COMPLETED"
+  | "NO_SHOW";
+
+export interface AdminBookingListItem {
+  bookingId: number;
+  venueId: number;
+  venueName: string;
+  courtId: number;
+  courtName: string;
+  bookingDate: string;
+  startTime: string;
+  endTime: string;
+  endsNextDay: boolean;
+  totalAmount: number;
+  currencyCode: string;
+  status: AdminBookingStatus;
+  paymentMethod: BookingPaymentMethod;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminBookingsSummary {
+  totalBookings: number;
+  countsByStatus: Partial<Record<AdminBookingStatus, number>>;
+  grossRevenueByCurrency: Record<string, number>;
+  averageBookingValueByCurrency: Record<string, number>;
+  cancelledBookings: number;
+  noShowBookings: number;
+  cancellationRatePct: number;
+  noShowRatePct: number;
+}
+
+export interface AdminBookingsResponse {
+  bookings: PageResponse<AdminBookingListItem>;
+  summary: AdminBookingsSummary;
+}
+
+export interface AdminBookingsQuery {
+  venueId?: number;
+  status?: AdminBookingStatus;
+  paymentMethod?: BookingPaymentMethod;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
 export interface BookingOptionResponse {
   id: string;
   durationMinutes: number;
