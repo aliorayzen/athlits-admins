@@ -12,6 +12,7 @@ import type {
   StoreSummary,
   StoreTimeseries,
 } from "@/types/store-analytics";
+import { adminEndpoints } from "@/lib/admin-endpoints";
 
 const BASE = "/api/admin/v1/store-analytics";
 
@@ -78,4 +79,9 @@ export function getStoreTimeseries(
 
 export function getStoreImportStatus(signal?: AbortSignal) {
   return readStoreReport<StoreImportStatus>("import-status", {}, signal);
+}
+
+export async function runStoreImport(platform: StorePlatform): Promise<void> {
+  const endpoint = adminEndpoints.runStoreImport(platform);
+  await apiClient.request({ method: endpoint.method, url: endpoint.path });
 }

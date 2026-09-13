@@ -6,12 +6,27 @@ import {
   ArrowUpRight,
   BarChart3,
   Check,
+  Loader2,
   Play,
   RefreshCw,
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { getApiErrorMessage } from "@/lib/api";
+import { runStoreImport } from "@/lib/store-analytics-api";
+import { toast } from "sonner";
 import {
   defaultStoreRange,
   STORE_NAMES,
@@ -32,6 +47,9 @@ export default function AnalyticsPage() {
   const [draft, setDraft] = useState(range);
   const [validation, setValidation] = useState<string>();
   const [revision, setRevision] = useState(0);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [isImportRunning, setIsImportRunning] = useState(false);
+  const [importError, setImportError] = useState("");
 
   if (user?.role !== "ADMIN")
     return (
@@ -47,6 +65,24 @@ export default function AnalyticsPage() {
     if (error) return;
     setRange({ ...draft });
     setRevision((value) => value + 1);
+  }
+
+  async function startImport() {
+    if (!platform || isImportRunning) return;
+    setIsImportRunning(true);
+    setImportError("");
+    try {
+      await runStoreImport(platform);
+      setImportDialogOpen(false);
+      setRevision((value) => value + 1);
+      toast.success(`${STORE_NAMES[platform]} import started`);
+    } catch (error: unknown) {
+      setImportError(
+        getApiErrorMessage(error, "The import could not be started. Try again."),
+      );
+    } finally {
+      setIsImportRunning(false);
+    }
   }
 
   return (
@@ -122,13 +158,71 @@ export default function AnalyticsPage() {
               <h2 className="text-xl font-semibold">
                 {STORE_NAMES[platform]} report
               </h2>
-              <Button
-                variant="outline"
-                onClick={() => setRevision((value) => value + 1)}
-              >
-                <RefreshCw className="h-4 w-4" />
-                Refresh reports
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setRevision((value) => value + 1)}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Refresh reports
+                </Button>
+                <AlertDialog
+                  open={importDialogOpen}
+                  onOpenChange={(open) => {
+                    if (isImportRunning) return;
+                    setImportDialogOpen(open);
+                    if (open) setImportError("");
+                  }}
+                >
+                  <AlertDialogTrigger
+                    render={
+                      <Button className="bg-[var(--teal)] font-semibold text-[var(--bg-0)] hover:brightness-110" />
+                    }
+                  >
+                    <Play className="h-4 w-4" />
+                    Run import
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Run {STORE_NAMES[platform]} import?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This starts a new backend import for the selected platform.
+                        Import status will refresh after the request is accepted.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    {importError && (
+                      <p
+                        role="alert"
+                        className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--semantic-red)]"
+                      >
+                        {importError}
+                      </p>
+                    )}
+                    <AlertDialogFooter>
+                      <AlertDialogCancel disabled={isImportRunning}>
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        disabled={isImportRunning}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          void startImport();
+                        }}
+                        className="bg-[var(--teal)] font-semibold text-[var(--bg-0)] hover:brightness-110"
+                      >
+                        {isImportRunning ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Play className="h-4 w-4" />
+                        )}
+                        {isImportRunning ? "Starting import..." : "Run import"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
             <form onSubmit={applyRange} className="space-y-2">
               <div className="flex flex-wrap items-end gap-3">

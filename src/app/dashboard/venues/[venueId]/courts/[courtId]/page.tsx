@@ -9,8 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { getApiErrorMessage, getApiErrorStatus, getCourt, getVenue, saveCourtRecord, uploadCourtImages } from "@/lib/api";
-import type { CourtAmenityId, CourtDivisionLayout, CourtEnvironment, CourtRecord, SurfaceType } from "@/types/api";
+import { deleteCourt } from "@/lib/courts-api";
+import { CourtAvailabilityPanel } from "./_components/court-availability-panel";
+import { CourtConfigurationPanel } from "./_components/court-configuration-panel";
+import type { CourtAmenityId, CourtEnvironment, CourtRecord, SurfaceType } from "@/types/api";
 
 const FIELD_CLASS = "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--teal)]/40 focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
 const SELECT_CLASS = `h-9 w-full rounded-lg border px-3 text-sm outline-none ${FIELD_CLASS}`;
@@ -20,7 +32,6 @@ const AMENITIES: { value: CourtAmenityId; label: string }[] = [
   { value: "spectator_seating", label: "Spectator seating" },
 ];
 const SURFACES: SurfaceType[] = ["PADEL", "GRASS", "CLAY", "HARD", "SYNTHETIC", "WOOD", "RUBBER", "SAND", "TURF", "CONCRETE"];
-const LAYOUTS: CourtDivisionLayout[] = ["FULL", "HALVES", "THIRDS", "QUARTERS"];
 
 export default function CourtDetailPage() {
   const { venueId, courtId } = useParams<{ venueId: string; courtId: string }>();
@@ -29,9 +40,15 @@ export default function CourtDetailPage() {
   const [record, setRecord] = useState<CourtRecord | null>(null);
   const [savedRecord, setSavedRecord] = useState<CourtRecord | null>(null);
   const [venueActive, setVenueActive] = useState(false);
+  const [venueTimeZoneId, setVenueTimeZoneId] = useState<string>();
+  const [venueCurrencyCode, setVenueCurrencyCode] = useState("USD");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [hasVersionConflict, setHasVersionConflict] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   async function loadCourt() {
     setIsLoading(true);
@@ -40,6 +57,8 @@ export default function CourtDetailPage() {
       setRecord(courtRecord);
       setSavedRecord(courtRecord);
       setVenueActive(venue.status === "ACTIVE");
+      setVenueTimeZoneId(venue.timeZoneId);
+      setVenueCurrencyCode(venue.currencyCode);
       setHasVersionConflict(false);
     } catch {
       toast.error("Failed to load court");
@@ -100,6 +119,13 @@ export default function CourtDetailPage() {
     }
   }
 
+  async function refreshCourtRecord() {
+    const updated = await getCourt(venueId, courtId);
+    setRecord(updated);
+    setSavedRecord(updated);
+    setHasVersionConflict(false);
+  }
+
   function moveImage(index: number, direction: -1 | 1) {
     if (!record) return;
     const nextIndex = index + direction;
@@ -107,6 +133,25 @@ export default function CourtDetailPage() {
     const imageIds = [...record.imageIds];
     [imageIds[index], imageIds[nextIndex]] = [imageIds[nextIndex], imageIds[index]];
     updateRecord({ imageIds });
+  }
+
+  async function removeCourt() {
+    if (!record || isDeleting) return;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await deleteCourt(venueId, courtId);
+      toast.success(`${record.nameEn || record.nameAr} deleted`);
+      router.push(`/dashboard/venues/${venueId}`);
+    } catch (error: unknown) {
+      const fallback =
+        getApiErrorStatus(error) === 409
+          ? "This court cannot be deleted while it has dependent bookings or configuration."
+          : "Failed to delete court";
+      setDeleteError(getApiErrorMessage(error, fallback));
+    } finally {
+      setIsDeleting(false);
+    }
   }
 
   if (isLoading) return <div className="mx-auto max-w-5xl space-y-5"><Skeleton className="h-12 w-72" /><Skeleton className="h-80 w-full rounded-2xl" /></div>;
@@ -135,8 +180,7 @@ export default function CourtDetailPage() {
           <Field label="Dimensions"><Input value={record.dimensionsLabel ?? ""} onChange={(e) => updateRecord({ dimensionsLabel: e.target.value })} placeholder="40 x 20m" className={FIELD_CLASS} /></Field>
           <Field label="Surface"><select value={record.surfaceType} onChange={(e) => updateRecord({ surfaceType: e.target.value as SurfaceType })} className={SELECT_CLASS}>{SURFACES.map((surface) => <option key={surface}>{surface}</option>)}</select></Field>
           <Field label="Environment"><select value={record.environment} onChange={(e) => updateRecord({ environment: e.target.value as CourtEnvironment })} className={SELECT_CLASS}><option>INDOOR</option><option>OUTDOOR</option></select></Field>
-          <Field label="Division layout"><select value={record.divisionLayout} onChange={(e) => updateRecord({ divisionLayout: e.target.value as CourtDivisionLayout })} className={SELECT_CLASS}>{LAYOUTS.map((layout) => <option key={layout}>{layout}</option>)}</select></Field>
-          <Field label="Cancellation policy ID"><Input type="number" min={1} value={record.cancellationPolicyId ?? ""} onChange={(e) => updateRecord({ cancellationPolicyId: e.target.value ? Number(e.target.value) : null })} className={`${FIELD_CLASS} font-mono`} /></Field>
+          <Field label="Cancellation policy"><Input readOnly value={record.cancellationPolicyId ? `Assigned policy ${record.cancellationPolicyId}` : "No policy assigned"} className={FIELD_CLASS} /></Field>
           <Field label="Booking status"><select value={record.active ? "ACTIVE" : "INACTIVE"} onChange={(e) => updateRecord({ active: e.target.value === "ACTIVE" })} className={SELECT_CLASS}><option value="ACTIVE">Active and bookable</option><option value="INACTIVE">Inactive</option></select></Field>
         </div>
       </Section>
@@ -145,17 +189,114 @@ export default function CourtDetailPage() {
         <div className="flex flex-wrap gap-2">{AMENITIES.map(({ value, label }) => { const selected = record.amenityIds.includes(value); return <button key={value} type="button" aria-pressed={selected} onClick={() => updateRecord({ amenityIds: selected ? record.amenityIds.filter((id) => id !== value) : [...record.amenityIds, value] })} className={`rounded-lg border px-3 py-2 text-sm transition-colors ${selected ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]" : "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-3)] hover:border-[var(--border-strong)]"}`}>{label}</button>; })}</div>
       </Section>
 
-      <Section number="03" title="Sports configuration" description="Nested booking options, pricing, and equipment are preserved on every save.">
-        <div className="space-y-3">{record.sports.map((sport, index) => <div key={sport.id} className="grid gap-3 rounded-xl border border-[var(--border)] bg-[var(--bg-0)] p-4 sm:grid-cols-2 lg:grid-cols-5"><Field label="Sport"><Input readOnly value={sport.sportType} className={FIELD_CLASS} /></Field><Field label="Area"><Input readOnly value={sport.courtAreaCode} className={FIELD_CLASS} /></Field><Field label="Capacity"><Input type="number" min={1} value={sport.capacity} onChange={(e) => updateRecord({ sports: record.sports.map((item, i) => i === index ? { ...item, capacity: Number(e.target.value) } : item) })} className={FIELD_CLASS} /></Field><Field label="Session minutes"><Input type="number" min={1} value={sport.sessionDurationMinutes} onChange={(e) => updateRecord({ sports: record.sports.map((item, i) => i === index ? { ...item, sessionDurationMinutes: Number(e.target.value) } : item) })} className={FIELD_CLASS} /></Field><Field label="Start interval"><Input type="number" min={1} value={sport.startIntervalMinutes} onChange={(e) => updateRecord({ sports: record.sports.map((item, i) => i === index ? { ...item, startIntervalMinutes: Number(e.target.value) } : item) })} className={FIELD_CLASS} /></Field><p className="self-end text-xs text-[var(--text-4)] sm:col-span-2 lg:col-span-5">{sport.bookingOptions.length} booking options, {sport.pricingRules.length} pricing rules, {sport.equipment.length} equipment items</p></div>)}</div>
-      </Section>
+      <CourtAvailabilityPanel
+        venueId={venueId}
+        courtId={courtId}
+        timeZoneId={venueTimeZoneId}
+        aggregateDirty={isDirty}
+        onSaved={refreshCourtRecord}
+      />
 
-      <Section number="04" title="Image order" description="The first ID is primary. Saving replaces the complete ordered list; maximum 5.">
+      <CourtConfigurationPanel venueId={venueId} courtId={courtId} currencyCode={venueCurrencyCode} aggregateDirty={isDirty} onSaved={refreshCourtRecord} />
+
+      <Section number="03" title="Image order" description="The first ID is primary. Saving replaces the complete ordered list; maximum 5.">
         <div className="space-y-2">
           {record.imageIds.map((imageId, index) => <div key={imageId} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3 py-2"><div><span className="font-mono text-sm text-[var(--text-2)]">Image {imageId}</span>{index === 0 && <span className="ml-2 text-[10px] font-semibold uppercase text-[var(--teal-text)]">Primary</span>}</div><div className="flex gap-1"><Button type="button" size="icon" variant="ghost" disabled={index === 0} onClick={() => moveImage(index, -1)} aria-label={`Move image ${imageId} up`}><ArrowUp className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" disabled={index === record.imageIds.length - 1} onClick={() => moveImage(index, 1)} aria-label={`Move image ${imageId} down`}><ArrowDown className="h-4 w-4" /></Button><Button type="button" size="icon" variant="ghost" onClick={() => updateRecord({ imageIds: record.imageIds.filter((id) => id !== imageId) })} aria-label={`Remove image ${imageId}`}><Trash2 className="h-4 w-4 text-[var(--semantic-red)]" /></Button></div></div>)}
           {record.imageIds.length === 0 && <p className="rounded-lg border border-dashed border-[var(--border)] py-8 text-center text-sm text-[var(--text-4)]">No court images</p>}
           <label htmlFor={imageInputId} className={`mt-3 inline-flex h-9 cursor-pointer items-center rounded-lg border border-[var(--border-strong)] bg-[var(--bg-2)] px-3 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--bg-3)] ${record.imageIds.length >= 5 ? "pointer-events-none opacity-50" : ""}`}><ImagePlus className="mr-2 h-4 w-4" />Upload images</label><input id={imageInputId} disabled={isSaving || record.imageIds.length >= 5} type="file" accept="image/*" multiple className="sr-only" onChange={(event) => void addImages(Array.from(event.target.files ?? []))} />
         </div>
       </Section>
+
+      <section className="overflow-hidden rounded-2xl border border-[rgba(244,63,94,0.22)] bg-[var(--bg-1)]">
+        <header className="border-b border-[rgba(244,63,94,0.16)] px-5 py-4">
+          <h2 className="text-[15px] font-semibold text-[var(--semantic-red)]">
+            Danger zone
+          </h2>
+          <p className="text-xs text-[var(--text-4)]">
+            Deleting a court is permanent and may be rejected when bookings depend on it.
+          </p>
+        </header>
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-[var(--text-1)]">Delete this court</p>
+            <p className="mt-1 text-xs text-[var(--text-3)]">
+              Backend conflicts are shown here so dependent records can be resolved safely.
+            </p>
+          </div>
+          <Dialog
+            open={deleteDialogOpen}
+            onOpenChange={(open) => {
+              if (isDeleting) return;
+              setDeleteDialogOpen(open);
+              setDeleteConfirmation("");
+              setDeleteError("");
+            }}
+          >
+            <DialogTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="border-[rgba(244,63,94,0.3)] text-[var(--semantic-red)] hover:bg-[var(--semantic-red-subtle)]"
+                />
+              }
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete court
+            </DialogTrigger>
+            <DialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+              <DialogHeader>
+                <DialogTitle>Delete {record.nameEn || record.nameAr}?</DialogTitle>
+                <DialogDescription>
+                  Type the court name exactly to confirm. This action cannot be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2 py-2">
+                <Label htmlFor="delete-court-confirmation">Court name</Label>
+                <Input
+                  id="delete-court-confirmation"
+                  autoComplete="off"
+                  value={deleteConfirmation}
+                  disabled={isDeleting}
+                  onChange={(event) => {
+                    setDeleteConfirmation(event.target.value);
+                    setDeleteError("");
+                  }}
+                  className={FIELD_CLASS}
+                />
+                {deleteError && (
+                  <p role="alert" className="text-sm text-[var(--semantic-red)]">
+                    {deleteError}
+                  </p>
+                )}
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  disabled={isDeleting}
+                  onClick={() => setDeleteDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  disabled={
+                    isDeleting ||
+                    deleteConfirmation !== (record.nameEn || record.nameAr)
+                  }
+                  onClick={() => void removeCourt()}
+                  className="bg-[var(--semantic-red)] text-[var(--bg-0)] hover:brightness-110"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  {isDeleting ? "Deleting..." : "Delete court"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
 
       <div className="flex justify-end"><SaveButton disabled={!isDirty || isSaving || hasVersionConflict} busy={isSaving} onClick={save} /></div>
     </div>

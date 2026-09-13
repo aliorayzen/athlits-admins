@@ -1,21 +1,37 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
   CalendarClock,
+  Ban,
   ChevronRight,
   Loader2,
   RefreshCw,
   Search,
   UsersRound,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { blockUser } from "@/lib/admin-users-api";
+import { getApiErrorMessage } from "@/lib/api";
 import type { PlayerReportItem, PlayerSortBy } from "@/types/api";
 
 import {
@@ -183,6 +199,7 @@ export function PlayersDirectory() {
           });
         }}
         onRetry={report.retry}
+        onPlayerChanged={report.retry}
         onPage={report.goToPage}
       />
 
@@ -199,6 +216,7 @@ function PlayersBody({
   hasFilters,
   onClear,
   onRetry,
+  onPlayerChanged,
   onPage,
 }: {
   rows: PlayerReportItem[];
@@ -209,6 +227,7 @@ function PlayersBody({
   hasFilters: boolean;
   onClear: () => void;
   onRetry: () => void;
+  onPlayerChanged: () => void;
   onPage: (page: number) => void;
 }) {
   if (isLoading) return <PlayersSkeleton />;
@@ -303,6 +322,7 @@ function PlayersBody({
               <PlayerRow
                 key={player.playerId}
                 player={player}
+                onPlayerChanged={onPlayerChanged}
               />
             ))}
           </tbody>
@@ -315,8 +335,10 @@ function PlayersBody({
 
 function PlayerRow({
   player,
+  onPlayerChanged,
 }: {
   player: PlayerReportItem;
+  onPlayerChanged: () => void;
 }) {
   const fullName =
     `${player.firstName} ${player.lastName}`.trim() || "Unnamed player";
@@ -384,19 +406,115 @@ function PlayerRow({
         </span>
       </td>
       <td className="border-t border-white/[0.035] px-4 py-3 text-right align-middle">
-        <Link
-          href={{
-            pathname: `/dashboard/users/players/${player.playerId}/history`,
-            query: { name: fullName },
-          }}
-          aria-label={`View booking history for ${fullName}`}
-          className="inline-flex h-8 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 text-[11.5px] font-medium text-[var(--text-3)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
-        >
-          History
-          <ChevronRight className="h-3 w-3" />
-        </Link>
+        <div className="flex items-center justify-end gap-1.5">
+          {player.accountStatus !== "DISABLED" && (
+            <BlockPlayerDialog
+              player={player}
+              fullName={fullName}
+              onBlocked={onPlayerChanged}
+            />
+          )}
+          <Link
+            href={{
+              pathname: `/dashboard/users/players/${player.playerId}/history`,
+              query: { name: fullName },
+            }}
+            aria-label={`View booking history for ${fullName}`}
+            className="inline-flex h-8 items-center gap-1 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 text-[11.5px] font-medium text-[var(--text-3)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+          >
+            History
+            <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
       </td>
     </tr>
+  );
+}
+
+function BlockPlayerDialog({
+  player,
+  fullName,
+  onBlocked,
+}: {
+  player: PlayerReportItem;
+  fullName: string;
+  onBlocked: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [error, setError] = useState("");
+
+  async function confirmBlock() {
+    if (isBlocking) return;
+    setIsBlocking(true);
+    setError("");
+    try {
+      await blockUser(player.playerId);
+      setOpen(false);
+      onBlocked();
+      toast.success(`${fullName} blocked`);
+    } catch (caught: unknown) {
+      setError(getApiErrorMessage(caught, `Couldn't block ${fullName}.`));
+    } finally {
+      setIsBlocking(false);
+    }
+  }
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (isBlocking) return;
+        setOpen(nextOpen);
+        if (nextOpen) setError("");
+      }}
+    >
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            aria-label={`Block ${fullName}`}
+            className="text-[var(--text-4)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
+          />
+        }
+      >
+        <Ban className="h-3.5 w-3.5" />
+      </AlertDialogTrigger>
+      <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Block {fullName}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Their sessions will be revoked and active upcoming bookings across
+            all venues will be cancelled. This endpoint does not support unblocking.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {error && (
+          <p role="alert" className="text-sm text-[var(--semantic-red)]">
+            {error}
+          </p>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isBlocking}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={isBlocking}
+            onClick={(event) => {
+              event.preventDefault();
+              void confirmBlock();
+            }}
+            className="bg-[var(--semantic-red)] text-[var(--bg-0)] hover:bg-[var(--semantic-red)] hover:brightness-110"
+          >
+            {isBlocking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Ban className="h-4 w-4" />
+            )}
+            {isBlocking ? "Blocking..." : "Block player"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

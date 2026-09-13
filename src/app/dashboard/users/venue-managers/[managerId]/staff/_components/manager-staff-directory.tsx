@@ -14,6 +14,7 @@ import {
   Save,
   Search,
   ShieldCheck,
+  UserMinus,
   UserRound,
   UserPlus,
   Users,
@@ -21,6 +22,17 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { AdminPasswordResetDialog } from "@/components/admin-password-reset-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -38,6 +50,7 @@ import {
   getVenueManagerStaff,
   updateVenueStaff,
 } from "@/lib/api";
+import { removeVenueManagerStaff } from "@/lib/admin-users-api";
 import {
   ALL_STAFF_PERMISSIONS,
   expandStaffPermissionDependencies,
@@ -158,6 +171,12 @@ export function ManagerStaffDirectory({
     );
   }
 
+  function removeStaff(staffUserId: string) {
+    setStaff((current) =>
+      current.filter((person) => person.id !== staffUserId),
+    );
+  }
+
   function retry() {
     setReloadToken((current) => current + 1);
   }
@@ -232,6 +251,7 @@ export function ManagerStaffDirectory({
           managerId={managerId}
           preferredVenueId={venueId}
           onUpdated={replaceStaff}
+          onRemoved={removeStaff}
         />
       )}
     </div>
@@ -243,11 +263,13 @@ function StaffTable({
   managerId,
   preferredVenueId,
   onUpdated,
+  onRemoved,
 }: {
   staff: StaffUserDto[];
   managerId: string;
   preferredVenueId?: string;
   onUpdated: (staff: StaffUserDto) => void;
+  onRemoved: (staffUserId: string) => void;
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
@@ -271,6 +293,7 @@ function StaffTable({
                 managerId={managerId}
                 preferredVenueId={preferredVenueId}
                 onUpdated={onUpdated}
+                onRemoved={onRemoved}
               />
             ))}
           </tbody>
@@ -285,11 +308,13 @@ function StaffRow({
   managerId,
   preferredVenueId,
   onUpdated,
+  onRemoved,
 }: {
   staff: StaffUserDto;
   managerId: string;
   preferredVenueId?: string;
   onUpdated: (staff: StaffUserDto) => void;
+  onRemoved: (staffUserId: string) => void;
 }) {
   const primaryVenue = staff.venueAccess[0];
   const otherVenueCount = Math.max(0, staff.venueAccess.length - 1);
@@ -376,9 +401,109 @@ function StaffRow({
             preferredVenueId={preferredVenueId}
             onUpdated={onUpdated}
           />
+          <RemoveStaffDialog
+            managerId={managerId}
+            staff={staff}
+            onRemoved={onRemoved}
+          />
         </div>
       </td>
     </tr>
+  );
+}
+
+function RemoveStaffDialog({
+  managerId,
+  staff,
+  onRemoved,
+}: {
+  managerId: string;
+  staff: StaffUserDto;
+  onRemoved: (staffUserId: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState("");
+
+  async function removeStaff() {
+    if (isRemoving) return;
+    setIsRemoving(true);
+    setRemoveError("");
+    try {
+      await removeVenueManagerStaff(managerId, staff.id);
+      onRemoved(staff.id);
+      setOpen(false);
+      toast.success(`${staffName(staff)} removed from this manager`);
+    } catch (error: unknown) {
+      setRemoveError(
+        getApiErrorMessage(
+          error,
+          `Couldn't remove ${staffName(staff)}. Try again.`,
+        ),
+      );
+    } finally {
+      setIsRemoving(false);
+    }
+  }
+
+  return (
+    <AlertDialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (isRemoving) return;
+        setOpen(nextOpen);
+        if (nextOpen) setRemoveError("");
+      }}
+    >
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            aria-label={`Remove ${staffName(staff)}`}
+            className="text-[var(--text-3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
+          />
+        }
+      >
+        <UserMinus className="h-3.5 w-3.5" />
+      </AlertDialogTrigger>
+      <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {staffName(staff)}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This removes the staff account from venue manager #{managerId}. The
+            row remains visible until the backend confirms the removal.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        {removeError && (
+          <p
+            role="alert"
+            className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--semantic-red)]"
+          >
+            {removeError}
+          </p>
+        )}
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isRemoving}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={isRemoving}
+            onClick={(event) => {
+              event.preventDefault();
+              void removeStaff();
+            }}
+            className="bg-[var(--semantic-red)] text-[var(--bg-0)] hover:bg-[var(--semantic-red)] hover:brightness-110"
+          >
+            {isRemoving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <UserMinus className="h-4 w-4" />
+            )}
+            {isRemoving ? "Removing..." : "Remove staff member"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

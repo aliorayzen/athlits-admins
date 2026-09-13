@@ -68,6 +68,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
+import { VenueOperations } from "./_components/venue-operations";
+import { VenueDiscounts } from "./_components/venue-discounts";
 import {
   contractDraftError,
   contractDraftFromResponse,
@@ -77,6 +79,7 @@ import {
   formatContractFee,
   type ContractDraft,
 } from "@/lib/contracts";
+import { updateVenueContract } from "@/lib/venue-contracts-api";
 import {
   availabilityTimeLabel,
   decodeVenueAvailabilityDays,
@@ -211,7 +214,7 @@ export default function VenueDetailPage() {
     setContractDraft((prev) => ({ ...prev, ...patch }));
   }
 
-  async function handleCreateContract() {
+  async function saveContract() {
     if (!venue || contractSaving) return;
     const validationMessage = contractDraftError(contractDraft);
     if (validationMessage) {
@@ -222,14 +225,21 @@ export default function VenueDetailPage() {
     setContractSaving(true);
     setContractError(null);
     try {
-      const created = await createContract(
-        venue.id,
-        contractDraftToPayload(contractDraft),
-      );
-      setActiveContract(created);
-      setContractDraft(contractDraftFromResponse(created));
-      setContractHistory(await getContracts(venue.id));
-      toast.success("Contract terms saved");
+      const payload = contractDraftToPayload(contractDraft);
+      if (activeContract) {
+        await updateVenueContract(venue.id, activeContract.id, payload);
+      } else {
+        await createContract(venue.id, payload);
+      }
+
+      const [refreshedActiveContract, refreshedHistory] = await Promise.all([
+        getActiveContract(venue.id),
+        getContracts(venue.id),
+      ]);
+      setActiveContract(refreshedActiveContract);
+      setContractDraft(contractDraftFromResponse(refreshedActiveContract));
+      setContractHistory(refreshedHistory);
+      toast.success(activeContract ? "Contract updated" : "Contract created");
     } catch (err: unknown) {
       const message = getApiErrorMessage(err, "Failed to save contract terms");
       setContractError(message);
@@ -500,6 +510,16 @@ export default function VenueDetailPage() {
         </Fact>
       </div>
 
+      <VenueOperations
+        venue={venue}
+        onCourtLimitChanged={(courtLimit) =>
+          setVenue((current) =>
+            current ? { ...current, courtLimit } : current,
+          )
+        }
+      />
+      <VenueDiscounts venue={venue} />
+
       <div className="grid gap-5 lg:grid-cols-3">
         {/* Contract Terms — primary operation, full room */}
         <section className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--bg-1)]">
@@ -575,7 +595,7 @@ export default function VenueDetailPage() {
                   </span>
                   <Button
                     type="button"
-                    onClick={handleCreateContract}
+                    onClick={saveContract}
                     disabled={contractSaving || contractIsUnchanged}
                     className="bg-[linear-gradient(135deg,var(--teal),#00b894)] font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
                   >
@@ -585,7 +605,7 @@ export default function VenueDetailPage() {
                         Saving...
                       </>
                     ) : activeContract ? (
-                      "Replace Active"
+                      "Update contract"
                     ) : (
                       "Create Contract"
                     )}
