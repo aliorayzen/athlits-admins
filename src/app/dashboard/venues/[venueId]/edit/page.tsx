@@ -42,6 +42,7 @@ import {
   phoneValueForCountry,
 } from "@/lib/phone";
 import { getOptionalHttpUrlError } from "@/lib/http-url";
+import { updateVenueCourtLimit } from "@/lib/venues-api";
 import {
   Card,
   CardContent,
@@ -103,6 +104,7 @@ interface EditForm {
   autoConfirmation: boolean;
   allowRecurringBookings: boolean;
   maxAdvanceBookingDays: number;
+  courtLimit: number;
   facilities: Facility[];
   availabilityDays: VenueAvailabilityDay[];
 }
@@ -115,6 +117,7 @@ export default function EditVenuePage() {
 
   const [loadState, setLoadState] = useState<LoadState>("loading");
   const [venueName, setVenueName] = useState("");
+  const [initialCourtLimit, setInitialCourtLimit] = useState(1);
   const [form, setForm] = useState<EditForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -129,6 +132,8 @@ export default function EditVenuePage() {
       .then((venue) => {
         if (cancelled) return;
         setVenueName(venue.name);
+        const courtLimit = venue.courtLimit ?? 1;
+        setInitialCourtLimit(courtLimit);
         setForm({
           nameEn: venue.nameEn ?? "",
           nameAr: venue.nameAr ?? "",
@@ -145,6 +150,7 @@ export default function EditVenuePage() {
           autoConfirmation: venue.autoConfirmation ?? false,
           allowRecurringBookings: venue.allowRecurringBookings,
           maxAdvanceBookingDays: venue.maxAdvanceBookingDays,
+          courtLimit,
           facilities: venue.facilities ?? [],
           // The venue detail endpoint returns venue-local operating hours.
           // Missing data stays empty rather than displaying invented defaults.
@@ -225,8 +231,20 @@ export default function EditVenuePage() {
       return;
     }
 
+    if (!Number.isInteger(form.courtLimit) || form.courtLimit < 1) {
+      setSubmitError("Court limit must be a whole number of at least 1.");
+      return;
+    }
+
     setIsSaving(true);
+    let courtLimitSaved = false;
     try {
+      if (form.courtLimit !== initialCourtLimit) {
+        await updateVenueCourtLimit(params.venueId, {
+          courtLimit: form.courtLimit,
+        });
+        courtLimitSaved = true;
+      }
       const payload: UpdateVenueRequest = {
         paymentMode: form.paymentMode,
         nameEn: form.nameEn.trim(),
@@ -265,7 +283,10 @@ export default function EditVenuePage() {
       setWhishPaymentLinkError(
         getApiFieldErrorMap(err).whishPaymentLink ?? null,
       );
-      setSubmitError(getApiErrorMessage(err, "Failed to update venue"));
+      const fallback = courtLimitSaved
+        ? "Court limit was updated, but the remaining venue changes could not be saved. Try saving again."
+        : "Failed to update venue";
+      setSubmitError(getApiErrorMessage(err, fallback));
       toast.error("Failed to update venue");
     } finally {
       setIsSaving(false);
@@ -577,6 +598,33 @@ export default function EditVenuePage() {
                 labelClassName={LABEL_CLASS}
               />
             )}
+            <div className="space-y-2">
+              <Label htmlFor="courtLimit" className={LABEL_CLASS}>
+                Court Limit *
+              </Label>
+              <Input
+                id="courtLimit"
+                type="number"
+                min={1}
+                step={1}
+                required
+                value={form.courtLimit}
+                disabled={isSaving}
+                onChange={(event) => {
+                  const parsed = Number(event.target.value);
+                  updateField(
+                    "courtLimit",
+                    Number.isInteger(parsed) && parsed >= 1 ? parsed : 1,
+                  );
+                }}
+                className={INPUT_CLASS}
+              />
+              <p className="text-xs leading-5 text-[var(--text-4)]">
+                Maximum number of courts this venue can register. The backend
+                rejects limits below the venue&apos;s current court count.
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="maxAdvanceBookingDays" className={LABEL_CLASS}>
                 Max Advance Booking (days) *
