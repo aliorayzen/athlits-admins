@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import { adminEndpoints } from "@/lib/admin-endpoints";
+import { normalizeListResponse } from "@/lib/normalize-list-response";
 import type {
   AvailabilityScheduleRequest,
   AvailabilityScheduleResponse,
@@ -52,10 +53,14 @@ export function updateCourtAvailability(
   );
 }
 
-export function getVenueBlackouts(venueId: string, signal?: AbortSignal) {
-  return request<BlackoutResponse[]>(adminEndpoints.venueBlackouts(venueId), {
+export async function getVenueBlackouts(
+  venueId: string,
+  signal?: AbortSignal,
+) {
+  const result = await request<unknown>(adminEndpoints.venueBlackouts(venueId), {
     signal,
   });
+  return normalizeListResponse<BlackoutResponse>(result, "Venue blackouts");
 }
 
 export function checkVenueBlackout(

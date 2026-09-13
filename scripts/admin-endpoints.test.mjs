@@ -2,6 +2,26 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { adminEndpoints } from "../src/lib/admin-endpoints.ts";
+import { normalizeListResponse } from "../src/lib/normalize-list-response.ts";
+
+test("list responses normalize raw, data-wrapped, and paged arrays", () => {
+  const rows = [{ id: 1 }];
+
+  assert.equal(normalizeListResponse(rows, "Rows"), rows);
+  assert.equal(normalizeListResponse({ data: rows }, "Rows"), rows);
+  assert.equal(normalizeListResponse({ content: rows }, "Rows"), rows);
+  assert.equal(
+    normalizeListResponse({ data: { content: rows } }, "Rows"),
+    rows,
+  );
+});
+
+test("list response normalization rejects malformed payloads", () => {
+  assert.throws(
+    () => normalizeListResponse({ data: { total: 1 } }, "Discounts"),
+    /Discounts response was not a list/,
+  );
+});
 
 test("store import uses POST and encodes the platform segment", () => {
   assert.deepEqual(adminEndpoints.runStoreImport("APPLE/beta"), {

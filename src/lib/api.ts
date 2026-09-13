@@ -239,7 +239,8 @@ function normalizeVenueDetail(v: VenueDetailResponse): VenueDetailResponse {
     createdByAdminId: v.createdByAdminId
       ? ensureStringId(v.createdByAdminId)
       : v.createdByAdminId,
-    courts: (v.courts ?? []).map((c) => ({
+    facilities: Array.isArray(v.facilities) ? v.facilities : [],
+    courts: (Array.isArray(v.courts) ? v.courts : []).map((c) => ({
       ...c,
       id: ensureStringId(c.id),
       venueId: c.venueId ? ensureStringId(c.venueId) : c.venueId,
