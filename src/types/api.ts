@@ -373,8 +373,8 @@ export interface CreateVenueRequest {
 }
 
 // PUT /api/admin/v1/venues/{venueId} (application/json). Payment mode is
-// required; the remaining fields are partial updates. Currency, manager, and
-// cover image are managed via create / separate endpoints.
+// required; the remaining fields are partial updates. Manager and cover image
+// are managed via separate endpoints.
 export interface UpdateVenueRequest {
   paymentMode: PaymentMode;
   nameEn?: string;
@@ -387,6 +387,7 @@ export interface UpdateVenueRequest {
   longitude?: number;
   contactPhone?: string;
   contactEmail?: string;
+  currencyCode?: string;
   // The API wrapper always sends either a trimmed URL or null.
   whishPaymentLink?: string | null;
   autoConfirmation?: boolean;

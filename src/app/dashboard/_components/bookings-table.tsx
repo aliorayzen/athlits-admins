@@ -96,7 +96,7 @@ export function BookingsTable({
                     {formatSlot(inv.dueDate)}
                   </td>
                   <td className="px-6 py-3.5 font-mono font-semibold tabular-nums text-[var(--text-1)]">
-                    USD {formatNumber(invoiceAmountDue(inv))}
+                    {inv.currencyCode} {formatNumber(invoiceAmountDue(inv))}
                   </td>
                   <td className="px-6 py-3.5">
                     <span

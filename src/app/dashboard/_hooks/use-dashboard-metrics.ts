@@ -8,7 +8,7 @@ export interface DashboardMetrics {
   thisMonthRevenue: number;
   lastMonthRevenue: number;
   momDelta: number | null;
-  currency: "USD";
+  currency: string;
   collectionRate: number;
   paidCount: number;
   totalInvoiced: number;
@@ -45,6 +45,8 @@ export function useDashboardMetrics(
     const overdueInv = invoices.filter((i) => i.status === "OVERDUE");
     const generated = invoices.filter((i) => i.status === "GENERATED");
     const activeVenues = venues.filter((v) => v.status === "ACTIVE").length;
+    const currency =
+      invoices.find((invoice) => invoice.currencyCode)?.currencyCode ?? "USD";
 
     const thisMonthPaid = paid.filter((i) => {
       const d = i.paidAt ? new Date(i.paidAt) : null;
@@ -113,7 +115,7 @@ export function useDashboardMetrics(
       thisMonthRevenue,
       lastMonthRevenue,
       momDelta,
-      currency: "USD",
+      currency,
       collectionRate,
       paidCount: paid.length,
       totalInvoiced,

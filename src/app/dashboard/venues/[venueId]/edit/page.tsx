@@ -42,6 +42,7 @@ import {
   phoneValueForCountry,
 } from "@/lib/phone";
 import { getOptionalHttpUrlError } from "@/lib/http-url";
+import { CURRENCY_OPTIONS } from "@/lib/currencies";
 import { updateVenueCourtLimit } from "@/lib/venues-api";
 import {
   Card,
@@ -99,6 +100,7 @@ interface EditForm {
   longitude: number;
   contactPhone: string;
   contactEmail: string;
+  currencyCode: string;
   paymentMode: PaymentMode;
   whishPaymentLink: string;
   autoConfirmation: boolean;
@@ -145,6 +147,7 @@ export default function EditVenuePage() {
           longitude: venue.longitude,
           contactPhone: venue.contactPhone ?? "",
           contactEmail: venue.contactEmail ?? "",
+          currencyCode: venue.currencyCode,
           paymentMode: venue.paymentMode ?? "CASH",
           whishPaymentLink: venue.whishPaymentLink ?? "",
           autoConfirmation: venue.autoConfirmation ?? false,
@@ -259,6 +262,7 @@ export default function EditVenuePage() {
           normalizePhoneForSubmit(form.contactPhone, form.countryCode) ??
           undefined,
         contactEmail: form.contactEmail.trim() || undefined,
+        currencyCode: form.currencyCode.trim().toUpperCase(),
         // Cash-only venues cannot use the online payment link. An empty field
         // explicitly clears a previously stored link.
         whishPaymentLink:
@@ -544,6 +548,49 @@ export default function EditVenuePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
+            <div className="space-y-2">
+              <Label htmlFor="currencyCode" className={LABEL_CLASS}>
+                Currency *
+              </Label>
+              <Select
+                id="currencyCode"
+                required
+                value={form.currencyCode}
+                onValueChange={(value) => {
+                  if (value) updateField("currencyCode", value);
+                }}
+                disabled={isSaving}
+              >
+                <SelectTrigger
+                  className={`h-9 w-full rounded-md px-3 ${INPUT_CLASS}`}
+                >
+                  <SelectValue>
+                    {(value) => {
+                      const currency = CURRENCY_OPTIONS.find(
+                        (option) => option.code === value,
+                      );
+                      return currency
+                        ? `${currency.code} - ${currency.label}`
+                        : "Select currency";
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)]">
+                  {CURRENCY_OPTIONS.map((currency) => (
+                    <SelectItem
+                      key={currency.code}
+                      value={currency.code}
+                      className="px-3 py-2 text-[var(--text-2)] focus:bg-[var(--bg-3)] focus:text-[var(--text-1)]"
+                    >
+                      {currency.code} - {currency.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs leading-5 text-[var(--text-4)]">
+                Used for new pricing, bookings, and billing at this venue.
+              </p>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="paymentMode" className={LABEL_CLASS}>
                 Payment Mode *
