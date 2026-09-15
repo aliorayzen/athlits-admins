@@ -53,13 +53,13 @@ export function updateCourtAvailability(
   );
 }
 
-export async function getVenueBlackouts(
-  venueId: string,
-  signal?: AbortSignal,
-) {
-  const result = await request<unknown>(adminEndpoints.venueBlackouts(venueId), {
-    signal,
-  });
+export async function getVenueBlackouts(venueId: string, signal?: AbortSignal) {
+  const result = await request<unknown>(
+    adminEndpoints.venueBlackouts(venueId),
+    {
+      signal,
+    },
+  );
   return normalizeListResponse<BlackoutResponse>(result, "Venue blackouts");
 }
 

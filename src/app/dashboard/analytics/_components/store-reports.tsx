@@ -186,10 +186,10 @@ export function ImportReport({ platform }: { platform: StorePlatform }) {
                     <span
                       className={
                         item.status === "SUCCEEDED"
-                          ? "text-[var(--semantic-green)]"
+                          ? "text-[var(--green-text)]"
                           : item.status === "FAILED"
-                            ? "text-[var(--semantic-red)]"
-                            : "text-[var(--semantic-amber)]"
+                            ? "text-[var(--red-text)]"
+                            : "text-[var(--amber-text)]"
                       }
                     >
                       {item.status ?? "Not reported"}
@@ -203,7 +203,7 @@ export function ImportReport({ platform }: { platform: StorePlatform }) {
                   <td className="p-2 text-xs text-[var(--text-3)]">
                     <span>{item.importedAt ?? "Not reported"}</span>
                     {item.errorCode && (
-                      <span className="mt-1 block text-[var(--semantic-red)]">
+                      <span className="mt-1 block text-[var(--red-text)]">
                         {item.errorCode}
                       </span>
                     )}

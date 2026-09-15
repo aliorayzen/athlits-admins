@@ -1,26 +1,120 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, Loader2, RefreshCw, SearchX, WalletCards } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Loader2,
+  RefreshCw,
+  SearchX,
+  WalletCards,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/context/auth-context";
 import { getAdminBookings, getApiErrorMessage, getVenues } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { AdminBookingListItem, AdminBookingsResponse, AdminBookingStatus, BookingPaymentMethod, VenueSummaryResponse } from "@/types/api";
+import type {
+  AdminBookingListItem,
+  AdminBookingsResponse,
+  AdminBookingStatus,
+  BookingPaymentMethod,
+  VenueSummaryResponse,
+} from "@/types/api";
 
 const PAGE_SIZE = 20;
-const STATUSES: AdminBookingStatus[] = ["PENDING", "PENDING_APPROVAL", "CONFIRMED", "REJECTED", "CANCELLED", "BLOCKED", "EXPIRED", "COMPLETED", "NO_SHOW"];
-interface BookingFilters { venueId: string; status: "" | AdminBookingStatus; paymentMethod: "" | BookingPaymentMethod; from: string; to: string; sort: string; }
-const EMPTY_FILTERS: BookingFilters = { venueId: "", status: "", paymentMethod: "", from: "", to: "", sort: "createdAt,desc" };
-const CONTROL_CLASS = "h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3 text-[13px] text-[var(--text-1)] outline-none transition-colors focus:border-[var(--teal)] focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
+const STATUSES: AdminBookingStatus[] = [
+  "PENDING",
+  "PENDING_APPROVAL",
+  "CONFIRMED",
+  "REJECTED",
+  "CANCELLED",
+  "BLOCKED",
+  "EXPIRED",
+  "COMPLETED",
+  "NO_SHOW",
+];
+interface BookingFilters {
+  venueId: string;
+  status: "" | AdminBookingStatus;
+  paymentMethod: "" | BookingPaymentMethod;
+  from: string;
+  to: string;
+  sort: string;
+}
+const EMPTY_FILTERS: BookingFilters = {
+  venueId: "",
+  status: "",
+  paymentMethod: "",
+  from: "",
+  to: "",
+  sort: "createdAt,desc",
+};
+const CONTROL_CLASS =
+  "h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3 text-[13px] text-[var(--text-1)] outline-none transition-colors focus:border-[var(--teal)] focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
 
-function humanize(value: string) { return value.replaceAll("_", " ").toLowerCase().replace(/^./, (c) => c.toUpperCase()); }
-function formatMoney(amount: number, currency: string) { try { return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 2 }).format(amount); } catch { return `${amount.toFixed(2)} ${currency}`; } }
-function formatDate(value: string) { return new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date(`${value}T12:00:00`)); }
-function formatTime(value: string) { const [h, m] = value.split(":").map(Number); if (!Number.isFinite(h) || !Number.isFinite(m)) return value; return new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date(2000, 0, 1, h, m)); }
-function formatDuration(booking: AdminBookingListItem) { const [sh, sm] = booking.startTime.split(":").map(Number); const [eh, em] = booking.endTime.split(":").map(Number); const minutes = Math.max(0, eh * 60 + em + (booking.endsNextDay ? 1440 : 0) - sh * 60 - sm); const h = Math.floor(minutes / 60); const m = minutes % 60; return [h ? `${h}h` : "", m ? `${m}m` : ""].filter(Boolean).join(" ") || "0m"; }
-function statusTone(status: AdminBookingStatus) { if (status === "CONFIRMED" || status === "COMPLETED") return "border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.09)] text-[var(--semantic-green)]"; if (["CANCELLED", "REJECTED", "NO_SHOW"].includes(status)) return "border-[rgba(244,63,94,0.2)] bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)]"; if (status === "PENDING" || status === "PENDING_APPROVAL") return "border-[rgba(245,158,11,0.22)] bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]"; return "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)]"; }
+function humanize(value: string) {
+  return value
+    .replaceAll("_", " ")
+    .toLowerCase()
+    .replace(/^./, (c) => c.toUpperCase());
+}
+function formatMoney(amount: number, currency: string) {
+  try {
+    return new Intl.NumberFormat("en", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+}
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(`${value}T12:00:00`));
+}
+function formatTime(value: string) {
+  const [h, m] = value.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return value;
+  return new Intl.DateTimeFormat("en", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(2000, 0, 1, h, m));
+}
+function formatDuration(booking: AdminBookingListItem) {
+  const [sh, sm] = booking.startTime.split(":").map(Number);
+  const [eh, em] = booking.endTime.split(":").map(Number);
+  const minutes = Math.max(
+    0,
+    eh * 60 + em + (booking.endsNextDay ? 1440 : 0) - sh * 60 - sm,
+  );
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return [h ? `${h}h` : "", m ? `${m}m` : ""].filter(Boolean).join(" ") || "0m";
+}
+function statusTone(status: AdminBookingStatus) {
+  if (status === "CONFIRMED" || status === "COMPLETED")
+    return "border-[rgb(var(--green-rgb)/0.2)] bg-[rgb(var(--green-rgb)/0.09)] text-[var(--green-text)]";
+  if (["CANCELLED", "REJECTED", "NO_SHOW"].includes(status))
+    return "border-[rgb(var(--red-rgb)/0.2)] bg-[var(--semantic-red-subtle)] text-[var(--red-text)]";
+  if (status === "PENDING" || status === "PENDING_APPROVAL")
+    return "border-[rgb(var(--amber-rgb)/0.22)] bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]";
+  return "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)]";
+}
 
 export default function BookingsPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -35,35 +129,504 @@ export default function BookingsPage() {
   const [revision, setRevision] = useState(0);
   const sequence = useRef(0);
 
-  useEffect(() => { if (user?.role === "ADMIN") void getVenues().then(setVenues).catch(() => setVenues([])); }, [user?.role]);
+  useEffect(() => {
+    if (user?.role === "ADMIN")
+      void getVenues()
+        .then(setVenues)
+        .catch(() => setVenues([]));
+  }, [user?.role]);
   useEffect(() => {
     if (user?.role !== "ADMIN") return;
     const request = ++sequence.current;
-    void getAdminBookings({ venueId: filters.venueId ? Number(filters.venueId) : undefined, status: filters.status || undefined, paymentMethod: filters.paymentMethod || undefined, from: filters.from || undefined, to: filters.to || undefined, sort: filters.sort, page, size: PAGE_SIZE })
-      .then((response) => { if (request === sequence.current) { setData(response); setError(""); } })
-      .catch((loadError: unknown) => { if (request === sequence.current) setError(getApiErrorMessage(loadError, "Could not load bookings.")); })
-      .finally(() => { if (request === sequence.current) { setLoading(false); setFetching(false); } });
+    void getAdminBookings({
+      venueId: filters.venueId ? Number(filters.venueId) : undefined,
+      status: filters.status || undefined,
+      paymentMethod: filters.paymentMethod || undefined,
+      from: filters.from || undefined,
+      to: filters.to || undefined,
+      sort: filters.sort,
+      page,
+      size: PAGE_SIZE,
+    })
+      .then((response) => {
+        if (request === sequence.current) {
+          setData(response);
+          setError("");
+        }
+      })
+      .catch((loadError: unknown) => {
+        if (request === sequence.current)
+          setError(getApiErrorMessage(loadError, "Could not load bookings."));
+      })
+      .finally(() => {
+        if (request === sequence.current) {
+          setLoading(false);
+          setFetching(false);
+        }
+      });
   }, [filters, page, revision, user?.role]);
 
-  const applyFilters = useCallback(() => { if (draft.from && draft.to && draft.from > draft.to) { setError("The start date must be before the end date."); return; } setError(""); setFetching(true); setPage(0); setFilters({ ...draft }); }, [draft]);
-  const currencies = useMemo(() => Object.entries(data?.summary.grossRevenueByCurrency ?? {}), [data]);
+  const applyFilters = useCallback(() => {
+    if (draft.from && draft.to && draft.from > draft.to) {
+      setError("The start date must be before the end date.");
+      return;
+    }
+    setError("");
+    setFetching(true);
+    setPage(0);
+    setFilters({ ...draft });
+  }, [draft]);
+  const currencies = useMemo(
+    () => Object.entries(data?.summary.grossRevenueByCurrency ?? {}),
+    [data],
+  );
   if (authLoading) return <BookingsSkeleton />;
-  if (user?.role !== "ADMIN") return <div role="alert" className="rounded-lg border border-[var(--border)] bg-[var(--bg-1)] p-6 text-sm text-[var(--text-2)]">Access denied. The platform booking list requires the ADMIN role.</div>;
+  if (user?.role !== "ADMIN")
+    return (
+      <div
+        role="alert"
+        className="rounded-lg border border-[var(--border)] bg-[var(--bg-1)] p-6 text-sm text-[var(--text-2)]"
+      >
+        Access denied. The platform booking list requires the ADMIN role.
+      </div>
+    );
 
-  return <div className="space-y-5">
-    <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><div className="flex items-center gap-2.5"><h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--text-1)]">Bookings</h1>{data && <span className="rounded-full border border-[var(--border)] bg-[var(--bg-1)] px-2 py-0.5 font-mono text-[11px] tabular-nums text-[var(--text-3)]">{data.summary.totalBookings}</span>}</div><p className="mt-1 text-[13px] text-[var(--text-3)]">Monitor every platform booking, payment method, and outcome.</p></div><Button variant="outline" onClick={() => { setFetching(true); setRevision((v) => v + 1); }} disabled={fetching} className="gap-1.5 border-[var(--border)] bg-[var(--bg-1)] text-[var(--text-2)]">{fetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}Refresh</Button></header>
+  return (
+    <div className="space-y-5">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-[var(--text-1)]">
+              Bookings
+            </h1>
+            {data && (
+              <span className="rounded-full border border-[var(--border)] bg-[var(--bg-1)] px-2 py-0.5 font-mono text-[11px] tabular-nums text-[var(--text-3)]">
+                {data.summary.totalBookings}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-[13px] text-[var(--text-3)]">
+            Monitor every platform booking, payment method, and outcome.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setFetching(true);
+            setRevision((v) => v + 1);
+          }}
+          disabled={fetching}
+          className="gap-1.5 border-[var(--border)] bg-[var(--bg-1)] text-[var(--text-2)]"
+        >
+          {fetching ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5" />
+          )}
+          Refresh
+        </Button>
+      </header>
 
-    {data && <section aria-label="Filtered booking summary" className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-1)]"><div className="grid divide-y divide-[var(--border)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4"><SummaryMetric label="Filtered bookings" value={data.summary.totalBookings.toLocaleString()} icon={<CalendarDays className="h-4 w-4" />} /><SummaryMetric label="Confirmed" value={(data.summary.countsByStatus.CONFIRMED ?? 0).toLocaleString()} detail={`${data.summary.countsByStatus.COMPLETED ?? 0} completed`} /><SummaryMetric label="Cancelled" value={data.summary.cancelledBookings.toLocaleString()} detail={`${data.summary.cancellationRatePct.toFixed(1)}% of filtered bookings`} tone="danger" /><SummaryMetric label="No-shows" value={data.summary.noShowBookings.toLocaleString()} detail={`${data.summary.noShowRatePct.toFixed(1)}% of filtered bookings`} tone="warning" /></div><div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-[var(--border)] px-4 py-3"><span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]"><WalletCards className="h-3.5 w-3.5" />Gross revenue</span>{currencies.length ? currencies.map(([currency, amount]) => <span key={currency} className="font-mono text-[13px] font-semibold tabular-nums text-[var(--text-1)]">{formatMoney(amount, currency)} <span className="font-sans text-[11px] font-normal text-[var(--text-4)]">gross</span><span className="ml-3 text-[11px] font-normal text-[var(--text-3)]">avg {formatMoney(data.summary.averageBookingValueByCurrency[currency] ?? 0, currency)}</span></span>) : <span className="text-[12px] text-[var(--text-4)]">No chargeable bookings in this set</span>}</div></section>}
+      {data && (
+        <section
+          aria-label="Filtered booking summary"
+          className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-1)]"
+        >
+          <div className="grid divide-y divide-[var(--border)] sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+            <SummaryMetric
+              label="Filtered bookings"
+              value={data.summary.totalBookings.toLocaleString()}
+              icon={<CalendarDays className="h-4 w-4" />}
+            />
+            <SummaryMetric
+              label="Confirmed"
+              value={(
+                data.summary.countsByStatus.CONFIRMED ?? 0
+              ).toLocaleString()}
+              detail={`${data.summary.countsByStatus.COMPLETED ?? 0} completed`}
+            />
+            <SummaryMetric
+              label="Cancelled"
+              value={data.summary.cancelledBookings.toLocaleString()}
+              detail={`${data.summary.cancellationRatePct.toFixed(1)}% of filtered bookings`}
+              tone="danger"
+            />
+            <SummaryMetric
+              label="No-shows"
+              value={data.summary.noShowBookings.toLocaleString()}
+              detail={`${data.summary.noShowRatePct.toFixed(1)}% of filtered bookings`}
+              tone="warning"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-2 border-t border-[var(--border)] px-4 py-3">
+            <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+              <WalletCards className="h-3.5 w-3.5" />
+              Gross revenue
+            </span>
+            {currencies.length ? (
+              currencies.map(([currency, amount]) => (
+                <span
+                  key={currency}
+                  className="font-mono text-[13px] font-semibold tabular-nums text-[var(--text-1)]"
+                >
+                  {formatMoney(amount, currency)}{" "}
+                  <span className="font-sans text-[11px] font-normal text-[var(--text-4)]">
+                    gross
+                  </span>
+                  <span className="ml-3 text-[11px] font-normal text-[var(--text-3)]">
+                    avg{" "}
+                    {formatMoney(
+                      data.summary.averageBookingValueByCurrency[currency] ?? 0,
+                      currency,
+                    )}
+                  </span>
+                </span>
+              ))
+            ) : (
+              <span className="text-[12px] text-[var(--text-4)]">
+                No chargeable bookings in this set
+              </span>
+            )}
+          </div>
+        </section>
+      )}
 
-    <section aria-label="Booking filters" className="rounded-xl border border-[var(--border)] bg-[var(--bg-1)] p-4"><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6"><FilterField label="Venue"><select value={draft.venueId} onChange={(e) => setDraft((v) => ({ ...v, venueId: e.target.value }))} className={CONTROL_CLASS}><option value="">All venues</option>{venues.map((venue) => <option key={venue.id} value={venue.id}>{venue.name}</option>)}</select></FilterField><FilterField label="Status"><select value={draft.status} onChange={(e) => setDraft((v) => ({ ...v, status: e.target.value as BookingFilters["status"] }))} className={CONTROL_CLASS}><option value="">All statuses</option>{STATUSES.map((status) => <option key={status} value={status}>{humanize(status)}</option>)}</select></FilterField><FilterField label="Payment"><select value={draft.paymentMethod} onChange={(e) => setDraft((v) => ({ ...v, paymentMethod: e.target.value as BookingFilters["paymentMethod"] }))} className={CONTROL_CLASS}><option value="">All methods</option><option value="CASH">Cash</option><option value="ONLINE">Online</option></select></FilterField><FilterField label="From"><input type="date" value={draft.from} onChange={(e) => setDraft((v) => ({ ...v, from: e.target.value }))} className={CONTROL_CLASS} /></FilterField><FilterField label="To"><input type="date" value={draft.to} onChange={(e) => setDraft((v) => ({ ...v, to: e.target.value }))} className={CONTROL_CLASS} /></FilterField><FilterField label="Order"><select value={draft.sort} onChange={(e) => setDraft((v) => ({ ...v, sort: e.target.value }))} className={CONTROL_CLASS}><option value="createdAt,desc">Newest added</option><option value="bookingDate,desc">Latest booking date</option><option value="bookingDate,asc">Earliest booking date</option></select></FilterField></div><div className="mt-3 flex justify-end gap-2"><Button variant="ghost" onClick={() => { setFetching(true); setDraft(EMPTY_FILTERS); setFilters(EMPTY_FILTERS); setPage(0); }} className="text-[13px] text-[var(--text-3)]">Clear</Button><Button onClick={applyFilters} className="bg-[var(--teal)] text-[#032921] hover:bg-[var(--teal)] hover:brightness-110">Apply filters</Button></div></section>
-    {error && <div role="alert" className="rounded-lg border border-[rgba(244,63,94,0.2)] bg-[var(--semantic-red-subtle)] px-4 py-3 text-[13px] text-[var(--semantic-red)]">{error}</div>}
+      <section
+        aria-label="Booking filters"
+        className="rounded-xl border border-[var(--border)] bg-[var(--bg-1)] p-4"
+      >
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
+          <FilterField label="Venue">
+            <select
+              value={draft.venueId}
+              onChange={(e) =>
+                setDraft((v) => ({ ...v, venueId: e.target.value }))
+              }
+              className={CONTROL_CLASS}
+            >
+              <option value="">All venues</option>
+              {venues.map((venue) => (
+                <option key={venue.id} value={venue.id}>
+                  {venue.name}
+                </option>
+              ))}
+            </select>
+          </FilterField>
+          <FilterField label="Status">
+            <select
+              value={draft.status}
+              onChange={(e) =>
+                setDraft((v) => ({
+                  ...v,
+                  status: e.target.value as BookingFilters["status"],
+                }))
+              }
+              className={CONTROL_CLASS}
+            >
+              <option value="">All statuses</option>
+              {STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  {humanize(status)}
+                </option>
+              ))}
+            </select>
+          </FilterField>
+          <FilterField label="Payment">
+            <select
+              value={draft.paymentMethod}
+              onChange={(e) =>
+                setDraft((v) => ({
+                  ...v,
+                  paymentMethod: e.target
+                    .value as BookingFilters["paymentMethod"],
+                }))
+              }
+              className={CONTROL_CLASS}
+            >
+              <option value="">All methods</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online</option>
+            </select>
+          </FilterField>
+          <FilterField label="From">
+            <input
+              type="date"
+              value={draft.from}
+              onChange={(e) =>
+                setDraft((v) => ({ ...v, from: e.target.value }))
+              }
+              className={CONTROL_CLASS}
+            />
+          </FilterField>
+          <FilterField label="To">
+            <input
+              type="date"
+              value={draft.to}
+              onChange={(e) => setDraft((v) => ({ ...v, to: e.target.value }))}
+              className={CONTROL_CLASS}
+            />
+          </FilterField>
+          <FilterField label="Order">
+            <select
+              value={draft.sort}
+              onChange={(e) =>
+                setDraft((v) => ({ ...v, sort: e.target.value }))
+              }
+              className={CONTROL_CLASS}
+            >
+              <option value="createdAt,desc">Newest added</option>
+              <option value="bookingDate,desc">Latest booking date</option>
+              <option value="bookingDate,asc">Earliest booking date</option>
+            </select>
+          </FilterField>
+        </div>
+        <div className="mt-3 flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setFetching(true);
+              setDraft(EMPTY_FILTERS);
+              setFilters(EMPTY_FILTERS);
+              setPage(0);
+            }}
+            className="text-[13px] text-[var(--text-3)]"
+          >
+            Clear
+          </Button>
+          <Button
+            onClick={applyFilters}
+            className="bg-[var(--teal)] text-[var(--on-teal)] hover:bg-[var(--teal)] hover:brightness-110"
+          >
+            Apply filters
+          </Button>
+        </div>
+      </section>
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-[rgb(var(--red-rgb)/0.2)] bg-[var(--semantic-red-subtle)] px-4 py-3 text-[13px] text-[var(--red-text)]"
+        >
+          {error}
+        </div>
+      )}
 
-    <section aria-label="Booking results" className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-1)]">{loading ? <TableSkeleton /> : data?.bookings.content.length ? <div className="overflow-x-auto"><table className="w-full min-w-[960px] text-left text-[13px]"><thead className="border-b border-[var(--border)] bg-[var(--bg-2)]/60 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]"><tr><th className="px-4 py-3">Booking</th><th className="px-4 py-3">Venue & court</th><th className="px-4 py-3">Schedule</th><th className="px-4 py-3">Payment</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Created</th></tr></thead><tbody className="divide-y divide-[var(--border)]">{data.bookings.content.map((booking) => <BookingRow key={booking.bookingId} booking={booking} />)}</tbody></table></div> : <div className="grid min-h-56 place-items-center px-6 text-center"><div><SearchX className="mx-auto h-6 w-6 text-[var(--text-4)]" /><p className="mt-3 font-medium text-[var(--text-2)]">No bookings match these filters</p><p className="mt-1 text-[12px] text-[var(--text-4)]">Clear or broaden the filters to see more results.</p></div></div>}{data && data.bookings.totalPages > 0 && <footer className="flex items-center justify-between border-t border-[var(--border)] px-4 py-3 text-[12px] text-[var(--text-3)]"><span>Page <span className="font-mono text-[var(--text-2)]">{data.bookings.number + 1}</span> of <span className="font-mono text-[var(--text-2)]">{data.bookings.totalPages}</span></span><div className="flex gap-1"><Button size="icon-sm" variant="ghost" aria-label="Previous page" disabled={page === 0 || fetching} onClick={() => { setFetching(true); setPage((v) => Math.max(0, v - 1)); }}><ChevronLeft className="h-4 w-4" /></Button><Button size="icon-sm" variant="ghost" aria-label="Next page" disabled={page + 1 >= data.bookings.totalPages || fetching} onClick={() => { setFetching(true); setPage((v) => v + 1); }}><ChevronRight className="h-4 w-4" /></Button></div></footer>}</section>
-  </div>;
+      <section
+        aria-label="Booking results"
+        className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-1)]"
+      >
+        {loading ? (
+          <TableSkeleton />
+        ) : data?.bookings.content.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[960px] text-left text-[13px]">
+              <thead className="border-b border-[var(--border)] bg-[var(--bg-2)]/60 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+                <tr>
+                  <th className="px-4 py-3">Booking</th>
+                  <th className="px-4 py-3">Venue & court</th>
+                  <th className="px-4 py-3">Schedule</th>
+                  <th className="px-4 py-3">Payment</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Created</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border)]">
+                {data.bookings.content.map((booking) => (
+                  <BookingRow key={booking.bookingId} booking={booking} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="grid min-h-56 place-items-center px-6 text-center">
+            <div>
+              <SearchX className="mx-auto h-6 w-6 text-[var(--text-4)]" />
+              <p className="mt-3 font-medium text-[var(--text-2)]">
+                No bookings match these filters
+              </p>
+              <p className="mt-1 text-[12px] text-[var(--text-4)]">
+                Clear or broaden the filters to see more results.
+              </p>
+            </div>
+          </div>
+        )}
+        {data && data.bookings.totalPages > 0 && (
+          <footer className="flex items-center justify-between border-t border-[var(--border)] px-4 py-3 text-[12px] text-[var(--text-3)]">
+            <span>
+              Page{" "}
+              <span className="font-mono text-[var(--text-2)]">
+                {data.bookings.number + 1}
+              </span>{" "}
+              of{" "}
+              <span className="font-mono text-[var(--text-2)]">
+                {data.bookings.totalPages}
+              </span>
+            </span>
+            <div className="flex gap-1">
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label="Previous page"
+                disabled={page === 0 || fetching}
+                onClick={() => {
+                  setFetching(true);
+                  setPage((v) => Math.max(0, v - 1));
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                aria-label="Next page"
+                disabled={page + 1 >= data.bookings.totalPages || fetching}
+                onClick={() => {
+                  setFetching(true);
+                  setPage((v) => v + 1);
+                }}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </footer>
+        )}
+      </section>
+    </div>
+  );
 }
 
-function FilterField({ label, children }: { label: string; children: ReactNode }) { return <label className="space-y-1.5"><span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">{label}</span>{children}</label>; }
-function SummaryMetric({ label, value, detail, icon, tone }: { label: string; value: string; detail?: string; icon?: ReactNode; tone?: "danger" | "warning" }) { const color = tone === "danger" ? "text-[var(--semantic-red)]" : tone === "warning" ? "text-[var(--semantic-amber)]" : "text-[var(--text-1)]"; return <div className="px-4 py-4"><div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">{icon}{label}</div><div className={cn("mt-1.5 font-mono text-xl font-semibold tabular-nums", color)}>{value}</div>{detail && <p className="mt-0.5 text-[11px] text-[var(--text-4)]">{detail}</p>}</div>; }
-function BookingRow({ booking }: { booking: AdminBookingListItem }) { return <tr className="transition-colors hover:bg-[var(--bg-2)]/55"><td className="px-4 py-3.5"><span className="font-mono font-semibold tabular-nums text-[var(--text-1)]">#{booking.bookingId}</span></td><td className="px-4 py-3.5"><div className="font-medium text-[var(--text-1)]">{booking.venueName}</div><div className="mt-0.5 text-[11px] text-[var(--text-4)]">{booking.courtName}</div></td><td className="px-4 py-3.5"><div className="font-medium text-[var(--text-2)]">{formatDate(booking.bookingDate)}</div><div className="mt-0.5 flex items-center gap-1.5 font-mono text-[11px] tabular-nums text-[var(--text-4)]"><Clock3 className="h-3 w-3" />{formatTime(booking.startTime)} to {formatTime(booking.endTime)}{booking.endsNextDay && <span title="Ends the following day" className="text-[var(--teal-text)]">+1 day</span>} · {formatDuration(booking)}</div></td><td className="px-4 py-3.5"><div className="font-mono font-semibold tabular-nums text-[var(--text-1)]">{formatMoney(booking.totalAmount, booking.currencyCode)}</div><div className="mt-0.5 text-[11px] text-[var(--text-4)]">{humanize(booking.paymentMethod)}</div></td><td className="px-4 py-3.5"><span className={cn("inline-flex rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.04em]", statusTone(booking.status))}>{humanize(booking.status)}</span></td><td className="px-4 py-3.5 text-[12px] text-[var(--text-3)]">{new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(booking.createdAt))}</td></tr>; }
-function BookingsSkeleton() { return <div className="space-y-5"><Skeleton className="h-16 w-64" /><Skeleton className="h-32 w-full rounded-xl" /><Skeleton className="h-28 w-full rounded-xl" /><Skeleton className="h-80 w-full rounded-xl" /></div>; }
-function TableSkeleton() { return <div className="space-y-px p-4">{Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>; }
+function FilterField({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className="space-y-1.5">
+      <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+function SummaryMetric({
+  label,
+  value,
+  detail,
+  icon,
+  tone,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+  icon?: ReactNode;
+  tone?: "danger" | "warning";
+}) {
+  const color =
+    tone === "danger"
+      ? "text-[var(--red-text)]"
+      : tone === "warning"
+        ? "text-[var(--amber-text)]"
+        : "text-[var(--text-1)]";
+  return (
+    <div className="px-4 py-4">
+      <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+        {icon}
+        {label}
+      </div>
+      <div
+        className={cn(
+          "mt-1.5 font-mono text-xl font-semibold tabular-nums",
+          color,
+        )}
+      >
+        {value}
+      </div>
+      {detail && (
+        <p className="mt-0.5 text-[11px] text-[var(--text-4)]">{detail}</p>
+      )}
+    </div>
+  );
+}
+function BookingRow({ booking }: { booking: AdminBookingListItem }) {
+  return (
+    <tr className="transition-colors hover:bg-[var(--bg-2)]/55">
+      <td className="px-4 py-3.5">
+        <span className="font-mono font-semibold tabular-nums text-[var(--text-1)]">
+          #{booking.bookingId}
+        </span>
+      </td>
+      <td className="px-4 py-3.5">
+        <div className="font-medium text-[var(--text-1)]">
+          {booking.venueName}
+        </div>
+        <div className="mt-0.5 text-[11px] text-[var(--text-4)]">
+          {booking.courtName}
+        </div>
+      </td>
+      <td className="px-4 py-3.5">
+        <div className="font-medium text-[var(--text-2)]">
+          {formatDate(booking.bookingDate)}
+        </div>
+        <div className="mt-0.5 flex items-center gap-1.5 font-mono text-[11px] tabular-nums text-[var(--text-4)]">
+          <Clock3 className="h-3 w-3" />
+          {formatTime(booking.startTime)} to {formatTime(booking.endTime)}
+          {booking.endsNextDay && (
+            <span
+              title="Ends the following day"
+              className="text-[var(--teal-text)]"
+            >
+              +1 day
+            </span>
+          )}{" "}
+          · {formatDuration(booking)}
+        </div>
+      </td>
+      <td className="px-4 py-3.5">
+        <div className="font-mono font-semibold tabular-nums text-[var(--text-1)]">
+          {formatMoney(booking.totalAmount, booking.currencyCode)}
+        </div>
+        <div className="mt-0.5 text-[11px] text-[var(--text-4)]">
+          {humanize(booking.paymentMethod)}
+        </div>
+      </td>
+      <td className="px-4 py-3.5">
+        <span
+          className={cn(
+            "inline-flex rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.04em]",
+            statusTone(booking.status),
+          )}
+        >
+          {humanize(booking.status)}
+        </span>
+      </td>
+      <td className="px-4 py-3.5 text-[12px] text-[var(--text-3)]">
+        {new Intl.DateTimeFormat("en", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(new Date(booking.createdAt))}
+      </td>
+    </tr>
+  );
+}
+function BookingsSkeleton() {
+  return (
+    <div className="space-y-5">
+      <Skeleton className="h-16 w-64" />
+      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="h-28 w-full rounded-xl" />
+      <Skeleton className="h-80 w-full rounded-xl" />
+    </div>
+  );
+}
+function TableSkeleton() {
+  return (
+    <div className="space-y-px p-4">
+      {Array.from({ length: 7 }).map((_, i) => (
+        <Skeleton key={i} className="h-12 w-full" />
+      ))}
+    </div>
+  );
+}

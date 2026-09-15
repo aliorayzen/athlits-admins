@@ -42,7 +42,7 @@ import {
   phoneValueForCountry,
 } from "@/lib/phone";
 import { getOptionalHttpUrlError } from "@/lib/http-url";
-import { CURRENCY_OPTIONS } from "@/lib/currencies";
+import { currencyLabel, currencyOptionsFor } from "@/lib/currencies";
 import { updateVenueCourtLimit } from "@/lib/venues-api";
 import {
   Card,
@@ -82,7 +82,7 @@ const PAYMENT_MODES: { value: PaymentMode; label: string }[] = [
 ];
 
 const INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_rgba(0,212,170,0.06)]";
+  "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[rgb(var(--teal-rgb)/0.3)] focus:shadow-[0_0_0_3px_rgb(var(--teal-rgb)/0.06)]";
 
 const LABEL_CLASS =
   "text-xs font-medium uppercase tracking-wider text-[var(--text-3)]";
@@ -157,9 +157,7 @@ export default function EditVenuePage() {
           facilities: venue.facilities ?? [],
           // The venue detail endpoint returns venue-local operating hours.
           // Missing data stays empty rather than displaying invented defaults.
-          availabilityDays: availabilityDaysForEdit(
-            venue.availability?.days,
-          ),
+          availabilityDays: availabilityDaysForEdit(venue.availability?.days),
         });
         setLoadState("ready");
       })
@@ -317,23 +315,23 @@ export default function EditVenuePage() {
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="flex items-center gap-3">
           <Button
-              type="button"
-              onClick={() => router.back()}
-              variant="ghost"
-              size="icon"
-              className="text-[var(--text-4)] hover:text-[var(--text-1)]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+            type="button"
+            onClick={() => router.back()}
+            variant="ghost"
+            size="icon"
+            className="text-[var(--text-4)] hover:text-[var(--text-1)]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
         </div>
         <div
           role="alert"
-          className="flex gap-3 rounded-lg border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-[13px] leading-6"
+          className="flex gap-3 rounded-lg border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.08)] px-4 py-3 text-[13px] leading-6"
         >
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
           <div>
-            <p className="font-medium text-[var(--semantic-red)]">
+            <p className="font-medium text-[var(--red-text)]">
               Couldn&apos;t load this venue for editing
             </p>
             <p className="mt-0.5 text-[var(--text-3)]">
@@ -349,14 +347,14 @@ export default function EditVenuePage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
         <Button
-            type="button"
-            onClick={() => router.back()}
-            variant="ghost"
-            size="icon"
-            className="text-[var(--text-4)] hover:text-[var(--text-1)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          type="button"
+          onClick={() => router.back()}
+          variant="ghost"
+          size="icon"
+          className="text-[var(--text-4)] hover:text-[var(--text-1)]"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Edit Venue</h1>
           <p className="text-sm text-[var(--text-3)]">
@@ -370,7 +368,7 @@ export default function EditVenuePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -446,7 +444,7 @@ export default function EditVenuePage() {
         </Card>
 
         {/* Location */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -505,7 +503,7 @@ export default function EditVenuePage() {
         </Card>
 
         {/* Operating hours */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -532,7 +530,7 @@ export default function EditVenuePage() {
         </Card>
 
         {/* Settings */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -566,17 +564,15 @@ export default function EditVenuePage() {
                 >
                   <SelectValue>
                     {(value) => {
-                      const currency = CURRENCY_OPTIONS.find(
-                        (option) => option.code === value,
-                      );
-                      return currency
-                        ? `${currency.code} - ${currency.label}`
+                      const code = typeof value === "string" ? value : "";
+                      return code
+                        ? `${code} - ${currencyLabel(code)}`
                         : "Select currency";
                     }}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)]">
-                  {CURRENCY_OPTIONS.map((currency) => (
+                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[var(--shadow-3)]">
+                  {currencyOptionsFor(form.currencyCode).map((currency) => (
                     <SelectItem
                       key={currency.code}
                       value={currency.code}
@@ -619,7 +615,7 @@ export default function EditVenuePage() {
                     }
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[0_12px_32px_-12px_rgba(0,0,0,0.55)]">
+                <SelectContent className="border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-1)] shadow-[var(--shadow-3)]">
                   {PAYMENT_MODES.map((mode) => (
                     <SelectItem
                       key={mode.value}
@@ -707,7 +703,7 @@ export default function EditVenuePage() {
                       aria-pressed={active}
                       className={`rounded-md border px-2.5 py-2 text-[12.5px] font-medium transition-all ${
                         active
-                          ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
+                          ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
                           : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]"
                       }`}
                     >
@@ -748,11 +744,11 @@ export default function EditVenuePage() {
         {submitError && (
           <div
             role="alert"
-            className="flex gap-3 rounded-lg border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-[13px] leading-6"
+            className="flex gap-3 rounded-lg border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.08)] px-4 py-3 text-[13px] leading-6"
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
             <div>
-              <p className="font-medium text-[var(--semantic-red)]">
+              <p className="font-medium text-[var(--red-text)]">
                 The venue was not updated
               </p>
               <p className="mt-0.5 text-[var(--text-3)]">{submitError}</p>
@@ -762,18 +758,18 @@ export default function EditVenuePage() {
 
         <div className="flex justify-end gap-3">
           <Button
-                variant="outline"
-                type="button"
-                onClick={() => router.back()}
-              className="border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-1)]"
-            >
-              Cancel
-            </Button>
+            variant="outline"
+            type="button"
+            onClick={() => router.back()}
+            className="border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-1)]"
+          >
+            Cancel
+          </Button>
           <Button
             type="submit"
             disabled={isSaving}
             size="lg"
-            className="bg-[linear-gradient(135deg,var(--teal),#00b894)] px-6 font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] transition-all hover:-translate-y-px hover:brightness-110"
+            className="bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] px-6 font-semibold text-[var(--on-teal)] shadow-[0_1px_12px_-2px_var(--teal-glow)] transition-all hover:-translate-y-px hover:brightness-110"
           >
             {isSaving ? (
               <>

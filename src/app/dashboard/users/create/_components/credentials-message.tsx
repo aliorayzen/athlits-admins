@@ -21,8 +21,10 @@ export function buildCredentialsMessage({
   tempPassword,
   accountType,
 }: Omit<CredentialsMessageProps, "className">): string {
-  const englishRole = accountType === "venue-manager" ? "venue manager" : "venue staff";
-  const arabicRole = accountType === "venue-manager" ? "مدير المنشأة" : "موظف المنشأة";
+  const englishRole =
+    accountType === "venue-manager" ? "venue manager" : "venue staff";
+  const arabicRole =
+    accountType === "venue-manager" ? "مدير المنشأة" : "موظف المنشأة";
 
   return `Hello ${name},
 These are your Athlits ${englishRole} credentials:
@@ -62,7 +64,9 @@ export function CredentialsMessage({
       setCopied(true);
       toast.success("Credential message copied");
     } catch {
-      toast.error("Could not copy the message. Select the text and copy it manually.");
+      toast.error(
+        "Could not copy the message. Select the text and copy it manually.",
+      );
     }
   }
 
@@ -70,21 +74,25 @@ export function CredentialsMessage({
     <section
       aria-labelledby="credentials-message-title"
       className={cn(
-        "rounded-lg border border-[rgba(16,185,129,0.24)] bg-[rgba(16,185,129,0.07)] p-4",
+        "rounded-lg border border-[rgb(var(--green-rgb)/0.24)] bg-[rgb(var(--green-rgb)/0.07)] p-4",
         className,
       )}
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[rgba(16,185,129,0.12)] text-[var(--semantic-green)]">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[rgb(var(--green-rgb)/0.12)] text-[var(--green-text)]">
             <KeyRound className="h-4 w-4" />
           </span>
           <div>
-            <h2 id="credentials-message-title" className="text-[13.5px] font-semibold text-[var(--text-1)]">
+            <h2
+              id="credentials-message-title"
+              className="text-[13.5px] font-semibold text-[var(--text-1)]"
+            >
               Account created. Copy the login message now.
             </h2>
             <p className="mt-1 text-[11.5px] leading-5 text-[var(--text-3)]">
-              The temporary password is shown here so you can send it securely to the user.
+              The temporary password is shown here so you can send it securely
+              to the user.
             </p>
           </div>
         </div>
@@ -92,9 +100,13 @@ export function CredentialsMessage({
           type="button"
           variant="outline"
           onClick={() => void copyMessage()}
-          className="h-8 border-[rgba(16,185,129,0.24)] bg-[var(--bg-0)] text-[var(--text-1)] hover:bg-[var(--bg-2)]"
+          className="h-8 border-[rgb(var(--green-rgb)/0.24)] bg-[var(--bg-0)] text-[var(--text-1)] hover:bg-[var(--bg-2)]"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-[var(--semantic-green)]" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-[var(--green-text)]" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
           {copied ? "Copied" : "Copy message"}
         </Button>
       </div>

@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import Link from "next/link";
-import { Ban, Building2, Edit3, Loader2, Mail, Power, Save, User, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Ban,
+  Building2,
+  Edit3,
+  KeyRound,
+  Loader2,
+  Mail,
+  Power,
+  Save,
+  User,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { PhoneNumberField } from "@/components/phone-number-field";
@@ -15,7 +26,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DEFAULT_COUNTRY_CODE,
@@ -36,10 +46,16 @@ import {
   statusBucket,
 } from "../../_components/directory/directory-view";
 import { useVenueManagers } from "./use-venue-managers";
+import {
+  RowActionItem,
+  RowActionsGroup,
+  RowActionsMenu,
+  RowActionsSeparator,
+} from "@/components/row-actions-menu";
 
 const CREATE_HREF = "/dashboard/users/create/venue-manager";
 const INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]";
+  "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]";
 const LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]";
 
@@ -62,7 +78,11 @@ function venueManagerEditFieldErrors(err: unknown): VmEditFieldErrors {
   return fieldErrors;
 }
 
-export function VenueManagersDirectory({ initialSearch = "" }: { initialSearch?: string }) {
+export function VenueManagersDirectory({
+  initialSearch = "",
+}: {
+  initialSearch?: string;
+}) {
   const vm = useVenueManagers(initialSearch);
 
   return (
@@ -104,100 +124,108 @@ function ManagerActions({
     payload: UpdateVenueManagerRequest,
   ) => Promise<UserDto>;
 }) {
-  const managerName = `${manager.firstName ?? ""} ${manager.lastName ?? ""}`.trim();
-
-  return (
-    <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-      <Link
-        href={`/dashboard/users/venue-managers/${manager.id}/venues?name=${encodeURIComponent(managerName)}`}
-        aria-label={`View venues managed by ${managerName || manager.email}`}
-        className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-colors hover:bg-[rgba(245,158,11,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
-      >
-        <Building2 className="h-[13px] w-[13px]" />
-        Venues
-      </Link>
-      <Link
-        href={`/dashboard/users/venue-managers/${manager.id}/staff`}
-        aria-label={`View staff managed by ${manager.firstName} ${manager.lastName}`}
-        className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--text-3)] transition-colors hover:border-[rgba(245,158,11,0.25)] hover:bg-[var(--semantic-amber-subtle)] hover:text-[var(--semantic-amber)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
-      >
-        <Users className="h-[13px] w-[13px]" />
-        Staff
-      </Link>
-      <EditManagerDialog
-        manager={manager}
-        isPending={isPending}
-        onUpdate={onUpdate}
-      />
-      <AdminPasswordResetDialog
-        managerId={manager.id}
-        email={manager.email}
-        disabled={isPending}
-        compact
-      />
-      <ManagerStatusAction
-        manager={manager}
-        isPending={isPending}
-        onToggle={onToggle}
-      />
-    </div>
-  );
-}
-
-function ManagerStatusAction({
-  manager,
-  isPending,
-  onToggle,
-}: {
-  manager: UserDto;
-  isPending: boolean;
-  onToggle: (m: UserDto) => Promise<void>;
-}) {
+  const router = useRouter();
+  const managerName =
+    `${manager.firstName ?? ""} ${manager.lastName ?? ""}`.trim();
+  const label = managerName || manager.email;
   const bucket = statusBucket(manager.status);
-
-  if (bucket === "pending") {
-    return (
-      <span className="whitespace-nowrap font-mono text-[11px] text-[var(--text-4)]">
-        Awaiting setup
-      </span>
-    );
-  }
-
   const isActive = bucket === "active";
-  const label = isActive ? "Deactivate" : "Activate";
+
+  const [dialog, setDialog] = useState<"edit" | "password" | null>(null);
+  const close = () => setDialog(null);
 
   async function handleToggle() {
     const verb = isActive ? "Deactivated" : "Activated";
     try {
       await onToggle(manager);
-      toast.success(`${verb} ${manager.firstName} ${manager.lastName}`);
+      toast.success(`${verb} ${label}`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Action failed");
     }
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleToggle}
-      disabled={isPending}
-      aria-label={label}
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-[5px] text-[12px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-60",
-        isActive
-          ? "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] hover:border-[rgba(244,63,94,0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
-          : "border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.08)] text-[var(--semantic-green)] hover:bg-[rgba(16,185,129,0.14)]",
+    <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+      {/* A manager who has never signed in cannot be toggled or edited
+          meaningfully, so the row says so rather than offering dead actions. */}
+      {bucket === "pending" && (
+        <span className="font-mono text-[11px] text-[var(--text-4)]">
+          Awaiting setup
+        </span>
       )}
-    >
-      {isPending ? (
-        <Loader2 className="h-[13px] w-[13px] animate-spin" />
-      ) : isActive ? (
-        <Ban className="h-[13px] w-[13px]" />
-      ) : (
-        <Power className="h-[13px] w-[13px]" />
-      )}
-      {label}
-    </button>
+
+      <RowActionsMenu label={label}>
+        <RowActionsGroup label="Scope">
+          <RowActionItem
+            icon={Building2}
+            onSelect={() =>
+              router.push(
+                `/dashboard/users/venue-managers/${manager.id}/venues?name=${encodeURIComponent(managerName)}`,
+              )
+            }
+          >
+            Venues
+          </RowActionItem>
+          <RowActionItem
+            icon={Users}
+            onSelect={() =>
+              router.push(`/dashboard/users/venue-managers/${manager.id}/staff`)
+            }
+          >
+            Staff
+          </RowActionItem>
+        </RowActionsGroup>
+
+        <RowActionsSeparator />
+        <RowActionsGroup label="Account">
+          <RowActionItem
+            icon={Edit3}
+            disabled={isPending}
+            onSelect={() => setDialog("edit")}
+          >
+            Edit details
+          </RowActionItem>
+          <RowActionItem
+            icon={KeyRound}
+            disabled={isPending}
+            onSelect={() => setDialog("password")}
+          >
+            Reset password
+          </RowActionItem>
+        </RowActionsGroup>
+
+        {bucket !== "pending" && (
+          <>
+            <RowActionsSeparator />
+            <RowActionsGroup>
+              <RowActionItem
+                icon={isActive ? Ban : Power}
+                disabled={isPending}
+                tone={isActive ? "danger" : "default"}
+                onSelect={() => void handleToggle()}
+              >
+                {isActive ? "Deactivate" : "Activate"}
+              </RowActionItem>
+            </RowActionsGroup>
+          </>
+        )}
+      </RowActionsMenu>
+
+      <EditManagerDialog
+        manager={manager}
+        isPending={isPending}
+        onUpdate={onUpdate}
+        open={dialog === "edit"}
+        onOpenChange={(next) => (next ? setDialog("edit") : close())}
+      />
+      <AdminPasswordResetDialog
+        managerId={manager.id}
+        email={manager.email}
+        disabled={isPending}
+        open={dialog === "password"}
+        onOpenChange={(next) => (next ? setDialog("password") : close())}
+      />
+    </div>
   );
 }
 
@@ -205,6 +233,8 @@ function EditManagerDialog({
   manager,
   isPending,
   onUpdate,
+  open,
+  onOpenChange,
 }: {
   manager: UserDto;
   isPending: boolean;
@@ -212,8 +242,10 @@ function EditManagerDialog({
     managerId: string,
     payload: UpdateVenueManagerRequest,
   ) => Promise<UserDto>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
   const [firstName, setFirstName] = useState(manager.firstName ?? "");
   const [lastName, setLastName] = useState(manager.lastName ?? "");
   const [email, setEmail] = useState(manager.email ?? "");
@@ -294,25 +326,6 @@ function EditManagerDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={(props) => (
-          <button
-            {...props}
-            type="button"
-            disabled={isPending}
-            title="Edit venue manager"
-            aria-label={`Edit ${manager.firstName} ${manager.lastName}`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.25)] bg-[rgba(245,158,11,0.08)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-all hover:bg-[rgba(245,158,11,0.14)] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isPending ? (
-              <Loader2 className="h-[13px] w-[13px] animate-spin" />
-            ) : (
-              <Edit3 className="h-[13px] w-[13px]" />
-            )}
-            Edit
-          </button>
-        )}
-      />
       <DialogContent className="border-[var(--border)] bg-[var(--bg-1)] sm:max-w-lg">
         <form onSubmit={handleSubmit}>
           <DialogHeader className="pr-7">
@@ -382,7 +395,7 @@ function EditManagerDialog({
               {fieldErrors.phoneNumber && (
                 <p
                   role="alert"
-                  className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                  className="text-[11px] leading-[1.4] text-[var(--red-text)]"
                 >
                   {fieldErrors.phoneNumber}
                 </p>
@@ -393,13 +406,13 @@ function EditManagerDialog({
           {submitError && (
             <div
               role="alert"
-              className="mt-4 rounded-md border border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.08)] px-3 py-2 text-[12.5px] leading-5 text-[var(--semantic-red)]"
+              className="mt-4 rounded-md border border-[rgb(var(--red-rgb)/0.18)] bg-[rgb(var(--red-rgb)/0.08)] px-3 py-2 text-[12.5px] leading-5 text-[var(--red-text)]"
             >
               {submitError}
             </div>
           )}
 
-          <DialogFooter className="mt-5 border-[var(--border)] bg-white/[0.008]">
+          <DialogFooter className="mt-5 border-[var(--border)] bg-[var(--tint-1)]">
             <Button
               type="button"
               variant="outline"
@@ -412,7 +425,7 @@ function EditManagerDialog({
             <Button
               type="submit"
               disabled={!canSubmit}
-              className="gap-1.5 border border-[rgba(245,158,11,0.3)] bg-[linear-gradient(135deg,#f59e0b_0%,#d97706_100%)] px-4 text-[13px] font-semibold text-[#1a1100] shadow-[0_0_20px_-6px_rgba(245,158,11,0.35)] transition-all hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
+              className="gap-1.5 border border-[rgb(var(--amber-rgb)/0.3)] bg-[linear-gradient(135deg,#f59e0b_0%,#d97706_100%)] px-4 text-[13px] font-semibold text-[var(--on-amber)] shadow-[0_0_20px_-6px_rgb(var(--amber-rgb)/0.35)] transition-all hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -459,9 +472,7 @@ function EditTextField({
       <label className={LABEL_CLASS}>
         {label}
         {required && (
-          <span className="ml-1.5 text-[var(--semantic-red)] opacity-85">
-            *
-          </span>
+          <span className="ml-1.5 text-[var(--red-text)] opacity-85">*</span>
         )}
       </label>
       <div className="relative">
@@ -476,15 +487,15 @@ function EditTextField({
           className={cn(
             "h-[38px] w-full rounded-md border bg-[var(--bg-0)] pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)]",
             error
-              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
-              : "border-[var(--border)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]",
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgb(var(--red-rgb)/0.12)] focus:border-[var(--semantic-red)]"
+              : "border-[var(--border)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]",
           )}
         />
       </div>
       {error && (
         <p
           role="alert"
-          className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+          className="text-[11px] leading-[1.4] text-[var(--red-text)]"
         >
           {error}
         </p>

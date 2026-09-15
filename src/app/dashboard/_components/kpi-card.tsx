@@ -28,20 +28,20 @@ export function KpiCard({
 }: KpiCardProps) {
   const chipClass =
     deltaType === "up"
-      ? "bg-[var(--teal-subtle)] text-[var(--teal-text)] border-[rgba(0,212,170,0.22)]"
+      ? "bg-[var(--teal-subtle)] text-[var(--teal-text)] border-[rgb(var(--teal-rgb)/0.22)]"
       : deltaType === "down"
-        ? "bg-[rgba(244,63,94,0.08)] text-[#fda4af] border-[rgba(244,63,94,0.22)]"
-        : "bg-[rgba(255,255,255,0.04)] text-[var(--text-3)] border-[var(--border)]";
+        ? "bg-[rgb(var(--red-rgb)/0.08)] text-[var(--red-text)] border-[rgb(var(--red-rgb)/0.22)]"
+        : "bg-[var(--tint-3)] text-[var(--text-3)] border-[var(--border)]";
 
   return (
     <div
-      className={`dash-fade-up ${staggerClass} group relative overflow-hidden rounded-[14px] border px-[22px] py-[22px] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(0,212,170,0.22)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.3)] ${
+      className={`dash-fade-up ${staggerClass} group relative overflow-hidden rounded-[14px] border px-[22px] py-[22px] transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgb(var(--teal-rgb)/0.22)] hover:shadow-[var(--shadow-3)] ${
         hero
-          ? "hero-shimmer border-[rgba(0,212,170,0.22)] bg-[linear-gradient(180deg,rgba(0,212,170,0.04),rgba(0,212,170,0.012))]"
-          : "border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))]"
+          ? "hero-shimmer border-[rgb(var(--teal-rgb)/0.22)] bg-[linear-gradient(180deg,rgb(var(--teal-rgb)/0.04),rgb(var(--teal-rgb)/0.012))]"
+          : "border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))]"
       }`}
     >
-      <div className="pointer-events-none absolute right-0 top-0 h-[100px] w-[140px] bg-[radial-gradient(circle_at_100%_0%,rgba(0,212,170,0.08),transparent_70%)] opacity-60 transition-opacity group-hover:opacity-100" />
+      <div className="pointer-events-none absolute right-0 top-0 h-[100px] w-[140px] bg-[radial-gradient(circle_at_100%_0%,rgb(var(--teal-rgb)/0.08),transparent_70%)] opacity-60 transition-opacity group-hover:opacity-100" />
       <div className="relative">
         <div className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-[var(--text-3)]">
           {label}
@@ -92,8 +92,8 @@ export function HeroSpark() {
     >
       <defs>
         <linearGradient id="kpi-hero-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#00d4aa" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#00d4aa" stopOpacity="0" />
+          <stop offset="0%" stopColor="var(--teal)" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="var(--teal)" stopOpacity="0" />
         </linearGradient>
       </defs>
       <path

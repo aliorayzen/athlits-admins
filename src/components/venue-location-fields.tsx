@@ -97,7 +97,7 @@ function SearchSelect({
     <div className="space-y-2">
       <Label htmlFor={id} className={labelClassName}>
         {label}
-        {required && <span className="ml-1 text-[var(--semantic-red)]">*</span>}
+        {required && <span className="ml-1 text-[var(--red-text)]">*</span>}
       </Label>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger
@@ -144,7 +144,7 @@ function SearchSelect({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={searchPlaceholder}
                 aria-label={searchPlaceholder}
-                className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-8 pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
+                className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-8 pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[rgb(var(--teal-rgb)/0.3)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
               />
             </div>
           </div>

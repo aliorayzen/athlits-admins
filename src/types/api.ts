@@ -440,7 +440,16 @@ export interface AssignManagerRequest {
 
 // Courts
 export type SurfaceType =
-  "GRASS" | "CLAY" | "HARD" | "SYNTHETIC" | "WOOD" | "RUBBER" | "SAND" | "TURF" | "PADEL" | "CONCRETE";
+  | "GRASS"
+  | "CLAY"
+  | "HARD"
+  | "SYNTHETIC"
+  | "WOOD"
+  | "RUBBER"
+  | "SAND"
+  | "TURF"
+  | "PADEL"
+  | "CONCRETE";
 export type CourtEnvironment = "INDOOR" | "OUTDOOR";
 
 export type CourtDivisionLayout = "FULL" | "HALVES" | "THIRDS" | "QUARTERS";
@@ -505,8 +514,19 @@ export interface VenueStatisticsResponse {
   bookings: VenueBookingStatistics;
   revenue: VenueRevenueStatistics;
   occupancy: VenueOccupancyStatistics;
-  trend: Array<{ date: string; bookings: number; netRevenue: number; occupancyPct: number }>;
-  courts: Array<{ courtId: string; courtName: string; bookings: number; netRevenue: number; occupancyPct: number }>;
+  trend: Array<{
+    date: string;
+    bookings: number;
+    netRevenue: number;
+    occupancyPct: number;
+  }>;
+  courts: Array<{
+    courtId: string;
+    courtName: string;
+    bookings: number;
+    netRevenue: number;
+    occupancyPct: number;
+  }>;
   sports: Array<{ sport: string; bookings: number; netRevenue: number }>;
 }
 
@@ -551,11 +571,7 @@ export interface CreateCourtRequest {
 }
 
 export type CourtAmenityId =
-  | "parking"
-  | "lighting"
-  | "showers"
-  | "lockers"
-  | "spectator_seating";
+  "parking" | "lighting" | "showers" | "lockers" | "spectator_seating";
 
 export interface CourtResponse {
   id: string;
@@ -806,8 +822,10 @@ export interface AdminBookingPreviewResponse {
   dates?: string[];
 }
 
-export interface AdminCreatedBookingOccurrence
-  extends Omit<AdminBookingOccurrencePreview, "priceAmount" | "conflict"> {
+export interface AdminCreatedBookingOccurrence extends Omit<
+  AdminBookingOccurrencePreview,
+  "priceAmount" | "conflict"
+> {
   id?: string;
   reference?: string;
   reservationId?: string;
@@ -1089,11 +1107,7 @@ export interface PageQuery {
 }
 
 // Audit events
-export type AuditEventOutcome =
-  | "SUCCESS"
-  | "FAILURE"
-  | "DENIED"
-  | "UNKNOWN";
+export type AuditEventOutcome = "SUCCESS" | "FAILURE" | "DENIED" | "UNKNOWN";
 
 /**
  * Stable dashboard model for a platform audit event. The API wrapper

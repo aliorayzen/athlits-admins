@@ -20,7 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -36,6 +35,8 @@ const OVERLAY =
 
 interface SuspendVmDialogProps {
   invoice: InvoiceResponse;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   /** Refetch the list after a suspend/reactivate so statuses stay in sync. */
   onChanged: () => void;
 }
@@ -49,8 +50,13 @@ interface SuspendVmDialogProps {
  * Restrained by design: neutral surfaces, with red reserved for the danger icon
  * and the primary action only.
  */
-export function SuspendVmDialog({ invoice, onChanged }: SuspendVmDialogProps) {
-  const [open, setOpen] = useState(false);
+export function SuspendVmDialog({
+  invoice,
+  onChanged,
+  open,
+  onOpenChange,
+}: SuspendVmDialogProps) {
+  const setOpen = onOpenChange;
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<Action | null>(null);
   const [result, setResult] = useState<VenueManagerSuspensionResult | null>(
@@ -103,19 +109,6 @@ export function SuspendVmDialog({ invoice, onChanged }: SuspendVmDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={(props) => (
-          <button
-            {...props}
-            type="button"
-            title="Suspend venue manager"
-            aria-label={`Suspend venue manager for invoice ${invoice.id.slice(0, 8)}`}
-            className="grid h-11 w-11 place-items-center rounded border border-[rgba(244,63,94,0.2)] bg-[rgba(244,63,94,0.06)] text-[var(--semantic-red)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(244,63,94,0.4)] hover:bg-[rgba(244,63,94,0.12)]"
-          >
-            <ShieldOff className="h-[13px] w-[13px]" />
-          </button>
-        )}
-      />
       <DialogContent
         overlayClassName={OVERLAY}
         className="border-[var(--border)] bg-[var(--bg-1)] sm:max-w-md"
@@ -132,7 +125,7 @@ export function SuspendVmDialog({ invoice, onChanged }: SuspendVmDialogProps) {
           <>
             <DialogHeader className="pr-7">
               <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[rgba(244,63,94,0.22)] bg-[rgba(244,63,94,0.08)] text-[var(--semantic-red)]">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[rgb(var(--red-rgb)/0.22)] bg-[rgb(var(--red-rgb)/0.08)] text-[var(--red-text)]">
                   <ShieldOff className="h-[17px] w-[17px]" />
                 </span>
                 <div className="min-w-0">
@@ -187,7 +180,7 @@ export function SuspendVmDialog({ invoice, onChanged }: SuspendVmDialogProps) {
                 onClick={() => run("reactivate")}
                 disabled={busy !== null}
                 title="Already resolved? Restore a previously suspended manager"
-                className="inline-flex items-center gap-1.5 text-[12px] text-[var(--text-3)] underline-offset-2 transition-colors hover:text-[var(--semantic-green)] hover:underline disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-[12px] text-[var(--text-3)] underline-offset-2 transition-colors hover:text-[var(--green-text)] hover:underline disabled:opacity-50"
               >
                 {busy === "reactivate" ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -211,7 +204,7 @@ export function SuspendVmDialog({ invoice, onChanged }: SuspendVmDialogProps) {
                 type="button"
                 onClick={() => run("suspend")}
                 disabled={busy !== null}
-                className="h-9 gap-2 bg-[var(--semantic-red)] font-medium text-white transition-[filter] hover:brightness-110 active:brightness-95"
+                className="h-9 gap-2 bg-[var(--semantic-red)] font-medium text-[var(--on-danger)] transition-[filter] hover:brightness-110 active:brightness-95"
               >
                 {busy === "suspend" ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -258,8 +251,8 @@ function ResultView({
             className={cn(
               "grid h-10 w-10 shrink-0 place-items-center rounded-lg border",
               suspended
-                ? "border-[rgba(244,63,94,0.22)] bg-[rgba(244,63,94,0.08)] text-[var(--semantic-red)]"
-                : "border-[rgba(16,185,129,0.22)] bg-[rgba(16,185,129,0.08)] text-[var(--semantic-green)]",
+                ? "border-[rgb(var(--red-rgb)/0.22)] bg-[rgb(var(--red-rgb)/0.08)] text-[var(--red-text)]"
+                : "border-[rgb(var(--green-rgb)/0.22)] bg-[rgb(var(--green-rgb)/0.08)] text-[var(--green-text)]",
             )}
           >
             {suspended ? (

@@ -78,9 +78,7 @@ export function InvoiceDocument({ invoice }: InvoiceDocumentProps) {
             {v.charges.map((charge) => (
               <tr key={charge.key}>
                 <td>
-                  <div className="invoice-doc__item">
-                    {charge.description}
-                  </div>
+                  <div className="invoice-doc__item">{charge.description}</div>
                   <div className="invoice-doc__note">{charge.note}</div>
                 </td>
                 <td className="invoice-doc__num">{charge.quantity}</td>

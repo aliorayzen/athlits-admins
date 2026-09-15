@@ -187,7 +187,7 @@ export function TimezoneSelect({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search city or GMT offset…"
               aria-label="Search time zones"
-              className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-8 pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
+              className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-8 pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[rgb(var(--teal-rgb)/0.3)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
             />
           </div>
         </div>

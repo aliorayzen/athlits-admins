@@ -336,8 +336,8 @@ export function VenueCoverImageField({
   const metrics = displayMetrics();
   const isLowResolution = Boolean(
     editable &&
-      (editable.width < MIN_RECOMMENDED_WIDTH ||
-        editable.height < MIN_RECOMMENDED_HEIGHT),
+    (editable.width < MIN_RECOMMENDED_WIDTH ||
+      editable.height < MIN_RECOMMENDED_HEIGHT),
   );
 
   return (
@@ -412,11 +412,11 @@ export function VenueCoverImageField({
                 transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px))`,
               }}
             />
-            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
+            <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[var(--tint-5)]" />
           </div>
 
           {isLowResolution && (
-            <div className="flex gap-2 rounded-md bg-[var(--semantic-amber-subtle)] px-3 py-2 text-xs text-[var(--semantic-amber)]">
+            <div className="flex gap-2 rounded-md bg-[var(--semantic-amber-subtle)] px-3 py-2 text-xs text-[var(--amber-text)]">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <p>
                 This image is {editable.width}×{editable.height}. At least
@@ -471,7 +471,7 @@ export function VenueCoverImageField({
               type="button"
               onClick={() => void applyCrop()}
               disabled={isExporting}
-              className="bg-[var(--teal)] text-[#060a0e] hover:bg-[var(--teal)] hover:brightness-110"
+              className="bg-[var(--teal)] text-[var(--on-teal)] hover:bg-[var(--teal)] hover:brightness-110"
             >
               {isExporting ? <Loader2 className="animate-spin" /> : <Crop />}
               {isExporting ? "Preparing..." : "Use image"}
@@ -513,7 +513,7 @@ export function VenueCoverImageField({
               onClick={() => onChange(null)}
               disabled={disabled}
               aria-label="Remove selected image"
-              className="text-[var(--text-4)] hover:text-[var(--semantic-red)]"
+              className="text-[var(--text-4)] hover:text-[var(--red-text)]"
             >
               <Trash2 />
             </Button>
@@ -524,7 +524,7 @@ export function VenueCoverImageField({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={disabled || isPreparing}
-          className="group flex w-full items-center gap-3 rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--bg-hover)] px-4 py-4 text-left transition-colors hover:border-[rgba(0,212,170,0.3)] hover:bg-[var(--teal-subtle)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)] disabled:pointer-events-none disabled:opacity-50"
+          className="group flex w-full items-center gap-3 rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--bg-hover)] px-4 py-4 text-left transition-colors hover:border-[rgb(var(--teal-rgb)/0.3)] hover:bg-[var(--teal-subtle)] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)] disabled:pointer-events-none disabled:opacity-50"
         >
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[var(--bg-2)] text-[var(--text-4)] transition-colors group-hover:text-[var(--teal-text)]">
             {isPreparing ? (
@@ -548,7 +548,7 @@ export function VenueCoverImageField({
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-1.5 text-xs text-[var(--semantic-red)]"
+          className="flex items-start gap-1.5 text-xs text-[var(--red-text)]"
         >
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {error}

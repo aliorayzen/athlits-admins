@@ -1,5 +1,7 @@
 "use client";
 
+import { useTheme } from "next-themes";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
@@ -200,7 +202,10 @@ export default function SettingsPage() {
   const [notifPrefs, setNotifPrefs] =
     useState<Record<string, boolean>>(initialNotifState);
   const [notifChannel, setNotifChannel] = useState<"email" | "in-app">("email");
-  const [theme, setTheme] = useState<Theme>("dark");
+  // Theme is owned by next-themes (class strategy, see src/components/providers.tsx).
+  // `resolvedTheme` reports what "system" actually resolved to; `theme` is the
+  // stored preference, which is what the picker selects against.
+  const { theme, setTheme } = useTheme();
   const [density, setDensity] = useState<Density>("comfortable");
 
   /* ── Mount timestamp (stable for memoized derived values) ── */
@@ -342,9 +347,9 @@ export default function SettingsPage() {
             description="Your identity on the Athlits platform"
           >
             <div className="flex items-center gap-5 py-3.5">
-              <div className="relative grid h-[72px] w-[72px] place-items-center rounded-full border-2 border-[rgba(0,212,170,0.22)] bg-[linear-gradient(135deg,rgba(0,212,170,0.28),rgba(0,212,170,0.08))] text-[24px] font-bold tracking-[-0.02em] text-[var(--teal-text)]">
+              <div className="relative grid h-[72px] w-[72px] place-items-center rounded-full border-2 border-[rgb(var(--teal-rgb)/0.22)] bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.28),rgb(var(--teal-rgb)/0.08))] text-[24px] font-bold tracking-[-0.02em] text-[var(--teal-text)]">
                 {profile.initials}
-                <span className="pointer-events-none absolute inset-[-4px] rounded-full border border-[rgba(0,212,170,0.14)]" />
+                <span className="pointer-events-none absolute inset-[-4px] rounded-full border border-[rgb(var(--teal-rgb)/0.14)]" />
                 <span className="absolute bottom-[1px] right-[1px] h-[14px] w-[14px] rounded-full border-[2.5px] border-[var(--bg-1)] bg-[var(--semantic-green)] shadow-[0_0_6px_var(--semantic-green)]" />
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
@@ -355,7 +360,7 @@ export default function SettingsPage() {
                   {profile.email}
                 </div>
                 <div className="mt-1 flex gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(0,212,170,0.14)] bg-[rgba(0,212,170,0.1)] px-2 py-[3px] text-[11px] font-medium text-[var(--teal-text)]">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[rgb(var(--teal-rgb)/0.14)] bg-[rgb(var(--teal-rgb)/0.1)] px-2 py-[3px] text-[11px] font-medium text-[var(--teal-text)]">
                     <Shield className="h-[11px] w-[11px]" />
                     {profile.role === "ADMIN"
                       ? "Admin"
@@ -363,7 +368,7 @@ export default function SettingsPage() {
                         ? "Venue Manager"
                         : profile.role}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(16,185,129,0.08)] px-2 py-[3px] text-[11px] font-medium text-[var(--semantic-green)]">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(var(--green-rgb)/0.08)] px-2 py-[3px] text-[11px] font-medium text-[var(--green-text)]">
                     <span className="sv2-status-dot h-[5px] w-[5px] rounded-full bg-[var(--semantic-green)] shadow-[0_0_5px_var(--semantic-green)]" />
                     {profile.status === "ACTIVE" ? "Active" : profile.status}
                   </span>
@@ -371,8 +376,8 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="mt-2.5 flex items-start gap-2 rounded-md border border-[rgba(99,102,241,0.14)] bg-[rgba(99,102,241,0.06)] px-3 py-2.5">
-              <Info className="mt-px h-[13px] w-[13px] flex-shrink-0 text-[var(--semantic-blue)]" />
+            <div className="mt-2.5 flex items-start gap-2 rounded-md border border-[rgb(var(--indigo-rgb)/0.14)] bg-[rgb(var(--indigo-rgb)/0.06)] px-3 py-2.5">
+              <Info className="mt-px h-[13px] w-[13px] flex-shrink-0 text-[var(--blue-text)]" />
               <span className="text-[12px] leading-[1.5] text-[var(--text-2)]">
                 Your identity is managed centrally by platform admins. To change
                 your name or email, contact another admin.
@@ -467,7 +472,7 @@ export default function SettingsPage() {
                     className={cn(
                       "rounded-[4px] px-2.5 py-1 text-[12px] font-medium transition-colors",
                       notifChannel === ch
-                        ? "bg-white/[0.05] text-[var(--text-1)] shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_1px_2px_rgba(0,0,0,0.25)]"
+                        ? "bg-[var(--tint-4)] text-[var(--text-1)] shadow-[var(--inset-hi),var(--shadow-1)]"
                         : "text-[var(--text-3)] hover:text-[var(--text-1)]",
                     )}
                   >
@@ -514,19 +519,19 @@ export default function SettingsPage() {
               <ThemeCard
                 value="dark"
                 label="Dark"
-                selected={theme === "dark"}
+                selected={(theme ?? "light") === "dark"}
                 onClick={() => setTheme("dark")}
               />
               <ThemeCard
                 value="light"
                 label="Light"
-                selected={theme === "light"}
+                selected={(theme ?? "light") === "light"}
                 onClick={() => setTheme("light")}
               />
               <ThemeCard
                 value="system"
                 label="System"
-                selected={theme === "system"}
+                selected={(theme ?? "light") === "system"}
                 onClick={() => setTheme("system")}
               />
             </div>
@@ -542,7 +547,7 @@ export default function SettingsPage() {
                     className={cn(
                       "rounded-[4px] px-2.5 py-1 text-[12px] font-medium capitalize transition-colors",
                       density === d
-                        ? "bg-white/[0.05] text-[var(--text-1)] shadow-[0_1px_0_rgba(255,255,255,0.04)_inset,0_1px_2px_rgba(0,0,0,0.25)]"
+                        ? "bg-[var(--tint-4)] text-[var(--text-1)] shadow-[var(--inset-hi),var(--shadow-1)]"
                         : "text-[var(--text-3)] hover:text-[var(--text-1)]",
                     )}
                   >
@@ -567,7 +572,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 disabled
-                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md border border-[rgba(0,212,170,0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] px-2.5 py-1.5 text-[12px] font-semibold text-[#032921] opacity-60"
+                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-md border border-[rgb(var(--teal-rgb)/0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] px-2.5 py-1.5 text-[12px] font-semibold text-[var(--on-teal)] opacity-60"
               >
                 <Plus className="h-3 w-3" />
                 Create key
@@ -575,7 +580,7 @@ export default function SettingsPage() {
             }
           >
             <div className="overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-2)]">
-              <div className="grid grid-cols-[1fr_1.5fr_0.7fr_0.9fr_auto] gap-3 border-b border-[var(--border)] bg-white/[0.012] px-3.5 py-2.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+              <div className="grid grid-cols-[1fr_1.5fr_0.7fr_0.9fr_auto] gap-3 border-b border-[var(--border)] bg-[var(--tint-1)] px-3.5 py-2.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
                 <span>Name</span>
                 <span>Key</span>
                 <span>Status</span>
@@ -592,7 +597,7 @@ export default function SettingsPage() {
                   </span>
                 </span>
                 <span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(16,185,129,0.08)] px-2 py-[2px] text-[11px] font-medium text-[var(--semantic-green)]">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(var(--green-rgb)/0.08)] px-2 py-[2px] text-[11px] font-medium text-[var(--green-text)]">
                     <span className="h-[5px] w-[5px] rounded-full bg-[var(--semantic-green)] shadow-[0_0_5px_var(--semantic-green)]" />
                     Active
                   </span>
@@ -617,7 +622,7 @@ export default function SettingsPage() {
                   </IconBtn>
                 </span>
               </div>
-              <div className="border-t border-[rgba(255,255,255,0.035)] px-7 py-7 text-center">
+              <div className="border-t border-[var(--tint-3)] px-7 py-7 text-center">
                 <div className="text-[13px] font-medium text-[var(--text-2)]">
                   Awaiting backend endpoint
                 </div>
@@ -740,13 +745,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   const toneClasses = {
-    teal: "bg-[var(--teal-subtle)] border-[rgba(0,212,170,0.16)] text-[var(--teal-text)]",
-    blue: "bg-[rgba(99,102,241,0.1)] border-[rgba(99,102,241,0.18)] text-[#818cf8]",
+    teal: "bg-[var(--teal-subtle)] border-[rgb(var(--teal-rgb)/0.16)] text-[var(--teal-text)]",
+    blue: "bg-[rgb(var(--indigo-rgb)/0.1)] border-[rgb(var(--indigo-rgb)/0.18)] text-[var(--blue-text)]",
     amber:
-      "bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.18)] text-[var(--semantic-amber)]",
-    red: "bg-[rgba(244,63,94,0.08)] border-[rgba(244,63,94,0.2)] text-[var(--semantic-red)]",
-    neutral:
-      "bg-[rgba(255,255,255,0.03)] border-[var(--border)] text-[var(--text-3)]",
+      "bg-[rgb(var(--amber-rgb)/0.1)] border-[rgb(var(--amber-rgb)/0.18)] text-[var(--amber-text)]",
+    red: "bg-[rgb(var(--red-rgb)/0.08)] border-[rgb(var(--red-rgb)/0.2)] text-[var(--red-text)]",
+    neutral: "bg-[var(--tint-2)] border-[var(--border)] text-[var(--text-3)]",
   }[iconTone];
 
   return (
@@ -792,11 +796,11 @@ function Badge({
 }) {
   const tones = {
     amber:
-      "bg-[rgba(245,158,11,0.12)] text-[var(--semantic-amber)] border-[rgba(245,158,11,0.18)]",
-    teal: "bg-[var(--teal-subtle)] text-[var(--teal-text)] border-[rgba(0,212,170,0.14)]",
+      "bg-[rgb(var(--amber-rgb)/0.12)] text-[var(--amber-text)] border-[rgb(var(--amber-rgb)/0.18)]",
+    teal: "bg-[var(--teal-subtle)] text-[var(--teal-text)] border-[rgb(var(--teal-rgb)/0.14)]",
     green:
-      "bg-[rgba(16,185,129,0.1)] text-[var(--semantic-green)] border-[rgba(16,185,129,0.2)]",
-    blue: "bg-[rgba(99,102,241,0.1)] text-[#818cf8] border-[rgba(99,102,241,0.2)]",
+      "bg-[rgb(var(--green-rgb)/0.1)] text-[var(--green-text)] border-[rgb(var(--green-rgb)/0.2)]",
+    blue: "bg-[rgb(var(--indigo-rgb)/0.1)] text-[var(--blue-text)] border-[rgb(var(--indigo-rgb)/0.2)]",
   }[tone];
   return (
     <span
@@ -834,12 +838,12 @@ function ToggleRow({
   rightSlot?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-5 border-b border-[rgba(255,255,255,0.035)] py-3.5 last:border-b-0">
+    <div className="flex items-center justify-between gap-5 border-b border-[var(--tint-3)] py-3.5 last:border-b-0">
       <div className="flex-1">
         <div className="flex items-center gap-2 text-[13.5px] font-medium leading-[1.3] tracking-[-0.005em] text-[var(--text-1)]">
           {label}
           {chipLabel && (
-            <span className="inline-flex items-center rounded-[3px] border border-[rgba(0,212,170,0.14)] bg-[var(--teal-subtle)] px-1.5 py-[1px] text-[9px] font-semibold uppercase leading-[1.4] tracking-[0.06em] text-[var(--teal-text)]">
+            <span className="inline-flex items-center rounded-[3px] border border-[rgb(var(--teal-rgb)/0.14)] bg-[var(--teal-subtle)] px-1.5 py-[1px] text-[9px] font-semibold uppercase leading-[1.4] tracking-[0.06em] text-[var(--teal-text)]">
               {chipLabel}
             </span>
           )}
@@ -883,8 +887,8 @@ function IdRow({
 }) {
   const badgeTones = {
     green:
-      "bg-[rgba(16,185,129,0.1)] text-[var(--semantic-green)] border-[rgba(16,185,129,0.2)]",
-    blue: "bg-[rgba(99,102,241,0.1)] text-[#818cf8] border-[rgba(99,102,241,0.2)]",
+      "bg-[rgb(var(--green-rgb)/0.1)] text-[var(--green-text)] border-[rgb(var(--green-rgb)/0.2)]",
+    blue: "bg-[rgb(var(--indigo-rgb)/0.1)] text-[var(--blue-text)] border-[rgb(var(--indigo-rgb)/0.2)]",
   };
   return (
     <div
@@ -953,15 +957,23 @@ function ThemeCard({
   selected: boolean;
   onClick: () => void;
 }) {
+  // These previews are miniatures OF each theme, so they must use that theme's
+  // literal values. Tokens would make all three cards repaint to whichever
+  // theme is currently active, which defeats the purpose of the picker.
   const previewClass = {
-    dark: "bg-[#0a0d14]",
-    light: "bg-[#f5f4f2]",
-    system: "bg-[linear-gradient(135deg,#0a0d14_50%,#f5f4f2_50%)]",
+    dark: "bg-[#0f1115]",
+    light: "bg-[#fbfdfd]",
+    system: "bg-[linear-gradient(135deg,#0f1115_50%,#fbfdfd_50%)]",
   }[value];
   const barClass = {
-    dark: "bg-[rgba(255,255,255,0.06)]",
-    light: "bg-[rgba(0,0,0,0.08)]",
-    system: "bg-[rgba(128,128,128,0.2)]",
+    dark: "bg-[var(--tint-5)]",
+    light: "bg-[rgba(9,20,26,0.09)]",
+    system: "bg-[rgba(128,128,128,0.22)]",
+  }[value];
+  const accentClass = {
+    dark: "bg-[var(--teal)]",
+    light: "bg-[#008567]",
+    system: "bg-[#00a88a]",
   }[value];
 
   return (
@@ -981,7 +993,7 @@ function ThemeCard({
           previewClass,
         )}
       >
-        <div className="h-[5px] w-[40%] rounded-[3px] bg-[var(--teal)]" />
+        <div className={cn("h-[5px] w-[40%] rounded-[3px]", accentClass)} />
         <div className={cn("h-[5px] rounded-[3px]", barClass)} />
         <div className={cn("h-[5px] rounded-[3px]", barClass)} />
       </div>
@@ -998,7 +1010,7 @@ function ThemeCard({
           {selected && (
             <span
               aria-hidden="true"
-              className="absolute inset-[3px] rounded-full bg-[#032921]"
+              className="absolute inset-[3px] rounded-full bg-[var(--on-teal)]"
             />
           )}
         </span>
@@ -1031,8 +1043,8 @@ function IconBtn({
         "grid h-[26px] w-[26px] place-items-center rounded-[5px] border border-[var(--border)] bg-[var(--bg-1)] text-[var(--text-3)] transition-all disabled:cursor-not-allowed disabled:opacity-60",
         !disabled &&
           (danger
-            ? "hover:border-[rgba(244,63,94,0.3)] hover:bg-[rgba(244,63,94,0.08)] hover:text-[var(--semantic-red)]"
-            : "hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"),
+            ? "hover:border-[rgb(var(--red-rgb)/0.3)] hover:bg-[rgb(var(--red-rgb)/0.08)] hover:text-[var(--red-text)]"
+            : "hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"),
       )}
     >
       {children}
@@ -1058,7 +1070,7 @@ function DangerRow({
   disabled?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between gap-5 border-b border-[rgba(255,255,255,0.035)] py-3.5 last:border-b-0">
+    <div className="flex items-center justify-between gap-5 border-b border-[var(--tint-3)] py-3.5 last:border-b-0">
       <div className="flex-1">
         <div className="flex items-center gap-2 text-[13.5px] font-medium leading-[1.3] tracking-[-0.005em] text-[var(--text-1)]">
           {label}
@@ -1074,7 +1086,7 @@ function DangerRow({
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="sv2-danger-btn inline-flex items-center gap-1.5 rounded-md border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.06)] px-3.5 py-[7px] text-[12.5px] font-medium text-[var(--semantic-red)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="sv2-danger-btn inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.06)] px-3.5 py-[7px] text-[12.5px] font-medium text-[var(--red-text)] disabled:cursor-not-allowed disabled:opacity-50"
       >
         {Icon && <Icon className="h-[13px] w-[13px]" />}
         {cta}

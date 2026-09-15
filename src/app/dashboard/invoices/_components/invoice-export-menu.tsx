@@ -15,6 +15,7 @@ import { downloadBlob } from "@/lib/export";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -85,54 +86,58 @@ export function InvoiceExportMenu({
         align="end"
         className="w-60 border-[var(--border)] bg-[var(--bg-1)]"
       >
-        <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-[var(--text-4)]">
-          This view · {viewCount}
-        </DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={onClientCsv}
-          className="gap-2 text-[var(--text-2)]"
-        >
-          <FileSpreadsheet className="h-4 w-4 text-[var(--text-4)]" />
-          CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={onClientPdf}
-          className="gap-2 text-[var(--text-2)]"
-        >
-          <FileText className="h-4 w-4 text-[var(--text-4)]" />
-          PDF
-          <span className="ml-auto text-[10px] text-[var(--text-4)]">
-            themed
-          </span>
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-[var(--text-4)]">
+            This view · {viewCount}
+          </DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={onClientCsv}
+            className="gap-2 text-[var(--text-2)]"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-[var(--text-4)]" />
+            CSV
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={onClientPdf}
+            className="gap-2 text-[var(--text-2)]"
+          >
+            <FileText className="h-4 w-4 text-[var(--text-4)]" />
+            PDF
+            <span className="ml-auto text-[10px] text-[var(--text-4)]">
+              themed
+            </span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="bg-[var(--border)]" />
 
-        <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-[var(--text-4)]">
-          All matching filters
-        </DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() => void exportAll("csv")}
-          disabled={isBusy}
-          className="gap-2 text-[var(--text-2)]"
-        >
-          <FileSpreadsheet className="h-4 w-4 text-[var(--text-4)]" />
-          CSV
-          {busy === "csv" && (
-            <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin" />
-          )}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => void exportAll("pdf")}
-          disabled={isBusy}
-          className="gap-2 text-[var(--text-2)]"
-        >
-          <FileText className="h-4 w-4 text-[var(--text-4)]" />
-          PDF
-          {busy === "pdf" && (
-            <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin" />
-          )}
-        </DropdownMenuItem>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-[var(--text-4)]">
+            All matching filters
+          </DropdownMenuLabel>
+          <DropdownMenuItem
+            onClick={() => void exportAll("csv")}
+            disabled={isBusy}
+            className="gap-2 text-[var(--text-2)]"
+          >
+            <FileSpreadsheet className="h-4 w-4 text-[var(--text-4)]" />
+            CSV
+            {busy === "csv" && (
+              <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin" />
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => void exportAll("pdf")}
+            disabled={isBusy}
+            className="gap-2 text-[var(--text-2)]"
+          >
+            <FileText className="h-4 w-4 text-[var(--text-4)]" />
+            PDF
+            {busy === "pdf" && (
+              <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin" />
+            )}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

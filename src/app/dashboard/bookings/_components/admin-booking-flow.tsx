@@ -107,9 +107,7 @@ function localDateValue(date: Date): string {
 }
 
 function addDays(dateValue: string, days: number): string {
-  const date = dateValue
-    ? new Date(`${dateValue}T12:00:00`)
-    : new Date();
+  const date = dateValue ? new Date(`${dateValue}T12:00:00`) : new Date();
   date.setDate(date.getDate() + days);
   return localDateValue(date);
 }
@@ -135,7 +133,10 @@ function formatTime(value?: string | null): string {
   }).format(date);
 }
 
-function formatMoney(amount: number | null | undefined, currency: string): string {
+function formatMoney(
+  amount: number | null | undefined,
+  currency: string,
+): string {
   if (amount == null) return "Unavailable";
   try {
     return new Intl.NumberFormat("en", {
@@ -227,7 +228,7 @@ function SelectField({
   return (
     <div className="space-y-2">
       <Label htmlFor={id} className={LABEL_CLASS}>
-        {label} <span className="text-[var(--semantic-red)]">*</span>
+        {label} <span className="text-[var(--red-text)]">*</span>
       </Label>
       <div className="relative">
         <select
@@ -279,7 +280,7 @@ function Section({
   return (
     <section className="border-b border-[var(--border)] px-5 py-6 last:border-b-0 sm:px-6">
       <div className="mb-4 flex items-start gap-3">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[rgba(0,212,170,0.14)] bg-[var(--teal-subtle)] text-[var(--teal-text)]">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[rgb(var(--teal-rgb)/0.14)] bg-[var(--teal-subtle)] text-[var(--teal-text)]">
           <Icon className="h-4 w-4" />
         </div>
         <div>
@@ -302,7 +303,10 @@ function Section({
 function FlowIndicator({ step }: { step: FlowStep }) {
   const current = step === "DETAILS" ? 0 : step === "REVIEW" ? 1 : 2;
   return (
-    <ol aria-label="Booking creation progress" className="flex items-center gap-2">
+    <ol
+      aria-label="Booking creation progress"
+      className="flex items-center gap-2"
+    >
       {["Details", "Review", "Confirmed"].map((label, index) => (
         <li key={label} className="flex items-center gap-2">
           {index > 0 && <span className="h-px w-5 bg-[var(--border-strong)]" />}
@@ -310,7 +314,9 @@ function FlowIndicator({ step }: { step: FlowStep }) {
             aria-current={index === current ? "step" : undefined}
             className={cn(
               "inline-flex items-center gap-1.5 text-[11px] font-medium",
-              index <= current ? "text-[var(--text-2)]" : "text-[var(--text-4)]",
+              index <= current
+                ? "text-[var(--text-2)]"
+                : "text-[var(--text-4)]",
             )}
           >
             <span
@@ -319,7 +325,7 @@ function FlowIndicator({ step }: { step: FlowStep }) {
                 index < current
                   ? "border-[var(--teal)] bg-[var(--teal)] text-[var(--bg-0)]"
                   : index === current
-                    ? "border-[rgba(0,212,170,0.35)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
+                    ? "border-[rgb(var(--teal-rgb)/0.35)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
                     : "border-[var(--border)] text-[var(--text-4)]",
               )}
             >
@@ -355,11 +361,14 @@ export function AdminBookingFlow({
   const [loadingVenues, setLoadingVenues] = useState(true);
   const [loadingVenue, setLoadingVenue] = useState(false);
   const [metadataError, setMetadataError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<AdminBookingPreviewResponse | null>(null);
-  const [reviewPayload, setReviewPayload] = useState<AdminBookingRequest | null>(
+  const [preview, setPreview] = useState<AdminBookingPreviewResponse | null>(
     null,
   );
-  const [created, setCreated] = useState<AdminBookingCreateResponse | null>(null);
+  const [reviewPayload, setReviewPayload] =
+    useState<AdminBookingRequest | null>(null);
+  const [created, setCreated] = useState<AdminBookingCreateResponse | null>(
+    null,
+  );
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
@@ -367,16 +376,16 @@ export function AdminBookingFlow({
 
   const canWrite =
     user?.role === "ADMIN" &&
-    (user.permissions === undefined || user.permissions.includes("BOOKINGS_WRITE"));
+    (user.permissions === undefined ||
+      user.permissions.includes("BOOKINGS_WRITE"));
 
   const selectedVenue = venues.find((venue) => venue.id === draft.venueId);
   const courts = bookableVenue?.courts ?? [];
   const selectedCourt = courts.find((court) => court.id === draft.courtId);
   const sports = selectedCourt?.courtSports ?? [];
-  const selectedSport = sports.find(
-    (sport) => sport.id === draft.courtSportId,
-  );
-  const options = selectedSport?.bookingOptions.filter((option) => option.active) ?? [];
+  const selectedSport = sports.find((sport) => sport.id === draft.courtSportId);
+  const options =
+    selectedSport?.bookingOptions.filter((option) => option.active) ?? [];
   const selectedOption = options.find(
     (option) => option.id === draft.bookingOptionId,
   );
@@ -541,7 +550,9 @@ export function AdminBookingFlow({
 
     const phone = normalizePhone(draft.playerPhoneE164);
     if (phone && !/^\+\d{7,15}$/.test(phone)) {
-      toast.error("Enter the phone number in international format, such as +96170123456.");
+      toast.error(
+        "Enter the phone number in international format, such as +96170123456.",
+      );
       return null;
     }
 
@@ -571,7 +582,11 @@ export function AdminBookingFlow({
       }
       if (draft.recurrenceMode === "COUNT") {
         const occurrences = Number(draft.occurrences);
-        if (!Number.isInteger(occurrences) || occurrences < 2 || occurrences > 52) {
+        if (
+          !Number.isInteger(occurrences) ||
+          occurrences < 2 ||
+          occurrences > 52
+        ) {
           toast.error("Occurrence count must be between 2 and 52.");
           return null;
         }
@@ -583,9 +598,12 @@ export function AdminBookingFlow({
         }
         const start = new Date(`${draft.bookingDate}T12:00:00`);
         const end = new Date(`${draft.endDate}T12:00:00`);
-        const count = Math.floor((end.getTime() - start.getTime()) / 604800000) + 1;
+        const count =
+          Math.floor((end.getTime() - start.getTime()) / 604800000) + 1;
         if (count < 2 || count > 52) {
-          toast.error("The end date must produce between 2 and 52 weekly occurrences.");
+          toast.error(
+            "The end date must produce between 2 and 52 weekly occurrences.",
+          );
           return null;
         }
         payload.recurring = { frequency: "WEEKLY", endDate: draft.endDate };
@@ -609,7 +627,9 @@ export function AdminBookingFlow({
       setPreview(result);
       setStep("REVIEW");
       if (result.conflicts.length > 0) {
-        toast.error("Some occurrences are unavailable. Nothing has been created.");
+        toast.error(
+          "Some occurrences are unavailable. Nothing has been created.",
+        );
       }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Could not preview this booking."));
@@ -627,7 +647,9 @@ export function AdminBookingFlow({
     try {
       setPreview(await previewAdminBooking(reviewPayload));
     } catch (error: unknown) {
-      setReviewError(getApiErrorMessage(error, "Could not refresh the preview."));
+      setReviewError(
+        getApiErrorMessage(error, "Could not refresh the preview."),
+      );
     } finally {
       inFlight.current = false;
       setIsPreviewing(false);
@@ -655,7 +677,10 @@ export function AdminBookingFlow({
       );
     } catch (error: unknown) {
       const status = getApiErrorStatus(error);
-      const message = getApiErrorMessage(error, "Could not create this booking.");
+      const message = getApiErrorMessage(
+        error,
+        "Could not create this booking.",
+      );
       if (status === 409) {
         setReviewError(
           "Availability changed after this preview. Refresh the review before trying again. No bookings were created.",
@@ -695,7 +720,8 @@ export function AdminBookingFlow({
             Booking-write permission required
           </h1>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--text-3)]">
-            Your account cannot create admin bookings. Ask an administrator to grant booking-write access.
+            Your account cannot create admin bookings. Ask an administrator to
+            grant booking-write access.
           </p>
         </div>
       </div>
@@ -720,7 +746,9 @@ export function AdminBookingFlow({
             Admin booking desk
           </div>
           <h1 className="text-[26px] font-semibold leading-tight tracking-[-0.02em] text-[var(--text-1)]">
-            {selectedCourt ? `Book ${selectedCourt.name}` : "Create a court booking"}
+            {selectedCourt
+              ? `Book ${selectedCourt.name}`
+              : "Create a court booking"}
           </h1>
           <p className="mt-1.5 max-w-2xl text-[13.5px] leading-5 text-[var(--text-3)]">
             {selectedVenue && selectedCourt
@@ -754,7 +782,12 @@ export function AdminBookingFlow({
                   {initialVenueId ? (
                     <ContextValue
                       label="Venue"
-                      value={selectedVenue?.name ?? (loadingVenues ? "Loading venue…" : `Venue ${initialVenueId}`)}
+                      value={
+                        selectedVenue?.name ??
+                        (loadingVenues
+                          ? "Loading venue…"
+                          : `Venue ${initialVenueId}`)
+                      }
                     />
                   ) : (
                     <SelectField
@@ -763,7 +796,9 @@ export function AdminBookingFlow({
                       value={draft.venueId}
                       onChange={chooseVenue}
                       disabled={loadingVenues}
-                      placeholder={loadingVenues ? "Loading venues…" : "Choose venue"}
+                      placeholder={
+                        loadingVenues ? "Loading venues…" : "Choose venue"
+                      }
                     >
                       {venues.map((venue) => (
                         <option
@@ -771,7 +806,8 @@ export function AdminBookingFlow({
                           value={venue.id}
                           disabled={venue.status !== "ACTIVE"}
                         >
-                          {venue.name}{venue.status !== "ACTIVE" ? " (inactive)" : ""}
+                          {venue.name}
+                          {venue.status !== "ACTIVE" ? " (inactive)" : ""}
                         </option>
                       ))}
                     </SelectField>
@@ -779,7 +815,12 @@ export function AdminBookingFlow({
                   {initialCourtId ? (
                     <ContextValue
                       label="Court"
-                      value={selectedCourt?.name ?? (loadingVenue ? "Loading court…" : `Court ${initialCourtId}`)}
+                      value={
+                        selectedCourt?.name ??
+                        (loadingVenue
+                          ? "Loading court…"
+                          : `Court ${initialCourtId}`)
+                      }
                     />
                   ) : (
                     <SelectField
@@ -787,8 +828,12 @@ export function AdminBookingFlow({
                       label="Court"
                       value={draft.courtId}
                       onChange={chooseCourt}
-                      disabled={!selectedVenue || loadingVenue || courts.length === 0}
-                      placeholder={loadingVenue ? "Loading courts…" : "Choose court"}
+                      disabled={
+                        !selectedVenue || loadingVenue || courts.length === 0
+                      }
+                      placeholder={
+                        loadingVenue ? "Loading courts…" : "Choose court"
+                      }
                     >
                       {courts.map((court) => (
                         <option key={court.id} value={court.id}>
@@ -822,13 +867,17 @@ export function AdminBookingFlow({
                   >
                     {options.map((option) => (
                       <option key={option.id} value={option.id}>
-                        {option.durationMinutes} minutes{option.isDefault ? " (default)" : ""}
+                        {option.durationMinutes} minutes
+                        {option.isDefault ? " (default)" : ""}
                       </option>
                     ))}
                   </SelectField>
                 </div>
                 {metadataError && (
-                  <div role="alert" className="mt-4 flex gap-2 rounded-lg border border-[rgba(244,63,94,0.18)] bg-[var(--semantic-red-subtle)] px-3 py-2.5 text-[12px] text-[var(--semantic-red)]">
+                  <div
+                    role="alert"
+                    className="mt-4 flex gap-2 rounded-lg border border-[rgb(var(--red-rgb)/0.18)] bg-[var(--semantic-red-subtle)] px-3 py-2.5 text-[12px] text-[var(--red-text)]"
+                  >
                     <AlertCircle className="mt-px h-4 w-4 shrink-0" />
                     {metadataError}
                   </div>
@@ -844,7 +893,8 @@ export function AdminBookingFlow({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="booking-date" className={LABEL_CLASS}>
-                      First booking date <span className="text-[var(--semantic-red)]">*</span>
+                      First booking date{" "}
+                      <span className="text-[var(--red-text)]">*</span>
                     </Label>
                     <Input
                       id="booking-date"
@@ -852,7 +902,9 @@ export function AdminBookingFlow({
                       min={today}
                       max={latestBookingDate}
                       value={draft.bookingDate}
-                      onChange={(event) => setField("bookingDate", event.target.value)}
+                      onChange={(event) =>
+                        setField("bookingDate", event.target.value)
+                      }
                       className={INPUT_CLASS}
                     />
                     {bookableVenue && (
@@ -863,14 +915,17 @@ export function AdminBookingFlow({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="booking-time" className={LABEL_CLASS}>
-                      Start time <span className="text-[var(--semantic-red)]">*</span>
+                      Start time{" "}
+                      <span className="text-[var(--red-text)]">*</span>
                     </Label>
                     <Input
                       id="booking-time"
                       type="time"
                       step={(selectedSport?.startIntervalMinutes ?? 15) * 60}
                       value={draft.startTime}
-                      onChange={(event) => setField("startTime", event.target.value)}
+                      onChange={(event) =>
+                        setField("startTime", event.target.value)
+                      }
                       className={INPUT_CLASS}
                     />
                   </div>
@@ -889,7 +944,9 @@ export function AdminBookingFlow({
                       checked={draft.recurrenceMode !== "NONE"}
                       label="Weekly"
                       description="Create a linked series"
-                      disabled={!bookableVenue?.allowRecurringBookings || !cashSupported}
+                      disabled={
+                        !bookableVenue?.allowRecurringBookings || !cashSupported
+                      }
                       onClick={() => {
                         setDraft((current) => ({
                           ...current,
@@ -900,22 +957,29 @@ export function AdminBookingFlow({
                     />
                   </div>
                   {bookableVenue && !bookableVenue.allowRecurringBookings && (
-                    <p className="mt-2 text-[11.5px] text-[var(--semantic-amber)]">
-                      Weekly recurrence is disabled in this venue&apos;s settings.
+                    <p className="mt-2 text-[11.5px] text-[var(--amber-text)]">
+                      Weekly recurrence is disabled in this venue&apos;s
+                      settings.
                     </p>
                   )}
-                  {bookableVenue?.allowRecurringBookings && selectedSport && !cashSupported && (
-                    <p className="mt-2 text-[11.5px] text-[var(--semantic-amber)]">
-                      Weekly recurrence is unavailable because this court option does not accept cash.
-                    </p>
-                  )}
+                  {bookableVenue?.allowRecurringBookings &&
+                    selectedSport &&
+                    !cashSupported && (
+                      <p className="mt-2 text-[11.5px] text-[var(--amber-text)]">
+                        Weekly recurrence is unavailable because this court
+                        option does not accept cash.
+                      </p>
+                    )}
                 </fieldset>
 
                 {draft.recurrenceMode !== "NONE" && (
                   <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--bg-0)] p-4">
                     <div className="mb-3 flex items-center gap-2 text-[12px] text-[var(--text-3)]">
                       <Clock3 className="h-3.5 w-3.5 text-[var(--teal-text)]" />
-                      Every week at {draft.startTime ? formatTime(draft.startTime) : "the selected time"}
+                      Every week at{" "}
+                      {draft.startTime
+                        ? formatTime(draft.startTime)
+                        : "the selected time"}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <label className="flex cursor-pointer gap-2.5 rounded-lg border border-[var(--border)] px-3 py-3">
@@ -927,14 +991,18 @@ export function AdminBookingFlow({
                           className="mt-0.5 accent-[var(--teal)]"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[12.5px] font-medium text-[var(--text-2)]">Occurrence count</span>
+                          <span className="block text-[12.5px] font-medium text-[var(--text-2)]">
+                            Occurrence count
+                          </span>
                           <Input
                             aria-label="Number of occurrences"
                             type="number"
                             min={2}
                             max={52}
                             value={draft.occurrences}
-                            onChange={(event) => setField("occurrences", event.target.value)}
+                            onChange={(event) =>
+                              setField("occurrences", event.target.value)
+                            }
                             disabled={draft.recurrenceMode !== "COUNT"}
                             className={cn(INPUT_CLASS, "mt-2")}
                           />
@@ -945,18 +1013,24 @@ export function AdminBookingFlow({
                           type="radio"
                           name="ending-method"
                           checked={draft.recurrenceMode === "END_DATE"}
-                          onChange={() => setField("recurrenceMode", "END_DATE")}
+                          onChange={() =>
+                            setField("recurrenceMode", "END_DATE")
+                          }
                           className="mt-0.5 accent-[var(--teal)]"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-[12.5px] font-medium text-[var(--text-2)]">End date</span>
+                          <span className="block text-[12.5px] font-medium text-[var(--text-2)]">
+                            End date
+                          </span>
                           <Input
                             aria-label="Recurrence end date"
                             type="date"
                             min={draft.bookingDate || today}
                             max={latestBookingDate}
                             value={draft.endDate}
-                            onChange={(event) => setField("endDate", event.target.value)}
+                            onChange={(event) =>
+                              setField("endDate", event.target.value)
+                            }
                             disabled={draft.recurrenceMode !== "END_DATE"}
                             className={cn(INPUT_CLASS, "mt-2")}
                           />
@@ -964,7 +1038,8 @@ export function AdminBookingFlow({
                       </label>
                     </div>
                     <p className="mt-3 text-[11.5px] text-[var(--text-4)]">
-                      Exactly one ending method is sent. Weekly series support 2 to 52 occurrences and cash payment only.
+                      Exactly one ending method is sent. Weekly series support 2
+                      to 52 occurrences and cash payment only.
                     </p>
                   </div>
                 )}
@@ -978,24 +1053,32 @@ export function AdminBookingFlow({
               >
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="player-name" className={LABEL_CLASS}>Player name</Label>
+                    <Label htmlFor="player-name" className={LABEL_CLASS}>
+                      Player name
+                    </Label>
                     <Input
                       id="player-name"
                       value={draft.playerName}
                       maxLength={120}
-                      onChange={(event) => setField("playerName", event.target.value)}
+                      onChange={(event) =>
+                        setField("playerName", event.target.value)
+                      }
                       placeholder="Sara Khalil"
                       className={INPUT_CLASS}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="player-phone" className={LABEL_CLASS}>Phone, international format</Label>
+                    <Label htmlFor="player-phone" className={LABEL_CLASS}>
+                      Phone, international format
+                    </Label>
                     <Input
                       id="player-phone"
                       type="tel"
                       value={draft.playerPhoneE164}
                       maxLength={40}
-                      onChange={(event) => setField("playerPhoneE164", event.target.value)}
+                      onChange={(event) =>
+                        setField("playerPhoneE164", event.target.value)
+                      }
                       placeholder="+96170123456"
                       className={INPUT_CLASS}
                     />
@@ -1014,23 +1097,31 @@ export function AdminBookingFlow({
                     id="payment-method"
                     label="Payment method"
                     value={draft.paymentMethod}
-                    onChange={(value) => setField("paymentMethod", value as BookingPaymentMethod)}
+                    onChange={(value) =>
+                      setField("paymentMethod", value as BookingPaymentMethod)
+                    }
                     disabled={!selectedSport || draft.recurrenceMode !== "NONE"}
                     placeholder="Choose payment method"
                   >
-                    {(selectedSport?.supportedPaymentMethods ?? []).map((method) => (
-                      <option key={method} value={method}>
-                        {method === "CASH" ? "Cash" : "Online"}
-                      </option>
-                    ))}
+                    {(selectedSport?.supportedPaymentMethods ?? []).map(
+                      (method) => (
+                        <option key={method} value={method}>
+                          {method === "CASH" ? "Cash" : "Online"}
+                        </option>
+                      ),
+                    )}
                   </SelectField>
                   <div className="space-y-2 sm:row-span-2">
-                    <Label htmlFor="booking-notes" className={LABEL_CLASS}>Internal notes</Label>
+                    <Label htmlFor="booking-notes" className={LABEL_CLASS}>
+                      Internal notes
+                    </Label>
                     <Textarea
                       id="booking-notes"
                       value={draft.notes}
                       maxLength={500}
-                      onChange={(event) => setField("notes", event.target.value)}
+                      onChange={(event) =>
+                        setField("notes", event.target.value)
+                      }
                       placeholder="Optional context for the booking and audit trail"
                       className="min-h-[96px] resize-y border-[var(--border)] bg-[var(--bg-0)] text-[13px] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
                     />
@@ -1045,9 +1136,13 @@ export function AdminBookingFlow({
                 <Button
                   type="submit"
                   disabled={isPreviewing || loadingVenues || loadingVenue}
-                  className="h-10 gap-2 bg-[var(--teal)] px-5 font-semibold text-[var(--bg-0)] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[var(--teal-text)]"
+                  className="h-10 gap-2 bg-[var(--teal)] px-5 font-semibold text-[var(--bg-0)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)] hover:bg-[var(--teal-text)]"
                 >
-                  {isPreviewing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarCheck2 className="h-4 w-4" />}
+                  {isPreviewing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <CalendarCheck2 className="h-4 w-4" />
+                  )}
                   Preview booking
                 </Button>
               </div>
@@ -1068,9 +1163,15 @@ export function AdminBookingFlow({
         <ReviewPanel
           preview={preview}
           payload={reviewPayload}
-          venueName={selectedVenue?.name ?? bookableVenue?.name ?? `Venue ${reviewPayload.venueId}`}
+          venueName={
+            selectedVenue?.name ??
+            bookableVenue?.name ??
+            `Venue ${reviewPayload.venueId}`
+          }
           courtName={selectedCourt?.name ?? `Court ${reviewPayload.courtId}`}
-          currency={preview.currencyCode ?? bookableVenue?.currencyCode ?? "USD"}
+          currency={
+            preview.currencyCode ?? bookableVenue?.currencyCode ?? "USD"
+          }
           isCreating={isCreating}
           isRefreshing={isPreviewing}
           error={reviewError}
@@ -1089,9 +1190,15 @@ export function AdminBookingFlow({
         <SuccessPanel
           created={created}
           payload={reviewPayload}
-          venueName={selectedVenue?.name ?? bookableVenue?.name ?? `Venue ${reviewPayload.venueId}`}
+          venueName={
+            selectedVenue?.name ??
+            bookableVenue?.name ??
+            `Venue ${reviewPayload.venueId}`
+          }
           courtName={selectedCourt?.name ?? `Court ${reviewPayload.courtId}`}
-          currency={created.currencyCode ?? bookableVenue?.currencyCode ?? "USD"}
+          currency={
+            created.currencyCode ?? bookableVenue?.currencyCode ?? "USD"
+          }
           onReset={resetFlow}
         />
       )}
@@ -1122,17 +1229,26 @@ function RecurrenceChoice({
       className={cn(
         "rounded-lg border px-3 py-3 text-left outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)] disabled:cursor-not-allowed disabled:opacity-40",
         checked
-          ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)]"
+          ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[var(--teal-subtle)]"
           : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
       )}
     >
       <span className="flex items-center gap-2 text-[12.5px] font-medium text-[var(--text-1)]">
-        <span className={cn("grid h-4 w-4 place-items-center rounded-full border", checked ? "border-[var(--teal)]" : "border-[var(--border-strong)]")}>
-          {checked && <span className="h-2 w-2 rounded-full bg-[var(--teal)]" />}
+        <span
+          className={cn(
+            "grid h-4 w-4 place-items-center rounded-full border",
+            checked ? "border-[var(--teal)]" : "border-[var(--border-strong)]",
+          )}
+        >
+          {checked && (
+            <span className="h-2 w-2 rounded-full bg-[var(--teal)]" />
+          )}
         </span>
         {label}
       </span>
-      <span className="mt-1 block pl-6 text-[11px] text-[var(--text-4)]">{description}</span>
+      <span className="mt-1 block pl-6 text-[11px] text-[var(--text-4)]">
+        {description}
+      </span>
     </button>
   );
 }
@@ -1164,8 +1280,15 @@ function DraftSummary({
       <dl className="divide-y divide-[var(--border)] px-4">
         <SummaryRow label="Venue" value={venue?.name ?? "Not selected"} />
         <SummaryRow label="Court" value={court?.name ?? "Not selected"} />
-        <SummaryRow label="Sport" value={sport ? sportLabel(sport.sportType) : "Not selected"} />
-        <SummaryRow label="Session" value={option ? `${option.durationMinutes} minutes` : "Not selected"} mono />
+        <SummaryRow
+          label="Sport"
+          value={sport ? sportLabel(sport.sportType) : "Not selected"}
+        />
+        <SummaryRow
+          label="Session"
+          value={option ? `${option.durationMinutes} minutes` : "Not selected"}
+          mono
+        />
         <SummaryRow label="First date" value={formatDate(draft.bookingDate)} />
         <SummaryRow label="Start" value={formatTime(draft.startTime)} mono />
         <SummaryRow
@@ -1178,20 +1301,37 @@ function DraftSummary({
                 : `Weekly until ${draft.endDate ? formatDate(draft.endDate) : "—"}`
           }
         />
-        <SummaryRow label="Payment" value={draft.paymentMethod === "CASH" ? "Cash" : "Online"} />
+        <SummaryRow
+          label="Payment"
+          value={draft.paymentMethod === "CASH" ? "Cash" : "Online"}
+        />
       </dl>
-      <div className="m-4 rounded-lg border border-[rgba(99,102,241,0.16)] bg-[var(--semantic-blue-subtle)] px-3 py-2.5 text-[11.5px] leading-5 text-[var(--text-3)]">
-        The backend checks schedule, conflicts, venue settings, advance limits, and current pricing for every occurrence.
+      <div className="m-4 rounded-lg border border-[rgb(var(--indigo-rgb)/0.16)] bg-[var(--semantic-blue-subtle)] px-3 py-2.5 text-[11.5px] leading-5 text-[var(--text-3)]">
+        The backend checks schedule, conflicts, venue settings, advance limits,
+        and current pricing for every occurrence.
       </div>
     </aside>
   );
 }
 
-function SummaryRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="flex items-start justify-between gap-4 py-3">
       <dt className="text-[11.5px] text-[var(--text-4)]">{label}</dt>
-      <dd className={cn("max-w-[180px] text-right text-[12px] text-[var(--text-2)]", mono && "font-mono tabular-nums")}>
+      <dd
+        className={cn(
+          "max-w-[180px] text-right text-[12px] text-[var(--text-2)]",
+          mono && "font-mono tabular-nums",
+        )}
+      >
         {value}
       </dd>
     </div>
@@ -1223,7 +1363,9 @@ function ReviewPanel({
   onRefresh: () => void;
   onCreate: () => void;
 }) {
-  const rowConflicts = preview.occurrences.filter((item) => item.conflict != null).length;
+  const rowConflicts = preview.occurrences.filter(
+    (item) => item.conflict != null,
+  ).length;
   const hasConflicts = preview.conflicts.length > 0 || rowConflicts > 0;
   const conflictCount = Math.max(preview.conflicts.length, rowConflicts);
 
@@ -1231,34 +1373,48 @@ function ReviewPanel({
     <div className="bcv2-panel overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--bg-1)]">
       <div className="flex flex-col gap-4 border-b border-[var(--border)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div>
-          <button type="button" onClick={onEdit} className="mb-2 inline-flex items-center gap-1.5 text-[11.5px] text-[var(--text-4)] hover:text-[var(--text-2)]">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="mb-2 inline-flex items-center gap-1.5 text-[11.5px] text-[var(--text-4)] hover:text-[var(--text-2)]"
+          >
             <ArrowLeft className="h-3.5 w-3.5" /> Edit details
           </button>
-          <h2 className="text-lg font-semibold text-[var(--text-1)]">Review before creating</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-1)]">
+            Review before creating
+          </h2>
           <p className="mt-1 text-[12.5px] text-[var(--text-3)]">
-            {venueName} · {courtName} · {payload.recurring ? "Weekly series" : "One-time booking"}
+            {venueName} · {courtName} ·{" "}
+            {payload.recurring ? "Weekly series" : "One-time booking"}
           </p>
         </div>
         <div className="text-left sm:text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">Total</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+            Total
+          </p>
           <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-[var(--text-1)]">
             {formatMoney(previewTotal(preview), currency)}
           </p>
           <p className="mt-0.5 text-[11px] text-[var(--text-4)]">
-            {preview.occurrences.length} occurrence{preview.occurrences.length === 1 ? "" : "s"}
+            {preview.occurrences.length} occurrence
+            {preview.occurrences.length === 1 ? "" : "s"}
           </p>
         </div>
       </div>
 
       {hasConflicts && (
-        <div role="alert" className="mx-5 mt-5 flex gap-3 rounded-lg border border-[rgba(244,63,94,0.2)] bg-[var(--semantic-red-subtle)] px-4 py-3 sm:mx-6">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
+        <div
+          role="alert"
+          className="mx-5 mt-5 flex gap-3 rounded-lg border border-[rgb(var(--red-rgb)/0.2)] bg-[var(--semantic-red-subtle)] px-4 py-3 sm:mx-6"
+        >
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
           <div>
-            <p className="text-[12.5px] font-semibold text-[var(--semantic-red)]">
+            <p className="text-[12.5px] font-semibold text-[var(--red-text)]">
               {conflictCount} conflict{conflictCount === 1 ? "" : "s"} found
             </p>
             <p className="mt-0.5 text-[11.5px] leading-5 text-[var(--text-3)]">
-              Creation is disabled. Edit the booking or refresh after the schedule changes. No partial series will be created.
+              Creation is disabled. Edit the booking or refresh after the
+              schedule changes. No partial series will be created.
             </p>
             {preview.conflicts.length > 0 && (
               <ul className="mt-2 space-y-1 text-[11.5px] leading-5 text-[var(--text-3)]">
@@ -1272,27 +1428,52 @@ function ReviewPanel({
       )}
 
       {error && (
-        <div role="alert" className="mx-5 mt-5 flex items-start justify-between gap-3 rounded-lg border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3 text-[12px] text-[var(--semantic-amber)] sm:mx-6">
+        <div
+          role="alert"
+          className="mx-5 mt-5 flex items-start justify-between gap-3 rounded-lg border border-[rgb(var(--amber-rgb)/0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3 text-[12px] text-[var(--amber-text)] sm:mx-6"
+        >
           <span>{error}</span>
-          <button type="button" onClick={onRefresh} disabled={isRefreshing} className="shrink-0 font-semibold underline underline-offset-4 disabled:opacity-50">Refresh review</button>
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            className="shrink-0 font-semibold underline underline-offset-4 disabled:opacity-50"
+          >
+            Refresh review
+          </button>
         </div>
       )}
 
       <OccurrenceTable occurrences={preview.occurrences} currency={currency} />
 
       <div className="flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--bg-0)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <button type="button" onClick={onRefresh} disabled={isRefreshing || isCreating} className="inline-flex items-center gap-2 text-[12px] font-medium text-[var(--text-3)] hover:text-[var(--text-1)] disabled:opacity-50">
-          <RefreshCw className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")} />
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={isRefreshing || isCreating}
+          className="inline-flex items-center gap-2 text-[12px] font-medium text-[var(--text-3)] hover:text-[var(--text-1)] disabled:opacity-50"
+        >
+          <RefreshCw
+            className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+          />
           Refresh availability and prices
         </button>
         <Button
           type="button"
           onClick={onCreate}
           disabled={hasConflicts || isCreating || isRefreshing}
-          className="h-10 gap-2 bg-[var(--teal)] px-5 font-semibold text-[var(--bg-0)] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[var(--teal-text)]"
+          className="h-10 gap-2 bg-[var(--teal)] px-5 font-semibold text-[var(--bg-0)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)] hover:bg-[var(--teal-text)]"
         >
-          {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
-          {isCreating ? "Creating safely…" : preview.occurrences.length === 1 ? "Create booking" : `Create all ${preview.occurrences.length}`}
+          {isCreating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ShieldCheck className="h-4 w-4" />
+          )}
+          {isCreating
+            ? "Creating safely…"
+            : preview.occurrences.length === 1
+              ? "Create booking"
+              : `Create all ${preview.occurrences.length}`}
         </Button>
       </div>
     </div>
@@ -1303,7 +1484,9 @@ function OccurrenceTable({
   occurrences,
   currency,
 }: {
-  occurrences: Array<AdminBookingOccurrencePreview | AdminCreatedBookingOccurrence>;
+  occurrences: Array<
+    AdminBookingOccurrencePreview | AdminCreatedBookingOccurrence
+  >;
   currency: string;
 }) {
   return (
@@ -1312,32 +1495,71 @@ function OccurrenceTable({
         <thead>
           <tr className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
             <th className="border-b border-[var(--border)] px-3 py-2.5">#</th>
-            <th className="border-b border-[var(--border)] px-3 py-2.5">Date</th>
-            <th className="border-b border-[var(--border)] px-3 py-2.5">Time</th>
-            <th className="border-b border-[var(--border)] px-3 py-2.5">Price</th>
-            <th className="border-b border-[var(--border)] px-3 py-2.5">Status</th>
+            <th className="border-b border-[var(--border)] px-3 py-2.5">
+              Date
+            </th>
+            <th className="border-b border-[var(--border)] px-3 py-2.5">
+              Time
+            </th>
+            <th className="border-b border-[var(--border)] px-3 py-2.5">
+              Price
+            </th>
+            <th className="border-b border-[var(--border)] px-3 py-2.5">
+              Status
+            </th>
           </tr>
         </thead>
         <tbody>
           {occurrences.map((occurrence, index) => {
-            const conflict = "conflict" in occurrence ? conflictMessage(occurrence.conflict) : null;
-            const amount = occurrence.priceAmount ?? ("totalAmount" in occurrence ? occurrence.totalAmount : undefined);
-            const status = "status" in occurrence ? occurrence.status : undefined;
+            const conflict =
+              "conflict" in occurrence
+                ? conflictMessage(occurrence.conflict)
+                : null;
+            const amount =
+              occurrence.priceAmount ??
+              ("totalAmount" in occurrence
+                ? occurrence.totalAmount
+                : undefined);
+            const status =
+              "status" in occurrence ? occurrence.status : undefined;
             return (
-              <tr key={`${occurrence.bookingDate}-${occurrence.startTime}-${index}`}>
-                <td className="border-b border-[var(--border)] px-3 py-3 font-mono text-[11px] tabular-nums text-[var(--text-4)]">{String(index + 1).padStart(2, "0")}</td>
-                <td className="border-b border-[var(--border)] px-3 py-3 text-[12.5px] font-medium text-[var(--text-2)]">{formatDate(occurrence.bookingDate)}</td>
-                <td className="border-b border-[var(--border)] px-3 py-3 font-mono text-[12px] tabular-nums text-[var(--text-3)]">
-                  {formatTime(occurrence.startTime)}{occurrence.endTime ? ` – ${formatTime(occurrence.endTime)}` : ""}{occurrence.endsNextDay ? " +1d" : ""}
+              <tr
+                key={`${occurrence.bookingDate}-${occurrence.startTime}-${index}`}
+              >
+                <td className="border-b border-[var(--border)] px-3 py-3 font-mono text-[11px] tabular-nums text-[var(--text-4)]">
+                  {String(index + 1).padStart(2, "0")}
                 </td>
-                <td className={cn("border-b border-[var(--border)] px-3 py-3 font-mono text-[12px] font-medium tabular-nums", amount == null ? "text-[var(--semantic-red)]" : "text-[var(--text-1)]")}>
+                <td className="border-b border-[var(--border)] px-3 py-3 text-[12.5px] font-medium text-[var(--text-2)]">
+                  {formatDate(occurrence.bookingDate)}
+                </td>
+                <td className="border-b border-[var(--border)] px-3 py-3 font-mono text-[12px] tabular-nums text-[var(--text-3)]">
+                  {formatTime(occurrence.startTime)}
+                  {occurrence.endTime
+                    ? ` – ${formatTime(occurrence.endTime)}`
+                    : ""}
+                  {occurrence.endsNextDay ? " +1d" : ""}
+                </td>
+                <td
+                  className={cn(
+                    "border-b border-[var(--border)] px-3 py-3 font-mono text-[12px] font-medium tabular-nums",
+                    amount == null
+                      ? "text-[var(--red-text)]"
+                      : "text-[var(--text-1)]",
+                  )}
+                >
                   {formatMoney(amount, occurrence.currencyCode ?? currency)}
                 </td>
                 <td className="border-b border-[var(--border)] px-3 py-3">
                   {conflict ? (
-                    <span className="inline-flex max-w-[260px] items-start gap-1.5 text-[11.5px] leading-4 text-[var(--semantic-red)]"><AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" />{conflict}</span>
+                    <span className="inline-flex max-w-[260px] items-start gap-1.5 text-[11.5px] leading-4 text-[var(--red-text)]">
+                      <AlertCircle className="mt-px h-3.5 w-3.5 shrink-0" />
+                      {conflict}
+                    </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--semantic-green-subtle)] px-2 py-1 text-[10.5px] font-medium text-[var(--semantic-green)]"><CheckCircle2 className="h-3 w-3" />{status ? sportLabel(status) : "Available"}</span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--semantic-green-subtle)] px-2 py-1 text-[10.5px] font-medium text-[var(--green-text)]">
+                      <CheckCircle2 className="h-3 w-3" />
+                      {status ? sportLabel(status) : "Available"}
+                    </span>
                   )}
                 </td>
               </tr>
@@ -1366,39 +1588,55 @@ function SuccessPanel({
 }) {
   const seriesId = created.seriesId ?? created.recurringSeriesId;
   return (
-    <div className="bcv2-panel overflow-hidden rounded-xl border border-[rgba(16,185,129,0.2)] bg-[var(--bg-1)]">
+    <div className="bcv2-panel overflow-hidden rounded-xl border border-[rgb(var(--green-rgb)/0.2)] bg-[var(--bg-1)]">
       <div className="flex flex-col gap-5 border-b border-[var(--border)] px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[rgba(16,185,129,0.22)] bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[rgb(var(--green-rgb)/0.22)] bg-[var(--semantic-green-subtle)] text-[var(--green-text)]">
             <CheckCircle2 className="h-5 w-5" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-[var(--text-1)]">
-              {created.occurrences.length === 1 ? "Booking created" : "Booking series created"}
+              {created.occurrences.length === 1
+                ? "Booking created"
+                : "Booking series created"}
             </h2>
             <p className="mt-1 text-[12.5px] text-[var(--text-3)]">
-              {venueName} · {courtName} · {created.occurrences.length} occurrence{created.occurrences.length === 1 ? "" : "s"}
+              {venueName} · {courtName} · {created.occurrences.length}{" "}
+              occurrence{created.occurrences.length === 1 ? "" : "s"}
             </p>
             {seriesId && (
-              <p className="mt-2 font-mono text-[11px] tabular-nums text-[var(--text-4)]">Series ID {seriesId}</p>
+              <p className="mt-2 font-mono text-[11px] tabular-nums text-[var(--text-4)]">
+                Series ID {seriesId}
+              </p>
             )}
           </div>
         </div>
         <div className="sm:text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">Created total</p>
-          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-[var(--semantic-green)]">{formatMoney(createdTotal(created), currency)}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
+            Created total
+          </p>
+          <p className="mt-1 font-mono text-2xl font-semibold tabular-nums text-[var(--green-text)]">
+            {formatMoney(createdTotal(created), currency)}
+          </p>
         </div>
       </div>
-      <div className="mx-5 mt-5 flex gap-2.5 rounded-lg border border-[rgba(99,102,241,0.16)] bg-[var(--semantic-blue-subtle)] px-4 py-3 text-[11.5px] leading-5 text-[var(--text-3)] sm:mx-6">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-blue)]" />
-        Created by an admin as one atomic operation. The action and series association are available in audit history.
+      <div className="mx-5 mt-5 flex gap-2.5 rounded-lg border border-[rgb(var(--indigo-rgb)/0.16)] bg-[var(--semantic-blue-subtle)] px-4 py-3 text-[11.5px] leading-5 text-[var(--text-3)] sm:mx-6">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--blue-text)]" />
+        Created by an admin as one atomic operation. The action and series
+        association are available in audit history.
       </div>
       <OccurrenceTable occurrences={created.occurrences} currency={currency} />
       <div className="flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--bg-0)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <p className="text-[11.5px] text-[var(--text-4)]">
-          {payload.playerName || payload.playerPhoneE164 || "Walk-in player"} · {payload.paymentMethod === "CASH" ? "Cash" : "Online"}
+          {payload.playerName || payload.playerPhoneE164 || "Walk-in player"} ·{" "}
+          {payload.paymentMethod === "CASH" ? "Cash" : "Online"}
         </p>
-        <Button type="button" onClick={onReset} variant="outline" className="h-9 border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-2)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]">
+        <Button
+          type="button"
+          onClick={onReset}
+          variant="outline"
+          className="h-9 border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-2)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
+        >
           Create another booking
         </Button>
       </div>

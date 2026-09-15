@@ -49,7 +49,10 @@ export function auditTargetLabel(event: AuditEvent): string {
 }
 
 export function auditEventSummary(event: AuditEvent): string {
-  return event.summary?.trim() || `${auditActorLabel(event)} performed ${humanizeAuditValue(event.action).toLowerCase()}`;
+  return (
+    event.summary?.trim() ||
+    `${auditActorLabel(event)} performed ${humanizeAuditValue(event.action).toLowerCase()}`
+  );
 }
 
 export function auditContextLabel(event: AuditEvent): {
@@ -99,8 +102,7 @@ export function auditOutcomeTone(outcome: AuditEventOutcome): {
     case "SUCCESS":
       return {
         dot: "bg-[var(--semantic-green)]",
-        pill:
-          "bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]",
+        pill: "bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]",
         label: "Success",
       };
     case "FAILURE":
@@ -112,8 +114,7 @@ export function auditOutcomeTone(outcome: AuditEventOutcome): {
     case "DENIED":
       return {
         dot: "bg-[var(--semantic-amber)]",
-        pill:
-          "bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]",
+        pill: "bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]",
         label: "Denied",
       };
     default:

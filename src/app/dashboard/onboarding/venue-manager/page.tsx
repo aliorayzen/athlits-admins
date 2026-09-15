@@ -53,7 +53,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PhoneNumberField } from "@/components/phone-number-field";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import {
   availabilityDaysWithErrors,
   defaultAvailabilityDays,
@@ -64,12 +63,7 @@ import { GoogleMapsLocationField } from "@/components/google-maps-location-field
 import { VenueBookingPreferencesField } from "@/components/venue-booking-preferences-field";
 import { browserTimeZone, TimezoneSelect } from "@/components/timezone-select";
 import { CURRENCY_OPTIONS, DEFAULT_CURRENCY } from "@/lib/currencies";
-import {
-  DEFAULT_COUNTRY_CODE,
-  isValidPhoneForCountry,
-  normalizePhoneForSubmit,
-  phoneValueForCountry,
-} from "@/lib/phone";
+import { DEFAULT_COUNTRY_CODE, normalizePhoneForSubmit } from "@/lib/phone";
 import {
   generatePassword,
   passwordStrength,
@@ -81,22 +75,21 @@ import {
   contractDraftToPayload,
   defaultContractDraft,
   formatContractFee,
-  isContractDraftValid,
   type ContractDraft,
 } from "@/lib/contracts";
 import { findNearestLebanonLocation } from "@/lib/lebanon-locations";
+import {
+  availablePaymentModes,
+  validateManagerDraft,
+  validateVenue,
+  type ManagerFieldErrors,
+  type VenueFieldErrors,
+} from "@/lib/venue-onboarding-validation";
 import { CredentialsMessage } from "../../users/create/_components/credentials-message";
 
 type StepKey = "manager" | "venue" | "contract" | "review";
 type ManagerMode = "existing" | "new";
 type ManagersState = "loading" | "ready" | "error";
-type ManagerFieldErrors = Partial<
-  Record<
-    "firstName" | "lastName" | "email" | "phoneNumber" | "tempPassword",
-    string
-  >
->;
-
 const STEPS: Array<{
   key: StepKey;
   label: string;
@@ -155,17 +148,18 @@ const emptyVenue = (): CreateVenueRequest => ({
   managerId: "",
   nameEn: "",
   nameAr: "",
-  description: "",
   addressLine: "",
   city: "",
+  // Not user-editable in this flow: every venue is Lebanese, and the field's
+  // only former UI was the contact-phone country picker, which is gone.
   countryCode: DEFAULT_COUNTRY_CODE,
   latitude: 0,
   longitude: 0,
-  contactPhone: "",
-  contactEmail: "",
   timeZoneId: browserTimeZone(),
   currencyCode: DEFAULT_CURRENCY,
-  paymentMode: "BOTH",
+  // Cash is the only mode available without a payment link; see
+  // availablePaymentModes() for why the other two are withheld here.
+  paymentMode: "CASH",
   autoConfirmation: false,
   allowRecurringBookings: false,
   courtLimit: undefined,
@@ -206,12 +200,6 @@ function venueManagerFieldErrors(err: unknown): ManagerFieldErrors {
   return fieldErrors;
 }
 
-// The backend requires a non-blank, well-formed contact email on create.
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-function isValidEmail(value: string | undefined): boolean {
-  return Boolean(value && EMAIL_PATTERN.test(value.trim()));
-}
-
 export default function OnboardingVenueManagerPage() {
   const router = useRouter();
   const inFlight = useRef(false);
@@ -228,6 +216,12 @@ export default function OnboardingVenueManagerPage() {
   >({});
   const [managerFieldErrors, setManagerFieldErrors] =
     useState<ManagerFieldErrors>({});
+  // Inline validation stays quiet until the operator actually tries to advance.
+  // Flagging every empty required field on first paint reads as failure before
+  // they have typed anything.
+  const [attemptedSteps, setAttemptedSteps] = useState<
+    Partial<Record<StepKey, boolean>>
+  >({});
   const [createdManager, setCreatedManager] = useState<UserDto | null>(null);
   const [createdVenue, setCreatedVenue] = useState<VenueDetailResponse | null>(
     null,
@@ -301,42 +295,40 @@ export default function OnboardingVenueManagerPage() {
     managerMode === "new" ? (createdManager ?? undefined) : selectedManager;
   const activeManagerId = activeManager?.id ?? "";
 
+  // Same shape as the venue step: one validator drives both the valid flag and
+  // the inline messages, so the two can never disagree.
+  const liveManagerErrors = useMemo(
+    () =>
+      managerMode === "new"
+        ? validateManagerDraft(managerDraft, passwordScore)
+        : {},
+    [managerMode, managerDraft, passwordScore],
+  );
   const managerValid =
     managerMode === "existing"
       ? Boolean(selectedManagerId)
-      : Boolean(
-          managerDraft.firstName.trim() &&
-          managerDraft.lastName.trim() &&
-          managerDraft.email.trim() &&
-          isValidPhoneForCountry(
-            managerDraft.phoneNumber,
-            managerDraft.phoneCountryCode,
-          ) &&
-          managerDraft.tempPassword.length >= 10 &&
-          passwordScore >= 3,
-        );
+      : Object.keys(liveManagerErrors).length === 0;
+  // Server messages are more specific than anything computed here (for example
+  // "email already in use"), so they sit on top of the client's.
+  const shownManagerErrors: ManagerFieldErrors = attemptedSteps.manager
+    ? { ...liveManagerErrors, ...managerFieldErrors }
+    : managerFieldErrors;
 
-  const venueValid = Boolean(
-    activeManagerId &&
-    venue.nameEn.trim() &&
-    venue.nameAr.trim() &&
-    venue.addressLine.trim() &&
-    venue.city.trim() &&
-    isValidEmail(venue.contactEmail) &&
-    isValidPhoneForCountry(venue.contactPhone ?? "", venue.countryCode) &&
-    venue.countryCode.trim().length === 2 &&
-    venue.timeZoneId &&
-    venue.currencyCode.trim().length === 3 &&
-    venue.courtLimit !== undefined &&
-    Number.isFinite(venue.courtLimit) &&
-    venue.courtLimit >= 1 &&
-    venue.maxAdvanceBookingDays !== undefined &&
-    venue.maxAdvanceBookingDays >= 1 &&
-    venue.maxAdvanceBookingDays <= 365 &&
-    venue.paymentMode &&
-    availabilityDaysWithErrors(venue.availability?.days ?? []).length === 0,
+  // Recomputed every render so inline errors clear the moment a field is fixed,
+  // without a second source of truth to keep in sync.
+  // The availability check belongs to the editor component, so it is evaluated
+  // here and handed to the validator, which stays UI-free.
+  const liveVenueErrors = useMemo(
+    () =>
+      validateVenue(
+        venue,
+        availabilityDaysWithErrors(venue.availability?.days ?? []).length > 0,
+      ),
+    [venue],
   );
-  const contractValid = isContractDraftValid(contractDraft);
+  const venueValid =
+    Boolean(activeManagerId) && Object.keys(liveVenueErrors).length === 0;
+  const shownVenueErrors = attemptedSteps.venue ? liveVenueErrors : {};
 
   const stepIndex = STEPS.findIndex((s) => s.key === step);
   const progressPercent =
@@ -398,8 +390,44 @@ export default function OnboardingVenueManagerPage() {
     setStep(STEPS[Math.max(stepIndex - 1, 0)].key);
   }
 
+  /**
+   * Move focus to the first control the form has marked invalid. `Field` and
+   * the manager inputs already set `aria-invalid`, so the DOM is the accurate
+   * source here — no parallel ref registry to keep in sync as fields move.
+   * Deferred a frame so the freshly rendered error markup is in the document.
+   */
+  function focusFirstInvalidField() {
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(
+        '[aria-invalid="true"]:not([aria-hidden="true"])',
+      );
+      if (!target) return;
+      target.scrollIntoView({ block: "center", behavior: "smooth" });
+      target.focus({ preventScroll: true });
+    });
+  }
+
   async function continueFromManager() {
-    if (!managerValid || inFlight.current) return;
+    if (inFlight.current) return;
+
+    // Same contract as the venue step: the button is live, so an incomplete
+    // form answers with field errors rather than refusing the click.
+    if (!managerValid) {
+      setAttemptedSteps((prev) => ({ ...prev, manager: true }));
+      if (managerMode === "existing") {
+        setStepErrors((prev) => ({
+          ...prev,
+          manager: "Select a venue manager to continue.",
+        }));
+      } else {
+        setManagerFieldErrors(
+          validateManagerDraft(managerDraft, passwordScore),
+        );
+        focusFirstInvalidField();
+      }
+      return;
+    }
+
     setStepErrors((prev) => ({ ...prev, manager: undefined }));
 
     if (managerMode === "existing") {
@@ -446,7 +474,21 @@ export default function OnboardingVenueManagerPage() {
   }
 
   async function continueFromVenue() {
-    if (!venueValid || inFlight.current) return;
+    if (inFlight.current) return;
+
+    // The button is always live, so an invalid form surfaces its errors here
+    // instead of being silently unclickable.
+    if (!venueValid) {
+      setAttemptedSteps((prev) => ({ ...prev, venue: true }));
+      if (!activeManagerId) {
+        setStepErrors((prev) => ({
+          ...prev,
+          venue: "Pick or create the venue manager first.",
+        }));
+      }
+      focusFirstInvalidField();
+      return;
+    }
 
     if (createdVenue) {
       setStep("contract");
@@ -467,15 +509,19 @@ export default function OnboardingVenueManagerPage() {
           availabilityDays.length > 0 ? { days: availabilityDays } : undefined,
         nameEn: venue.nameEn.trim(),
         nameAr: venue.nameAr.trim(),
-        description: venue.description?.trim() || undefined,
         addressLine: venue.addressLine.trim(),
         city: venue.city.trim(),
         countryCode: venue.countryCode.trim().toUpperCase(),
-        contactEmail: venue.contactEmail?.trim() || undefined,
-        contactPhone: normalizePhoneForSubmit(
-          venue.contactPhone,
-          venue.countryCode,
-        ),
+        // The form no longer asks for venue contact details. The manager chosen
+        // in step 1 IS the venue's contact, so the record inherits their email
+        // and phone. This also keeps the payload populated for the backend,
+        // which was documented as rejecting a blank contact email on create.
+        contactEmail: activeManager?.email?.trim() || undefined,
+        contactPhone:
+          normalizePhoneForSubmit(
+            activeManager?.phoneNumber ?? "",
+            venue.countryCode,
+          ) ?? undefined,
         currencyCode: venue.currencyCode.trim().toUpperCase(),
       });
       setCreatedVenue(created);
@@ -550,11 +596,14 @@ export default function OnboardingVenueManagerPage() {
             : "Create contract"
           : "Open venue";
 
+  // The primary button stays clickable while a step is merely incomplete —
+  // clicking it is how the operator asks "what's missing?", and each handler
+  // answers with inline field errors. Only genuinely impossible actions are
+  // disabled: a request already in flight, or a step whose prerequisite record
+  // does not exist yet (no contract without a venue, no "open" without both).
   const primaryDisabled =
     isSubmitting ||
-    (step === "manager" && !managerValid) ||
-    (step === "venue" && !venueValid) ||
-    (step === "contract" && (!createdVenue || !contractValid)) ||
+    (step === "contract" && !createdVenue) ||
     (step === "review" && (!createdVenue || !createdContract));
 
   return (
@@ -569,7 +618,7 @@ export default function OnboardingVenueManagerPage() {
             Dashboard
           </Link>
           <div className="flex items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-lg border border-[rgba(245,158,11,0.22)] bg-[rgba(245,158,11,0.08)] text-[var(--semantic-amber)]">
+            <span className="grid h-9 w-9 place-items-center rounded-lg border border-[rgb(var(--amber-rgb)/0.22)] bg-[rgb(var(--amber-rgb)/0.08)] text-[var(--amber-text)]">
               <Sparkles className="h-4.5 w-4.5" />
             </span>
             <div>
@@ -618,7 +667,7 @@ export default function OnboardingVenueManagerPage() {
                 managerDraft={managerDraft}
                 passwordScore={passwordScore}
                 error={stepErrors.manager}
-                fieldErrors={managerFieldErrors}
+                fieldErrors={shownManagerErrors}
                 createdManager={createdManager}
                 onModeChange={(mode) => {
                   setManagerMode(mode);
@@ -648,6 +697,7 @@ export default function OnboardingVenueManagerPage() {
                 venue={venue}
                 manager={activeManager}
                 error={stepErrors.venue}
+                fieldErrors={shownVenueErrors}
                 createdVenue={createdVenue}
                 onUpdateVenue={updateVenue}
                 onToggleFacility={toggleFacility}
@@ -691,7 +741,7 @@ export default function OnboardingVenueManagerPage() {
                   (step === "venue" && !venueValid)) && (
                   <span className="hidden text-[12px] text-[var(--text-4)] sm:inline">
                     Complete required fields (
-                    <span className="text-[var(--semantic-red)]">*</span>) to
+                    <span className="text-[var(--red-text)]">*</span>) to
                     continue
                   </span>
                 )}
@@ -699,7 +749,7 @@ export default function OnboardingVenueManagerPage() {
                 type="button"
                 onClick={handlePrimaryAction}
                 disabled={primaryDisabled}
-                className="bg-[linear-gradient(135deg,var(--teal),#00b894)] px-5 font-semibold text-[#06100d] shadow-[0_0_20px_-8px_var(--teal-glow)] hover:brightness-110"
+                className="bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] px-5 font-semibold text-[var(--on-teal)] shadow-[0_0_20px_-8px_var(--teal-glow)] hover:brightness-110"
               >
                 {isSubmitting ? (
                   <>
@@ -769,6 +819,10 @@ function ManagerStep({
     value: (typeof managerDraft)[K],
   ) => void;
 }) {
+  // PhoneNumberField renders its own label but not its message, so the id is
+  // minted here and handed to both the input and the error paragraph.
+  const phoneErrorId = useId();
+
   return (
     <section className="space-y-5 p-5">
       <SectionIntro
@@ -778,8 +832,8 @@ function ManagerStep({
       />
       <StepError message={error} />
       {createdManager && (
-        <div className="flex items-center gap-3 rounded-lg border border-[rgba(16,185,129,0.24)] bg-[rgba(16,185,129,0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--semantic-green)]" />
+        <div className="flex items-center gap-3 rounded-lg border border-[rgb(var(--green-rgb)/0.24)] bg-[rgb(var(--green-rgb)/0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--green-text)]" />
           <span>
             Created account for{" "}
             <span className="font-medium text-[var(--text-1)]">
@@ -827,7 +881,7 @@ function ManagerStep({
               </div>
             )}
             {managersState === "error" && (
-              <div className="rounded-lg border border-[rgba(244,63,94,0.2)] bg-[rgba(244,63,94,0.08)] p-4 text-[13px] text-[var(--semantic-red)]">
+              <div className="rounded-lg border border-[rgb(var(--red-rgb)/0.2)] bg-[rgb(var(--red-rgb)/0.08)] p-4 text-[13px] text-[var(--red-text)]">
                 Could not load venue managers. You can still create a new
                 manager in this flow.
               </div>
@@ -841,7 +895,7 @@ function ManagerStep({
                   className={cn(
                     "flex items-center gap-3 rounded-lg border p-3 text-left transition-all",
                     selectedManagerId === manager.id
-                      ? "border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.08)]"
+                      ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[rgb(var(--teal-rgb)/0.08)]"
                       : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)]",
                   )}
                 >
@@ -908,11 +962,14 @@ function ManagerStep({
                 inputClassName={fieldClass}
                 labelClassName={labelClass}
                 required
+                invalid={Boolean(fieldErrors.phoneNumber)}
+                errorId={phoneErrorId}
               />
               {fieldErrors.phoneNumber && (
                 <p
+                  id={phoneErrorId}
                   role="alert"
-                  className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                  className="text-[11px] leading-[1.4] text-[var(--red-text)]"
                 >
                   {fieldErrors.phoneNumber}
                 </p>
@@ -927,7 +984,7 @@ function ManagerStep({
           {fieldErrors.tempPassword && (
             <p
               role="alert"
-              className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+              className="text-[11px] leading-[1.4] text-[var(--red-text)]"
             >
               {fieldErrors.tempPassword}
             </p>
@@ -942,6 +999,7 @@ function VenueStep({
   venue,
   manager,
   error,
+  fieldErrors,
   createdVenue,
   onUpdateVenue,
   onToggleFacility,
@@ -949,6 +1007,7 @@ function VenueStep({
   venue: CreateVenueRequest;
   manager?: UserDto;
   error?: string;
+  fieldErrors: VenueFieldErrors;
   createdVenue: VenueDetailResponse | null;
   onUpdateVenue: <K extends keyof CreateVenueRequest>(
     key: K,
@@ -956,6 +1015,7 @@ function VenueStep({
   ) => void;
   onToggleFacility: (facility: Facility) => void;
 }) {
+  const paymentModes = availablePaymentModes(PAYMENT_MODES, venue);
   const paymentModesLabelId = useId();
   const recurringBookingsId = useId();
   const recurringBookingsHelpId = useId();
@@ -985,8 +1045,8 @@ function VenueStep({
         </div>
       )}
       {createdVenue && (
-        <div className="flex items-center gap-3 rounded-lg border border-[rgba(16,185,129,0.24)] bg-[rgba(16,185,129,0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--semantic-green)]" />
+        <div className="flex items-center gap-3 rounded-lg border border-[rgb(var(--green-rgb)/0.24)] bg-[rgb(var(--green-rgb)/0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--green-text)]" />
           <span>
             Created venue{" "}
             <span className="font-medium text-[var(--text-1)]">
@@ -1021,7 +1081,7 @@ function VenueStep({
           inputClassName={fieldClass}
           labelClassName={labelClass}
         />
-        <Field label="Venue name (English)" required>
+        <Field label="Venue name (English)" required error={fieldErrors.nameEn}>
           <Input
             value={venue.nameEn}
             onChange={(e) => onUpdateVenue("nameEn", e.target.value)}
@@ -1029,7 +1089,7 @@ function VenueStep({
             className={fieldClass}
           />
         </Field>
-        <Field label="Venue name (Arabic)" required>
+        <Field label="Venue name (Arabic)" required error={fieldErrors.nameAr}>
           <Input
             dir="rtl"
             lang="ar"
@@ -1039,25 +1099,12 @@ function VenueStep({
             className={fieldClass}
           />
         </Field>
-        <Field label="Description" className="sm:col-span-2">
-          <Textarea
-            value={venue.description ?? ""}
-            onChange={(e) => onUpdateVenue("description", e.target.value)}
-            placeholder="Short operational description"
-            rows={3}
-            className={cn(fieldClass, "min-h-24")}
-          />
-        </Field>
-        <Field label="Contact email" required>
-          <Input
-            type="email"
-            value={venue.contactEmail ?? ""}
-            onChange={(e) => onUpdateVenue("contactEmail", e.target.value)}
-            placeholder="frontdesk@venue.com"
-            className={fieldClass}
-          />
-        </Field>
-        <Field label="Address" required className="sm:col-span-2">
+        <Field
+          label="Address"
+          required
+          className="sm:col-span-2"
+          error={fieldErrors.addressLine}
+        >
           <Input
             value={venue.addressLine}
             onChange={(e) => onUpdateVenue("addressLine", e.target.value)}
@@ -1079,64 +1126,69 @@ function VenueStep({
           inputClassName={fieldClass}
           labelClassName={labelClass}
         />
-        <PhoneNumberField
-          countryCode={venue.countryCode}
-          phoneNumber={venue.contactPhone ?? ""}
-          onCountryCodeChange={(countryCode) => {
-            onUpdateVenue("countryCode", countryCode);
-            onUpdateVenue(
-              "contactPhone",
-              phoneValueForCountry(venue.contactPhone, countryCode),
-            );
-          }}
-          onPhoneNumberChange={(value) => onUpdateVenue("contactPhone", value)}
-          phoneLabel="Contact phone"
-          required
-          inputClassName={fieldClass}
-          labelClassName={labelClass}
-        />
+        {fieldErrors.city && (
+          <p
+            role="alert"
+            className="sm:col-span-2 -mt-1 text-[11px] leading-[1.4] text-[var(--red-text)]"
+          >
+            {fieldErrors.city}
+          </p>
+        )}
       </div>
 
       <div className="space-y-4 border-t border-[var(--border)] pt-5">
         <div>
           <div id={paymentModesLabelId} className={labelClass}>
             Payment mode
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </div>
-          <div
-            role="radiogroup"
-            aria-labelledby={paymentModesLabelId}
-            className="mt-2 grid gap-3 md:grid-cols-3"
-          >
-            {PAYMENT_MODES.map((mode) => (
-              <button
-                key={mode.value}
-                type="button"
-                role="radio"
-                aria-checked={venue.paymentMode === mode.value}
-                onClick={() => onUpdateVenue("paymentMode", mode.value)}
-                className={cn(
-                  "rounded-lg border p-3 text-left transition-all",
-                  venue.paymentMode === mode.value
-                    ? "border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.08)]"
-                    : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
-                )}
-              >
-                <span className="block text-[13px] font-semibold text-[var(--text-1)]">
-                  {mode.label}
-                </span>
-                <span className="mt-1 block text-[12px] leading-5 text-[var(--text-3)]">
-                  {mode.note}
-                </span>
-              </button>
-            ))}
-          </div>
+          {paymentModes.length > 1 ? (
+            <div
+              role="radiogroup"
+              aria-labelledby={paymentModesLabelId}
+              className="mt-2 grid gap-3 md:grid-cols-3"
+            >
+              {paymentModes.map((mode) => (
+                <button
+                  key={mode.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={venue.paymentMode === mode.value}
+                  onClick={() => onUpdateVenue("paymentMode", mode.value)}
+                  className={cn(
+                    "rounded-lg border p-3 text-left transition-all",
+                    venue.paymentMode === mode.value
+                      ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[rgb(var(--teal-rgb)/0.08)]"
+                      : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
+                  )}
+                >
+                  <span className="block text-[13px] font-semibold text-[var(--text-1)]">
+                    {mode.label}
+                  </span>
+                  <span className="mt-1 block text-[12px] leading-5 text-[var(--text-3)]">
+                    {mode.note}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : (
+            // One available mode is a statement, not a choice. Rendering it as a
+            // single-option radiogroup would imply an alternative that is not
+            // there, so state the outcome and where the others come from.
+            <p className="mt-2 text-[13px] leading-5 text-[var(--text-2)]">
+              <span className="font-semibold text-[var(--text-1)]">
+                Cash only.
+              </span>{" "}
+              Online payments need a Whish payment link, which you add on the
+              venue&apos;s page after onboarding.
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
           <Label htmlFor={timeZoneId} className={labelClass}>
             Time zone
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </Label>
           <TimezoneSelect
             id={timeZoneId}
@@ -1144,20 +1196,39 @@ function VenueStep({
             onChange={(value) => onUpdateVenue("timeZoneId", value)}
             triggerClassName={fieldClass}
           />
-          <p className="text-[12px] text-[var(--text-4)]">
-            Operating hours below are interpreted in this zone.
-          </p>
+          {fieldErrors.timeZoneId ? (
+            <p
+              role="alert"
+              className="text-[11px] leading-[1.4] text-[var(--red-text)]"
+            >
+              {fieldErrors.timeZoneId}
+            </p>
+          ) : (
+            <p className="text-[12px] text-[var(--text-4)]">
+              Operating hours below are interpreted in this zone.
+            </p>
+          )}
         </div>
 
-        <VenueAvailabilityEditor
-          days={venue.availability?.days ?? []}
-          onChange={(days) => onUpdateVenue("availability", { days })}
-          inputClassName={fieldClass}
-          labelClassName={labelClass}
-        />
+        <div className="space-y-2">
+          <VenueAvailabilityEditor
+            days={venue.availability?.days ?? []}
+            onChange={(days) => onUpdateVenue("availability", { days })}
+            inputClassName={fieldClass}
+            labelClassName={labelClass}
+          />
+          {fieldErrors.availability && (
+            <p
+              role="alert"
+              className="text-[11px] leading-[1.4] text-[var(--red-text)]"
+            >
+              {fieldErrors.availability}
+            </p>
+          )}
+        </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Currency" required>
+          <Field label="Currency" required error={fieldErrors.currencyCode}>
             <select
               value={venue.currencyCode}
               onChange={(e) => onUpdateVenue("currencyCode", e.target.value)}
@@ -1173,7 +1244,11 @@ function VenueStep({
               ))}
             </select>
           </Field>
-          <Field label="Max advance booking days" required>
+          <Field
+            label="Max advance booking days"
+            required
+            error={fieldErrors.maxAdvanceBookingDays}
+          >
             <Input
               type="number"
               min={1}
@@ -1188,7 +1263,7 @@ function VenueStep({
               className={fieldClass}
             />
           </Field>
-          <Field label="Court limit" required>
+          <Field label="Court limit" required error={fieldErrors.courtLimit}>
             <Input
               type="number"
               min={1}
@@ -1261,7 +1336,7 @@ function VenueStep({
                   className={cn(
                     "rounded-md border px-3 py-2 text-[12.5px] font-medium transition-all",
                     active
-                      ? "border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.08)] text-[var(--teal-text)]"
+                      ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[rgb(var(--teal-rgb)/0.08)] text-[var(--teal-text)]"
                       : "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]",
                   )}
                 >
@@ -1311,8 +1386,8 @@ function ContractStep({
         </div>
       )}
       {createdContract && (
-        <div className="flex items-center gap-3 rounded-lg border border-[rgba(16,185,129,0.24)] bg-[rgba(16,185,129,0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--semantic-green)]" />
+        <div className="flex items-center gap-3 rounded-lg border border-[rgb(var(--green-rgb)/0.24)] bg-[rgb(var(--green-rgb)/0.08)] px-4 py-3 text-[13px] text-[var(--text-2)]">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--green-text)]" />
           <span>
             Created active contract:{" "}
             <span className="font-medium text-[var(--text-1)]">
@@ -1399,7 +1474,7 @@ function ReviewStep({
           ]}
         />
       </div>
-      <div className="rounded-lg border border-[rgba(245,158,11,0.18)] bg-[rgba(245,158,11,0.08)] px-4 py-3 text-[13px] leading-6 text-[var(--text-2)]">
+      <div className="rounded-lg border border-[rgb(var(--amber-rgb)/0.18)] bg-[rgb(var(--amber-rgb)/0.08)] px-4 py-3 text-[13px] leading-6 text-[var(--text-2)]">
         New venue managers receive the temporary password you set. Share it
         through a secure channel after this flow completes.
       </div>
@@ -1454,9 +1529,9 @@ function WizardProgress({
                   className={cn(
                     "grid h-10 w-10 place-items-center rounded-full border transition-all duration-200",
                     complete
-                      ? "border-[rgba(16,185,129,0.28)] bg-[rgba(16,185,129,0.1)] text-[var(--semantic-green)]"
+                      ? "border-[rgb(var(--green-rgb)/0.28)] bg-[rgb(var(--green-rgb)/0.1)] text-[var(--green-text)]"
                       : active
-                        ? "scale-[1.04] border-[rgba(0,212,170,0.34)] bg-[rgba(0,212,170,0.12)] text-[var(--teal-text)] shadow-[0_0_22px_-10px_var(--teal-glow)]"
+                        ? "scale-[1.04] border-[rgb(var(--teal-rgb)/0.34)] bg-[rgb(var(--teal-rgb)/0.12)] text-[var(--teal-text)] shadow-[0_0_22px_-10px_var(--teal-glow)]"
                         : "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-4)]",
                   )}
                 >
@@ -1519,11 +1594,11 @@ function StepError({ message }: { message?: string }) {
   return (
     <div
       role="alert"
-      className="flex gap-3 rounded-lg border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-[13px] leading-6 text-[var(--text-2)]"
+      className="flex gap-3 rounded-lg border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.08)] px-4 py-3 text-[13px] leading-6 text-[var(--text-2)]"
     >
-      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
       <div>
-        <div className="font-medium text-[var(--semantic-red)]">
+        <div className="font-medium text-[var(--red-text)]">
           This step needs attention
         </div>
         <div className="mt-0.5 text-[var(--text-3)]">{message}</div>
@@ -1562,14 +1637,14 @@ function Field({
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={inputId} className={labelClass}>
         {label}
-        {required && <span className="ml-1 text-[var(--semantic-red)]">*</span>}
+        {required && <span className="ml-1 text-[var(--red-text)]">*</span>}
       </Label>
       {field}
       {error && (
         <p
           id={errorId}
           role="alert"
-          className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+          className="text-[11px] leading-[1.4] text-[var(--red-text)]"
         >
           {error}
         </p>
@@ -1608,14 +1683,14 @@ function ModeButton({
       className={cn(
         "rounded-lg border p-4 text-left transition-all disabled:cursor-not-allowed disabled:opacity-45",
         active
-          ? "border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.08)]"
+          ? "border-[rgb(var(--amber-rgb)/0.3)] bg-[rgb(var(--amber-rgb)/0.08)]"
           : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
       )}
     >
       <Icon
         className={cn(
           "mb-3 h-4 w-4",
-          active ? "text-[var(--semantic-amber)]" : "text-[var(--text-4)]",
+          active ? "text-[var(--amber-text)]" : "text-[var(--text-4)]",
         )}
       />
       <span className="block text-[14px] font-semibold text-[var(--text-1)]">
@@ -1630,7 +1705,7 @@ function ModeButton({
 
 function AvatarLabel({ name }: { name: string }) {
   return (
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[rgba(245,158,11,0.2)] bg-[rgba(245,158,11,0.08)] font-mono text-[12px] font-bold text-[var(--semantic-amber)]">
+    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[rgb(var(--amber-rgb)/0.2)] bg-[rgb(var(--amber-rgb)/0.08)] font-mono text-[12px] font-bold text-[var(--amber-text)]">
       {initials(name)}
     </span>
   );

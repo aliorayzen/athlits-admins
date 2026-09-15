@@ -9,7 +9,13 @@ import {
   type ReactNode,
 } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Mail, Table as TableIcon, User } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Mail,
+  Table as TableIcon,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { ContractTermsEditor } from "@/components/contract-terms-editor";
@@ -70,7 +76,7 @@ const MIN_PASSWORD_LENGTH = 8;
 const MIN_PASSWORD_STRENGTH = 2;
 
 const INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]";
+  "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]";
 const LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]";
 
@@ -351,9 +357,12 @@ export default function CreateVenueManagerPage() {
   if (creationResult) {
     return (
       <div className="users-create-v2 max-w-3xl space-y-5">
-        <BackLink href="/dashboard/users/venue-managers" label="Venue managers" />
+        <BackLink
+          href="/dashboard/users/venue-managers"
+          label="Venue managers"
+        />
         <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgba(16,185,129,0.12)] text-[var(--semantic-green)]">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgb(var(--green-rgb)/0.12)] text-[var(--green-text)]">
             <CheckCircle2 className="h-4.5 w-4.5" />
           </span>
           <div>
@@ -373,7 +382,7 @@ export default function CreateVenueManagerPage() {
         />
         <Link
           href={`/dashboard/venues/${creationResult.venueId}`}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 text-[13px] font-semibold text-[#06100d] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 text-[13px] font-semibold text-[var(--on-teal)] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
         >
           Open venue
           <ArrowRight className="h-4 w-4" />
@@ -477,7 +486,7 @@ export default function CreateVenueManagerPage() {
                   {fieldErrors.phoneNumber && (
                     <p
                       role="alert"
-                      className="text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                      className="text-[11px] leading-[1.4] text-[var(--red-text)]"
                     >
                       {fieldErrors.phoneNumber}
                     </p>
@@ -504,7 +513,7 @@ export default function CreateVenueManagerPage() {
               {fieldErrors.tempPassword && (
                 <p
                   role="alert"
-                  className="mt-2 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+                  className="mt-2 text-[11px] leading-[1.4] text-[var(--red-text)]"
                 >
                   {fieldErrors.tempPassword}
                 </p>
@@ -748,7 +757,7 @@ export default function CreateVenueManagerPage() {
                         aria-pressed={active}
                         className={`rounded-md border px-2.5 py-2 text-[12.5px] font-medium transition-all ${
                           active
-                            ? "border-[rgba(245,158,11,0.3)] bg-[rgba(245,158,11,0.08)] text-[var(--semantic-amber)]"
+                            ? "border-[rgb(var(--amber-rgb)/0.3)] bg-[rgb(var(--amber-rgb)/0.08)] text-[var(--amber-text)]"
                             : "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]"
                         }`}
                       >
@@ -778,7 +787,7 @@ export default function CreateVenueManagerPage() {
             {submitError && (
               <div
                 role="alert"
-                className="border-t border-[var(--border)] bg-[rgba(244,63,94,0.08)] px-6 py-4 text-[13px] leading-6 text-[var(--semantic-red)]"
+                className="border-t border-[var(--border)] bg-[rgb(var(--red-rgb)/0.08)] px-6 py-4 text-[13px] leading-6 text-[var(--red-text)]"
               >
                 {submitError}
               </div>
@@ -812,7 +821,7 @@ export default function CreateVenueManagerPage() {
                 value={`${contractDraft.gracePeriodDays} days`}
               />
             </div>
-            <div className="mt-3.5 flex gap-2 rounded-md border border-[rgba(245,158,11,0.14)] bg-[rgba(245,158,11,0.08)] px-3 py-2.5">
+            <div className="mt-3.5 flex gap-2 rounded-md border border-[rgb(var(--amber-rgb)/0.14)] bg-[rgb(var(--amber-rgb)/0.08)] px-3 py-2.5">
               <div className="text-[11.5px] leading-[1.5] text-[var(--text-2)]">
                 Submit runs account, venue, then contract creation in order.
               </div>
@@ -840,9 +849,7 @@ function Field({
       <label className={LABEL_CLASS}>
         {label}
         {required && (
-          <span className="ml-1.5 text-[var(--semantic-red)] opacity-85">
-            *
-          </span>
+          <span className="ml-1.5 text-[var(--red-text)] opacity-85">*</span>
         )}
       </label>
       {children}

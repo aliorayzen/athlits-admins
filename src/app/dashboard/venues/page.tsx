@@ -322,7 +322,7 @@ export default function VenuesPage() {
             </Button>
           )}
           <Link href="/dashboard/venues/new">
-            <Button className="gap-1.5 border border-[rgba(0,212,170,0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] px-4 text-[13px] font-semibold text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[linear-gradient(135deg,#1be2ba_0%,#0cc89f_100%)] hover:shadow-[0_0_28px_-6px_rgba(0,212,170,0.5)] hover:-translate-y-px">
+            <Button className="gap-1.5 border border-[rgb(var(--teal-rgb)/0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] px-4 text-[13px] font-semibold text-[var(--on-teal)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)] hover:bg-[linear-gradient(135deg,#1be2ba_0%,#0cc89f_100%)] hover:shadow-[0_0_28px_-6px_rgb(var(--teal-rgb)/0.5)] hover:-translate-y-px">
               <Plus className="h-3.5 w-3.5" />
               Add Venue
             </Button>
@@ -331,7 +331,7 @@ export default function VenuesPage() {
       </div>
 
       {/* ═══════════ KPI strip ═══════════ */}
-      <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.01)_0%,transparent_50%),var(--bg-1)] sm:grid-cols-4">
+      <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-1)_0%,transparent_50%),var(--bg-1)] sm:grid-cols-4">
         <KpiCell
           label="Total venues"
           value={isLoading ? "—" : String(kpis.total)}
@@ -349,7 +349,7 @@ export default function VenuesPage() {
         <KpiCell
           label="Active"
           value={isLoading ? "—" : String(kpis.active)}
-          valueToneClass="text-[#22d3ee]"
+          valueToneClass="text-[var(--green-text)]"
           dotClass="bg-[var(--semantic-green)] vv2-dot-ok"
           sub={
             isLoading
@@ -404,7 +404,7 @@ export default function VenuesPage() {
 
       {/* ═══════════ Bulk selection bar ═══════════ */}
       {selectedIds.size > 0 && (
-        <div className="vv2-bulk-bar flex items-center justify-between gap-4 rounded-md border border-[rgba(0,212,170,0.18)] bg-[linear-gradient(180deg,rgba(0,212,170,0.08),rgba(0,212,170,0.02)),var(--bg-1)] px-3.5 py-2">
+        <div className="vv2-bulk-bar flex items-center justify-between gap-4 rounded-md border border-[rgb(var(--teal-rgb)/0.18)] bg-[linear-gradient(180deg,rgb(var(--teal-rgb)/0.08),rgb(var(--teal-rgb)/0.02)),var(--bg-1)] px-3.5 py-2">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-subtle)] px-2.5 py-[3px] font-mono text-[11px] font-semibold text-[var(--teal-text)]">
               {selectedIds.size} selected
@@ -517,7 +517,7 @@ export default function VenuesPage() {
         <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
           <div className="overflow-x-auto">
             <table className="w-full border-separate border-spacing-0">
-              <thead className="bg-white/[0.012]">
+              <thead className="bg-[var(--tint-1)]">
                 <tr>
                   <Th className="w-10 pl-4 pr-0">
                     <Checkbox
@@ -570,7 +570,7 @@ export default function VenuesPage() {
           </div>
 
           {/* Table footer */}
-          <div className="flex items-center justify-between border-t border-[var(--border)] bg-white/[0.008] px-4 py-3">
+          <div className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3">
             <span className="font-mono text-[12px] tabular-nums text-[var(--text-4)]">
               {filtered.length === venues.length
                 ? `${venues.length} ${venues.length === 1 ? "venue" : "venues"}`
@@ -642,7 +642,7 @@ function KpiCell({
       {sub && (
         <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-[var(--text-3)]">
           {subHighlight && (
-            <span className="font-mono text-[10.5px] font-medium text-[var(--semantic-green)] tabular-nums">
+            <span className="font-mono text-[10.5px] font-medium text-[var(--green-text)] tabular-nums">
               {sub.split(" ")[0]}
             </span>
           )}
@@ -672,8 +672,8 @@ function BulkBtn({
       className={cn(
         "inline-flex items-center gap-1.5 rounded border border-[var(--border-strong)] bg-[var(--bg-2)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--text-2)] transition-all",
         danger
-          ? "hover:border-[rgba(244,63,94,0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
-          : "hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]",
+          ? "hover:border-[rgb(var(--red-rgb)/0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--red-text)]"
+          : "hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]",
       )}
     >
       {children}
@@ -785,13 +785,13 @@ function Checkbox({
       {state === "checked" && (
         <span
           aria-hidden="true"
-          className="absolute left-[3px] top-0 h-2 w-1 rotate-45 border-b-[1.5px] border-r-[1.5px] border-[#032921]"
+          className="absolute left-[3px] top-0 h-2 w-1 rotate-45 border-b-[1.5px] border-r-[1.5px] border-[var(--on-teal)]"
         />
       )}
       {state === "indeterminate" && (
         <span
           aria-hidden="true"
-          className="absolute left-[2px] right-[2px] top-1/2 h-[1.5px] -translate-y-1/2 bg-[#032921]"
+          className="absolute left-[2px] right-[2px] top-1/2 h-[1.5px] -translate-y-1/2 bg-[var(--on-teal)]"
         />
       )}
     </button>
@@ -813,18 +813,18 @@ function VenueRow({
       className={cn(
         "vv2-tr group transition-colors",
         isSelected
-          ? "bg-[rgba(0,212,170,0.04)] hover:bg-[rgba(0,212,170,0.055)]"
-          : "hover:bg-[rgba(255,255,255,0.015)]",
+          ? "bg-[rgb(var(--teal-rgb)/0.04)] hover:bg-[rgb(var(--teal-rgb)/0.055)]"
+          : "hover:bg-[var(--tint-1)]",
       )}
     >
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <Checkbox
           checked={isSelected}
           onChange={onToggle}
           ariaLabel={`Select ${venue.name}`}
         />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex min-w-[240px] items-center gap-3">
           <div className="vv2-thumb relative h-[38px] w-[38px] shrink-0 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-2)]">
             {venue.coverImageUrl ? (
@@ -846,7 +846,7 @@ function VenueRow({
             <div className="flex items-center gap-1.5 text-[13.5px] font-medium leading-[1.25] tracking-[-0.005em] text-[var(--text-1)]">
               <span className="truncate">{venue.name}</span>
               {isNew && (
-                <span className="vv2-new-tag inline-flex items-center rounded-[3px] border border-[rgba(0,212,170,0.14)] bg-[var(--teal-subtle)] px-1.5 py-px text-[9px] font-semibold uppercase leading-[1.4] tracking-[0.06em] text-[var(--teal-text)]">
+                <span className="vv2-new-tag inline-flex items-center rounded-[3px] border border-[rgb(var(--teal-rgb)/0.14)] bg-[var(--teal-subtle)] px-1.5 py-px text-[9px] font-semibold uppercase leading-[1.4] tracking-[0.06em] text-[var(--teal-text)]">
                   New
                 </span>
               )}
@@ -857,7 +857,7 @@ function VenueRow({
           </div>
         </div>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex items-center gap-1.5 text-[12.5px] text-[var(--text-2)]">
           <span className="text-[14px] leading-none">
             {countryCodeToFlag(venue.countryCode)}
@@ -868,14 +868,14 @@ function VenueRow({
           </span>
         </div>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <StatusPill status={venue.status} />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         {typeof venue.venueRating === "number" ? (
           <span className="inline-flex items-center gap-1 text-[12.5px] font-medium tabular-nums text-[var(--text-1)]">
             <Star
-              className="h-[13px] w-[13px] text-[var(--semantic-amber)]"
+              className="h-[13px] w-[13px] text-[var(--amber-text)]"
               fill="currentColor"
             />
             {venue.venueRating.toFixed(1)}
@@ -884,7 +884,7 @@ function VenueRow({
           <span className="text-[12.5px] text-[var(--text-4)]">—</span>
         )}
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         {typeof venue.courtCount === "number" ? (
           <span className="inline-flex items-center gap-1 font-mono text-[12px] tabular-nums text-[var(--text-2)]">
             {venue.courtCount}
@@ -896,24 +896,24 @@ function VenueRow({
           <span className="font-mono text-[12px] text-[var(--text-4)]">—</span>
         )}
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <span className="text-[12px] tabular-nums text-[var(--text-3)]">
           {formatCreatedDate(venue.createdAt)}
         </span>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 text-right align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right align-middle">
         <div className="flex items-center justify-end gap-1">
           <Link
             href={`/dashboard/venues/${venue.id}/edit`}
             title="Edit venue"
             aria-label={`Edit ${venue.name}`}
-            className="grid h-7 w-7 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-0 transition-all group-hover:opacity-100 hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
+            className="grid h-7 w-7 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-0 transition-all group-hover:opacity-100 hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
           >
             <Edit3 className="h-[13px] w-[13px]" />
           </Link>
           <Link
             href={`/dashboard/venues/${venue.id}`}
-            className="inline-flex h-7 items-center gap-1.5 rounded border border-[var(--border)] bg-[var(--bg-2)] px-2.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
+            className="inline-flex h-7 items-center gap-1.5 rounded border border-[var(--border)] bg-[var(--bg-2)] px-2.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
           >
             View
             <ArrowRight className="h-[11px] w-[11px]" />
@@ -927,14 +927,14 @@ function VenueRow({
 function StatusPill({ status }: { status: "ACTIVE" | "SUSPENDED" }) {
   if (status === "ACTIVE") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(16,185,129,0.08)] py-[3px] pl-[7px] pr-2 text-[11px] font-medium leading-[1.3] text-[var(--semantic-green)]">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(var(--green-rgb)/0.08)] py-[3px] pl-[7px] pr-2 text-[11px] font-medium leading-[1.3] text-[var(--green-text)]">
         <span className="vv2-status-active-dot h-[5px] w-[5px] rounded-full bg-[var(--semantic-green)] shadow-[0_0_5px_var(--semantic-green)]" />
         Active
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(245,158,11,0.08)] py-[3px] pl-[7px] pr-2 text-[11px] font-medium leading-[1.3] text-[var(--semantic-amber)]">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(var(--amber-rgb)/0.08)] py-[3px] pl-[7px] pr-2 text-[11px] font-medium leading-[1.3] text-[var(--amber-text)]">
       <span className="h-[5px] w-[5px] rounded-full bg-[var(--semantic-amber)]" />
       Suspended
     </span>
@@ -943,7 +943,7 @@ function StatusPill({ status }: { status: "ACTIVE" | "SUSPENDED" }) {
 
 function VenuesSkeleton() {
   return (
-    <div className="divide-y divide-[rgba(255,255,255,0.035)]">
+    <div className="divide-y divide-[var(--tint-3)]">
       {Array.from({ length: 7 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3">
           <Skeleton className="h-[14px] w-[14px] rounded-[3px]" />
@@ -973,8 +973,8 @@ function ErrorState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(244,63,94,0.25)] bg-[var(--semantic-red-subtle)]">
-        <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgb(var(--red-rgb)/0.25)] bg-[var(--semantic-red-subtle)]">
+        <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
       </div>
       <p className="text-base font-medium text-[var(--text-1)]">
         Couldn&apos;t load venues
@@ -1006,7 +1006,7 @@ function EmptyState({
       <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16">
         <div className="relative mb-5">
           <div className="absolute -inset-3 rounded-3xl bg-[var(--teal-subtle)] blur-xl" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--teal-subtle)] ring-1 ring-[rgba(0,212,170,0.3)]">
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--teal-subtle)] ring-1 ring-[rgb(var(--teal-rgb)/0.3)]">
             <MapPin className="h-7 w-7 text-[var(--teal)]" />
           </div>
         </div>
@@ -1019,7 +1019,7 @@ function EmptyState({
         <Link href="/dashboard/venues/new" className="mt-5">
           <Button
             size="lg"
-            className="gap-1.5 bg-[linear-gradient(135deg,var(--teal),#00b894)] px-6 font-semibold text-[var(--bg-0)] shadow-[0_0_24px_-4px_rgba(0,212,170,0.35)] hover:-translate-y-px"
+            className="gap-1.5 bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] px-6 font-semibold text-[var(--bg-0)] shadow-[0_0_24px_-4px_rgb(var(--teal-rgb)/0.35)] hover:-translate-y-px"
           >
             <Plus className="h-4 w-4" />
             Add Venue

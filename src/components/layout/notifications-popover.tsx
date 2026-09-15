@@ -39,33 +39,36 @@ const TYPE_META: Record<
 > = {
   invoice_overdue: {
     icon: AlertTriangle,
-    iconClass: "text-[var(--semantic-red)]",
-    bgClass: "bg-[rgba(244,63,94,0.1)] border-[rgba(244,63,94,0.2)]",
+    iconClass: "text-[var(--red-text)]",
+    bgClass: "bg-[rgb(var(--red-rgb)/0.1)] border-[rgb(var(--red-rgb)/0.2)]",
   },
   invoice_paid: {
     icon: CheckCircle,
-    iconClass: "text-[var(--semantic-green)]",
-    bgClass: "bg-[rgba(16,185,129,0.1)] border-[rgba(16,185,129,0.2)]",
+    iconClass: "text-[var(--green-text)]",
+    bgClass:
+      "bg-[rgb(var(--green-rgb)/0.1)] border-[rgb(var(--green-rgb)/0.2)]",
   },
   venue_new: {
     icon: MapPin,
     iconClass: "text-[var(--teal-text)]",
-    bgClass: "bg-[var(--teal-subtle)] border-[rgba(0,212,170,0.18)]",
+    bgClass: "bg-[var(--teal-subtle)] border-[rgb(var(--teal-rgb)/0.18)]",
   },
   user_new: {
     icon: UserPlus,
-    iconClass: "text-[#818cf8]",
-    bgClass: "bg-[rgba(99,102,241,0.1)] border-[rgba(99,102,241,0.2)]",
+    iconClass: "text-[var(--blue-text)]",
+    bgClass:
+      "bg-[rgb(var(--indigo-rgb)/0.1)] border-[rgb(var(--indigo-rgb)/0.2)]",
   },
   session_new: {
     icon: Shield,
-    iconClass: "text-[var(--semantic-amber)]",
-    bgClass: "bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)]",
+    iconClass: "text-[var(--amber-text)]",
+    bgClass:
+      "bg-[rgb(var(--amber-rgb)/0.1)] border-[rgb(var(--amber-rgb)/0.2)]",
   },
   system: {
     icon: Sparkles,
     iconClass: "text-[var(--text-3)]",
-    bgClass: "bg-white/[0.04] border-[var(--border)]",
+    bgClass: "bg-[var(--tint-3)] border-[var(--border)]",
   },
 };
 
@@ -160,17 +163,17 @@ export function NotificationsPopover({
         align="start"
         sideOffset={8}
         alignOffset={-4}
-        className="w-[360px] max-w-[92vw] overflow-hidden rounded-lg border border-white/[0.08] bg-[#0a0d14] p-0 text-[var(--text-1)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)] ring-0"
+        className="w-[360px] max-w-[92vw] overflow-hidden rounded-lg border border-[var(--tint-5)] bg-[var(--bg-1)] p-0 text-[var(--text-1)] shadow-[var(--shadow-3)] ring-0"
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-[var(--tint-4)] px-4 py-3">
           <div className="flex items-center gap-2">
             <Bell className="h-[15px] w-[15px] text-[var(--text-3)]" />
             <span className="text-[14px] font-semibold tracking-[-0.01em]">
               Notifications
             </span>
             {unreadCount > 0 && (
-              <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-[rgba(244,63,94,0.15)] px-1.5 text-[10px] font-semibold tabular-nums text-[var(--semantic-red)]">
+              <span className="inline-flex min-w-[18px] items-center justify-center rounded-full bg-[rgb(var(--red-rgb)/0.15)] px-1.5 text-[10px] font-semibold tabular-nums text-[var(--red-text)]">
                 {unreadCount}
               </span>
             )}
@@ -189,7 +192,7 @@ export function NotificationsPopover({
         {/* List */}
         {notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-1.5 px-6 py-8">
-            <div className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-white/[0.02]">
+            <div className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-[var(--tint-2)]">
               <Bell className="h-4 w-4 text-[var(--text-4)]" />
             </div>
             <div className="text-[13px] font-medium text-[var(--text-2)]">
@@ -209,10 +212,10 @@ export function NotificationsPopover({
 
               const commonClass = cn(
                 "group relative flex items-start gap-2.5 px-4 py-3 text-left transition-colors",
-                i > 0 && "border-t border-white/[0.04]",
+                i > 0 && "border-t border-[var(--tint-3)]",
                 !n.read
-                  ? "bg-[rgba(0,212,170,0.025)] hover:bg-[rgba(0,212,170,0.045)]"
-                  : "hover:bg-white/[0.025]",
+                  ? "bg-[rgb(var(--teal-rgb)/0.025)] hover:bg-[rgb(var(--teal-rgb)/0.045)]"
+                  : "hover:bg-[var(--tint-2)]",
               );
 
               const inner = (
@@ -285,10 +288,10 @@ export function NotificationsPopover({
 
         {/* Footer */}
         {notifications.length > 0 && (
-          <div className="border-t border-white/[0.06] bg-white/[0.015] px-3 py-2">
+          <div className="border-t border-[var(--tint-4)] bg-[var(--tint-1)] px-3 py-2">
             <Link
               href="/dashboard/invoices?status=OVERDUE"
-              className="flex w-full items-center justify-center rounded-md px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-3)] transition-all hover:bg-white/[0.035] hover:text-[var(--text-1)]"
+              className="flex w-full items-center justify-center rounded-md px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-3)] transition-all hover:bg-[var(--tint-3)] hover:text-[var(--text-1)]"
               onClick={() => setOpen(false)}
             >
               View overdue invoices

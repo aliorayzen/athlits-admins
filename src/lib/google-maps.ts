@@ -28,10 +28,7 @@ function coordinatesFromText(
 
   const latitude = Number(match[1]);
   const longitude = Number(match[2]);
-  if (
-    !isCoordinate(latitude, -90, 90) ||
-    !isCoordinate(longitude, -180, 180)
-  ) {
+  if (!isCoordinate(latitude, -90, 90) || !isCoordinate(longitude, -180, 180)) {
     return null;
   }
   return { latitude, longitude };
@@ -53,10 +50,7 @@ export function isGoogleMapsUrl(value: string): boolean {
     const url = new URL(value.trim());
     if (url.protocol !== "https:" && url.protocol !== "http:") return false;
     const host = url.hostname.toLowerCase();
-    return (
-      GOOGLE_HOSTS.has(host) ||
-      host.endsWith(".google.com")
-    );
+    return GOOGLE_HOSTS.has(host) || host.endsWith(".google.com");
   } catch {
     return false;
   }
@@ -95,7 +89,9 @@ export function parseGoogleMapsUrl(value: string): GoogleMapsLocation | null {
   }
   if (!coordinates) return null;
 
-  const placePathMatch = url.pathname.match(/\/maps\/(?:place|search)\/([^/]+)/i);
+  const placePathMatch = url.pathname.match(
+    /\/maps\/(?:place|search)\/([^/]+)/i,
+  );
   const queryLabel = url.searchParams.get("query") ?? url.searchParams.get("q");
   const rawLabel = placePathMatch?.[1] ?? queryLabel ?? "";
   const placeLabel = coordinatesFromText(rawLabel)

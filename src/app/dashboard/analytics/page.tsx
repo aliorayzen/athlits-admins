@@ -78,7 +78,10 @@ export default function AnalyticsPage() {
       toast.success(`${STORE_NAMES[platform]} import started`);
     } catch (error: unknown) {
       setImportError(
-        getApiErrorMessage(error, "The import could not be started. Try again."),
+        getApiErrorMessage(
+          error,
+          "The import could not be started. Try again.",
+        ),
       );
     } finally {
       setIsImportRunning(false);
@@ -188,14 +191,15 @@ export default function AnalyticsPage() {
                         Run {STORE_NAMES[platform]} import?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        This starts a new backend import for the selected platform.
-                        Import status will refresh after the request is accepted.
+                        This starts a new backend import for the selected
+                        platform. Import status will refresh after the request
+                        is accepted.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     {importError && (
                       <p
                         role="alert"
-                        className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--semantic-red)]"
+                        className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--red-text)]"
                       >
                         {importError}
                       </p>
@@ -274,7 +278,7 @@ export default function AnalyticsPage() {
                 <p
                   id="store-range-error"
                   role="alert"
-                  className="text-sm text-[var(--semantic-red)]"
+                  className="text-sm text-[var(--red-text)]"
                 >
                   {validation}
                 </p>

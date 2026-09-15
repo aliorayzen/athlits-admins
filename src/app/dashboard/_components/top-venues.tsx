@@ -27,17 +27,17 @@ export function TopVenues({
   const ranked = ranking.slice(0, 6);
 
   return (
-    <div className="dash-fade-up stg-7 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] px-6 py-[22px]">
+    <div className="dash-fade-up stg-7 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))] px-6 py-[22px]">
       <div className="mb-[18px] flex items-center justify-between">
         <div className="flex items-center gap-2 text-[13.5px] font-medium text-[var(--text-1)]">
           Top venues
-          <span className="rounded-full bg-[rgba(255,255,255,0.04)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
+          <span className="rounded-full bg-[var(--tint-3)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
             by revenue
           </span>
         </div>
         <Link
           href="/dashboard/venues"
-          className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--text-1)]"
+          className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)]"
           aria-label="Open full venue list"
         >
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -57,7 +57,7 @@ export function TopVenues({
             <Link
               key={r.venueId}
               href={`/dashboard/venues/${r.venueId}`}
-              className="group grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 rounded-[10px] border border-transparent p-2.5 transition-all duration-200 hover:translate-x-0.5 hover:border-[var(--border)] hover:bg-[rgba(255,255,255,0.028)]"
+              className="group grid grid-cols-[auto_1fr_auto_auto] items-center gap-2.5 rounded-[10px] border border-transparent p-2.5 transition-all duration-200 hover:translate-x-0.5 hover:border-[var(--border)] hover:bg-[var(--tint-2)]"
             >
               <div className="w-5 font-mono text-[11px] tabular-nums text-[var(--text-4)]">
                 {String(i + 1).padStart(2, "0")}
@@ -80,8 +80,8 @@ export function TopVenues({
                           pct >= 75
                             ? "text-[var(--teal-text)]"
                             : pct >= 50
-                              ? "text-[#fcd34d]"
-                              : "text-[#fda4af]"
+                              ? "text-[var(--amber-text)]"
+                              : "text-[var(--red-text)]"
                         }`}
                         title="Utilization % (demo data)"
                       >
@@ -98,8 +98,8 @@ export function TopVenues({
                       key={dot}
                       className={`h-1.5 w-1.5 rounded-full transition-transform duration-200 ${
                         dot < Math.round(pct / 20)
-                          ? "bg-[var(--teal)] shadow-[0_0_6px_rgba(0,212,170,0.35)] group-hover:scale-125"
-                          : "bg-[rgba(0,212,170,0.22)]"
+                          ? "bg-[var(--teal)] shadow-[0_0_6px_rgb(var(--teal-rgb)/0.35)] group-hover:scale-125"
+                          : "bg-[rgb(var(--teal-rgb)/0.22)]"
                       }`}
                     />
                   ))}

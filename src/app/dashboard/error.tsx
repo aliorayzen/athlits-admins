@@ -21,8 +21,8 @@ export default function DashboardError({
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="max-w-md rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] p-8 text-center">
-        <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[rgba(244,63,94,0.26)] bg-[rgba(244,63,94,0.08)] text-[#fda4af]">
+      <div className="max-w-md rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))] p-8 text-center">
+        <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full border border-[rgb(var(--red-rgb)/0.26)] bg-[rgb(var(--red-rgb)/0.08)] text-[var(--red-text)]">
           <AlertTriangle className="h-5 w-5" />
         </div>
         <h2 className="mb-2 text-lg font-semibold tracking-[-0.01em] text-[var(--text-1)]">
@@ -40,7 +40,7 @@ export default function DashboardError({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex items-center gap-2 rounded-[10px] border border-[var(--border-strong)] bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm font-medium text-[var(--text-1)] transition-all hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.06)]"
+          className="inline-flex items-center gap-2 rounded-[10px] border border-[var(--border-strong)] bg-[var(--tint-2)] px-4 py-2 text-sm font-medium text-[var(--text-1)] transition-all hover:border-[var(--tint-7)] hover:bg-[var(--tint-4)]"
         >
           <RefreshCcw className="h-3.5 w-3.5" />
           Try again

@@ -19,7 +19,15 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+
+import {
+  RowActionItem,
+  RowActionsGroup,
+  RowActionsMenu,
+  RowActionsSeparator,
+} from "@/components/row-actions-menu";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +39,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AdminPasswordResetDialog } from "@/components/admin-password-reset-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,7 +49,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -69,11 +75,16 @@ type LoadPhase = "loading" | "ready" | "error";
 type PermissionDraft = Record<string, StaffPermission[]>;
 
 function staffName(staff: StaffUserDto): string {
-  return `${staff.firstName ?? ""} ${staff.lastName ?? ""}`.trim() || "Unnamed staff";
+  return (
+    `${staff.firstName ?? ""} ${staff.lastName ?? ""}`.trim() || "Unnamed staff"
+  );
 }
 
 function staffInitials(staff: StaffUserDto): string {
-  return `${staff.firstName?.[0] ?? ""}${staff.lastName?.[0] ?? ""}`.toUpperCase() || "S";
+  return (
+    `${staff.firstName?.[0] ?? ""}${staff.lastName?.[0] ?? ""}`.toUpperCase() ||
+    "S"
+  );
 }
 
 function accessKey(access: VenueStaffAccess): string {
@@ -203,8 +214,10 @@ export function ManagerStaffDirectory({
             )}
           </div>
           <p className="mt-1 text-[13px] text-[var(--text-3)]">
-            {venueName ? `${venueName} staff managed by venue manager ` : "Accounts managed by venue manager "}
-            <span className="font-mono text-[12px] text-[var(--semantic-amber)]">
+            {venueName
+              ? `${venueName} staff managed by venue manager `
+              : "Accounts managed by venue manager "}
+            <span className="font-mono text-[12px] text-[var(--amber-text)]">
               #{managerId}
             </span>
           </p>
@@ -214,7 +227,7 @@ export function ManagerStaffDirectory({
           {venueId && (
             <Link
               href={`/dashboard/venues/${venueId}/staff/new`}
-              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-3 text-[12px] font-medium text-[var(--semantic-amber)] hover:bg-[rgba(245,158,11,0.16)]"
+              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-[rgb(var(--amber-rgb)/0.25)] bg-[var(--semantic-amber-subtle)] px-3 text-[12px] font-medium text-[var(--amber-text)] hover:bg-[rgb(var(--amber-rgb)/0.16)]"
             >
               <UserPlus className="h-3.5 w-3.5" />
               Create staff
@@ -223,13 +236,13 @@ export function ManagerStaffDirectory({
           <div className="relative w-full sm:w-[320px]">
             <Search className="pointer-events-none absolute left-[11px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)]" />
             <input
-            type="search"
-            aria-label="Search staff"
-            placeholder="Search staff or venue..."
-            value={search}
-            disabled={phase !== "ready"}
-            onChange={(event) => setSearch(event.target.value)}
-            className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-1)] pl-[34px] pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_var(--semantic-amber-subtle)] disabled:cursor-not-allowed disabled:opacity-50"
+              type="search"
+              aria-label="Search staff"
+              placeholder="Search staff or venue..."
+              value={search}
+              disabled={phase !== "ready"}
+              onChange={(event) => setSearch(event.target.value)}
+              className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--bg-1)] pl-[34px] pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_var(--semantic-amber-subtle)] disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
@@ -275,7 +288,7 @@ function StaffTable({
     <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[820px] border-separate border-spacing-0">
-          <thead className="bg-white/[0.012]">
+          <thead className="bg-[var(--tint-1)]">
             <tr>
               <TableHeading className="pl-4">Staff member</TableHeading>
               <TableHeading>Phone</TableHeading>
@@ -316,15 +329,20 @@ function StaffRow({
   onUpdated: (staff: StaffUserDto) => void;
   onRemoved: (staffUserId: string) => void;
 }) {
+  const router = useRouter();
+  const [dialog, setDialog] = useState<
+    "password" | "permissions" | "remove" | null
+  >(null);
+  const close = () => setDialog(null);
   const primaryVenue = staff.venueAccess[0];
   const otherVenueCount = Math.max(0, staff.venueAccess.length - 1);
   const isActive = staff.status === "ACTIVE";
 
   return (
-    <tr className="group transition-colors hover:bg-white/[0.015]">
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+    <tr className="group transition-colors hover:bg-[var(--tint-1)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex min-w-[230px] items-center gap-2.5">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-[rgba(245,158,11,0.18)] bg-[var(--semantic-amber-subtle)] text-[11px] font-semibold text-[var(--semantic-amber)]">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-3)] text-[11px] font-semibold text-[var(--text-2)]">
             {staffInitials(staff)}
           </div>
           <div className="min-w-0">
@@ -332,9 +350,12 @@ function StaffRow({
               <p className="truncate text-[13px] font-medium text-[var(--text-1)]">
                 {staffName(staff)}
               </p>
+              <span className="shrink-0 rounded border border-[var(--border)] bg-[var(--bg-2)] px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-[0.06em] text-[var(--text-3)]">
+                Staff
+              </span>
               {staff.forcePasswordChange && (
                 <span title="Password change required">
-                  <KeyRound className="h-3 w-3 shrink-0 text-[var(--semantic-amber)]" />
+                  <KeyRound className="h-3 w-3 shrink-0 text-[var(--text-3)]" />
                 </span>
               )}
             </div>
@@ -345,17 +366,17 @@ function StaffRow({
           </div>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-3 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-3 py-3 align-middle">
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-mono text-[11px] text-[var(--text-3)]">
           <Phone className="h-3 w-3 text-[var(--text-4)]" />
           {staff.phoneNumber || "Not provided"}
         </span>
       </td>
-      <td className="border-t border-white/[0.035] px-3 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-3 py-3 align-middle">
         {primaryVenue ? (
           <div className="min-w-[150px]">
             <span className="inline-flex items-center gap-1.5 text-[12px] text-[var(--text-2)]">
-              <Building2 className="h-3 w-3 text-[var(--semantic-amber)]" />
+              <Building2 className="h-3 w-3 text-[var(--text-4)]" />
               {primaryVenue.venueName}
             </span>
             {otherVenueCount > 0 && (
@@ -368,43 +389,96 @@ function StaffRow({
           <span className="text-[11px] text-[var(--text-4)]">No venues</span>
         )}
       </td>
-      <td className="border-t border-white/[0.035] px-3 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-3 py-3 align-middle">
         <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2 py-1 font-mono text-[10.5px] text-[var(--text-3)]">
-          <ShieldCheck className="h-3 w-3 text-[var(--semantic-amber)]" />
+          <ShieldCheck className="h-3 w-3 text-[var(--text-4)]" />
           {permissionCount(staff)} across {staff.venueAccess.length}
         </span>
       </td>
-      <td className="border-t border-white/[0.035] px-3 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-3 py-3 align-middle">
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10.5px] font-medium",
             isActive
-              ? "bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]"
-              : "bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)]",
+              ? "bg-[var(--semantic-green-subtle)] text-[var(--green-text)]"
+              : "bg-[var(--semantic-red-subtle)] text-[var(--red-text)]",
           )}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
           {isActive ? "Active" : "Disabled"}
         </span>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 text-right align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right align-middle">
         <div className="flex items-center justify-end gap-2">
+          <RowActionsMenu label={staffName(staff)}>
+            <RowActionsGroup label="Scope">
+              <RowActionItem
+                icon={Building2}
+                // Staff are scoped beneath a manager, so "their" venues are
+                // that manager's venues. This lands on the same list the
+                // manager's own Venues action opens, not a staff-only dead end.
+                onSelect={() =>
+                  router.push(
+                    `/dashboard/users/venue-managers/${managerId}/venues`,
+                  )
+                }
+                hint={
+                  staff.venueAccess.length > 0
+                    ? `${staff.venueAccess.length} assigned`
+                    : undefined
+                }
+              >
+                Venues
+              </RowActionItem>
+              <RowActionItem
+                icon={Pencil}
+                disabled={staff.venueAccess.length === 0}
+                onSelect={() => setDialog("permissions")}
+              >
+                Permissions
+              </RowActionItem>
+            </RowActionsGroup>
+
+            <RowActionsSeparator />
+            <RowActionsGroup label="Account">
+              <RowActionItem
+                icon={KeyRound}
+                onSelect={() => setDialog("password")}
+              >
+                Reset password
+              </RowActionItem>
+              <RowActionItem
+                icon={UserMinus}
+                tone="danger"
+                onSelect={() => setDialog("remove")}
+              >
+                Remove from manager
+              </RowActionItem>
+            </RowActionsGroup>
+          </RowActionsMenu>
+
           <AdminPasswordResetDialog
             managerId={managerId}
             staffUserId={staff.id}
             email={staff.email}
             onReset={() => onUpdated({ ...staff, forcePasswordChange: true })}
+            open={dialog === "password"}
+            onOpenChange={(next) => (next ? setDialog("password") : close())}
           />
           <EditPermissionsDialog
             managerId={managerId}
             staff={staff}
             preferredVenueId={preferredVenueId}
             onUpdated={onUpdated}
+            open={dialog === "permissions"}
+            onOpenChange={(next) => (next ? setDialog("permissions") : close())}
           />
           <RemoveStaffDialog
             managerId={managerId}
             staff={staff}
             onRemoved={onRemoved}
+            open={dialog === "remove"}
+            onOpenChange={(next) => (next ? setDialog("remove") : close())}
           />
         </div>
       </td>
@@ -416,12 +490,16 @@ function RemoveStaffDialog({
   managerId,
   staff,
   onRemoved,
+  open,
+  onOpenChange,
 }: {
   managerId: string;
   staff: StaffUserDto;
   onRemoved: (staffUserId: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const setOpen = onOpenChange;
   const [isRemoving, setIsRemoving] = useState(false);
   const [removeError, setRemoveError] = useState("");
 
@@ -455,19 +533,6 @@ function RemoveStaffDialog({
         if (nextOpen) setRemoveError("");
       }}
     >
-      <AlertDialogTrigger
-        render={
-          <Button
-            type="button"
-            size="icon"
-            variant="ghost"
-            aria-label={`Remove ${staffName(staff)}`}
-            className="text-[var(--text-3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
-          />
-        }
-      >
-        <UserMinus className="h-3.5 w-3.5" />
-      </AlertDialogTrigger>
       <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
         <AlertDialogHeader>
           <AlertDialogTitle>Remove {staffName(staff)}?</AlertDialogTitle>
@@ -479,7 +544,7 @@ function RemoveStaffDialog({
         {removeError && (
           <p
             role="alert"
-            className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--semantic-red)]"
+            className="rounded-lg bg-[var(--semantic-red-subtle)] px-3 py-2 text-sm text-[var(--red-text)]"
           >
             {removeError}
           </p>
@@ -512,16 +577,23 @@ function EditPermissionsDialog({
   staff,
   preferredVenueId,
   onUpdated,
+  open,
+  onOpenChange,
 }: {
   managerId: string;
   staff: StaffUserDto;
   preferredVenueId?: string;
   onUpdated: (staff: StaffUserDto) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<PermissionDraft>(() => permissionDraftFor(staff));
+  const setOpen = onOpenChange;
+  const [draft, setDraft] = useState<PermissionDraft>(() =>
+    permissionDraftFor(staff),
+  );
   const [selectedVenueId, setSelectedVenueId] = useState(
-    preferredVenueId ?? (staff.venueAccess[0] ? accessKey(staff.venueAccess[0]) : ""),
+    preferredVenueId ??
+      (staff.venueAccess[0] ? accessKey(staff.venueAccess[0]) : ""),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -532,7 +604,9 @@ function EditPermissionsDialog({
   const selectedPermissions = draft[selectedVenueId] ?? [];
   const canSave =
     staff.venueAccess.length > 0 &&
-    staff.venueAccess.every((access) => (draft[accessKey(access)] ?? []).length > 0) &&
+    staff.venueAccess.every(
+      (access) => (draft[accessKey(access)] ?? []).length > 0,
+    ) &&
     !isSaving;
 
   function handleOpenChange(nextOpen: boolean) {
@@ -605,26 +679,14 @@ function EditPermissionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={(props) => (
-          <button
-            {...props}
-            type="button"
-            disabled={staff.venueAccess.length === 0}
-            className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--semantic-amber)] transition-colors hover:bg-[rgba(245,158,11,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Pencil className="h-3 w-3" />
-            Permissions
-          </button>
-        )}
-      />
       <DialogContent className="max-h-[min(760px,calc(100vh-2rem))] overflow-y-auto border-[var(--border)] bg-[var(--bg-1)] sm:max-w-2xl">
         <DialogHeader className="pr-8">
           <DialogTitle className="text-[16px] text-[var(--text-1)]">
             Edit staff permissions
           </DialogTitle>
           <DialogDescription className="text-[12.5px] text-[var(--text-3)]">
-            Update venue access for {staffName(staff)}. Every venue assignment is preserved.
+            Update venue access for {staffName(staff)}. Every venue assignment
+            is preserved.
           </DialogDescription>
         </DialogHeader>
 
@@ -642,7 +704,7 @@ function EditPermissionsDialog({
                   className={cn(
                     "rounded-md border px-2.5 py-1.5 text-[11.5px] font-medium transition-colors",
                     isSelected
-                      ? "border-[rgba(245,158,11,0.3)] bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]"
+                      ? "border-[rgb(var(--amber-rgb)/0.3)] bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]"
                       : "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]",
                   )}
                 >
@@ -657,7 +719,7 @@ function EditPermissionsDialog({
           <div>
             <div className="mb-3 flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">
-                <Building2 className="h-3.5 w-3.5 shrink-0 text-[var(--semantic-amber)]" />
+                <Building2 className="h-3.5 w-3.5 shrink-0 text-[var(--amber-text)]" />
                 <span className="truncate text-[12.5px] font-semibold text-[var(--text-1)]">
                   {selectedAccess.venueName}
                 </span>
@@ -679,11 +741,13 @@ function EditPermissionsDialog({
                     key={preset.label}
                     type="button"
                     aria-pressed={isActive}
-                    onClick={() => setSelectedPermissions([...preset.permissions])}
+                    onClick={() =>
+                      setSelectedPermissions([...preset.permissions])
+                    }
                     className={cn(
                       "rounded-md border px-2.5 py-2 text-left transition-colors",
                       isActive
-                        ? "border-[rgba(245,158,11,0.3)] bg-[var(--semantic-amber-subtle)]"
+                        ? "border-[rgb(var(--amber-rgb)/0.3)] bg-[var(--semantic-amber-subtle)]"
                         : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
                     )}
                   >
@@ -731,21 +795,22 @@ function EditPermissionsDialog({
               ))}
             </div>
             <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-4)]">
-              Selecting an action automatically includes its required view permission.
-              Removing a view permission also removes the actions that depend on it.
+              Selecting an action automatically includes its required view
+              permission. Removing a view permission also removes the actions
+              that depend on it.
             </p>
           </div>
         )}
 
         {!canSave && !isSaving && staff.venueAccess.length > 0 && (
-          <p role="alert" className="text-[11px] text-[var(--semantic-red)]">
+          <p role="alert" className="text-[11px] text-[var(--red-text)]">
             Select at least one permission for every venue.
           </p>
         )}
         {saveError && (
           <p
             role="alert"
-            className="rounded-md border border-[var(--semantic-red-subtle)] bg-[var(--semantic-red-subtle)] px-3 py-2 text-[11.5px] text-[var(--semantic-red)]"
+            className="rounded-md border border-[var(--semantic-red-subtle)] bg-[var(--semantic-red-subtle)] px-3 py-2 text-[11.5px] text-[var(--red-text)]"
           >
             {saveError}
           </p>
@@ -765,7 +830,7 @@ function EditPermissionsDialog({
             type="button"
             disabled={!canSave}
             onClick={savePermissions}
-            className="gap-1.5 border border-[rgba(245,158,11,0.3)] bg-[var(--semantic-amber)] font-semibold text-[#1a1100] shadow-[0_0_20px_-6px_rgba(245,158,11,0.35)] hover:bg-[var(--semantic-amber)] hover:brightness-105"
+            className="gap-1.5 border border-[rgb(var(--amber-rgb)/0.3)] bg-[var(--semantic-amber)] font-semibold text-[var(--on-amber)] shadow-[0_0_20px_-6px_rgb(var(--amber-rgb)/0.35)] hover:bg-[var(--semantic-amber)] hover:brightness-105"
           >
             {isSaving ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -798,10 +863,16 @@ function StaffTableSkeleton() {
   );
 }
 
-function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+function LoadError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-[rgba(244,63,94,0.18)] bg-[var(--bg-1)] px-6 text-center">
-      <UserRound className="h-6 w-6 text-[var(--semantic-red)]" />
+    <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-[rgb(var(--red-rgb)/0.18)] bg-[var(--bg-1)] px-6 text-center">
+      <UserRound className="h-6 w-6 text-[var(--red-text)]" />
       <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">
         Staff unavailable
       </h2>
@@ -826,7 +897,7 @@ function EmptyStaff({ venueId }: { venueId?: string }) {
   return (
     <div className="flex min-h-64 flex-col items-center justify-center rounded-lg border border-dashed border-[var(--border)] bg-[var(--bg-1)] px-6 text-center">
       <div className="grid h-10 w-10 place-items-center rounded-lg bg-[var(--semantic-amber-subtle)]">
-        <Users className="h-5 w-5 text-[var(--semantic-amber)]" />
+        <Users className="h-5 w-5 text-[var(--amber-text)]" />
       </div>
       <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">
         No staff assigned
@@ -838,9 +909,11 @@ function EmptyStaff({ venueId }: { venueId?: string }) {
       </p>
       <Link
         href={
-          venueId ? `/dashboard/venues/${venueId}/staff/new` : "/dashboard/venues"
+          venueId
+            ? `/dashboard/venues/${venueId}/staff/new`
+            : "/dashboard/venues"
         }
-        className="mt-4 text-[12px] font-medium text-[var(--semantic-amber)] hover:underline hover:underline-offset-2"
+        className="mt-4 text-[12px] font-medium text-[var(--amber-text)] hover:underline hover:underline-offset-2"
       >
         {isVenueScoped ? "Create staff" : "Browse venues"}
       </Link>
@@ -861,7 +934,7 @@ function NoSearchResults({ onClear }: { onClear: () => void }) {
       <button
         type="button"
         onClick={onClear}
-        className="mt-3 text-[12px] font-medium text-[var(--semantic-amber)] hover:underline hover:underline-offset-2"
+        className="mt-3 text-[12px] font-medium text-[var(--amber-text)] hover:underline hover:underline-offset-2"
       >
         Clear search
       </button>

@@ -55,7 +55,9 @@ export function GoogleMapsLocationField({
           message?: string;
         };
         if (!response.ok || !body.resolvedUrl) {
-          throw new Error(body.message ?? "Could not open this Google Maps link.");
+          throw new Error(
+            body.message ?? "Could not open this Google Maps link.",
+          );
         }
         location = parseGoogleMapsUrl(body.resolvedUrl);
       }
@@ -121,7 +123,7 @@ export function GoogleMapsLocationField({
           type="button"
           onClick={() => void resolveLink()}
           disabled={isResolving || !link.trim()}
-          className="h-9 bg-[var(--teal)] px-3.5 font-semibold text-[#06100d] hover:brightness-110"
+          className="h-9 bg-[var(--teal)] px-3.5 font-semibold text-[var(--on-teal)] hover:brightness-110"
         >
           {isResolving ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -133,13 +135,17 @@ export function GoogleMapsLocationField({
       </div>
       <div id={feedbackId} aria-live="polite">
         {error ? (
-          <p role="alert" className="text-[11.5px] leading-5 text-[var(--semantic-red)]">
+          <p
+            role="alert"
+            className="text-[11.5px] leading-5 text-[var(--red-text)]"
+          >
             {error}
           </p>
         ) : resolved ? (
-          <p className="flex items-center gap-1.5 text-[11.5px] leading-5 text-[var(--semantic-green)]">
+          <p className="flex items-center gap-1.5 text-[11.5px] leading-5 text-[var(--green-text)]">
             <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-            Coordinates filled ({resolved.latitude.toFixed(6)}, {resolved.longitude.toFixed(6)}). Review the details below.
+            Coordinates filled ({resolved.latitude.toFixed(6)},{" "}
+            {resolved.longitude.toFixed(6)}). Review the details below.
           </p>
         ) : (
           <p className="text-[11.5px] leading-5 text-[var(--text-4)]">

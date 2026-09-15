@@ -100,13 +100,13 @@ export function PlayerReportFiltersPanel({
           className={cn(
             "h-8 gap-1.5 border-[var(--border)] bg-[var(--bg-1)] px-3 text-[12px] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]",
             open &&
-              "border-[rgba(0,212,170,0.22)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
+              "border-[rgb(var(--teal-rgb)/0.22)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
           )}
         >
           <Filter className="h-3.5 w-3.5" />
           Filters
           {activeCount > 0 && (
-            <span className="rounded-full bg-[var(--teal)] px-1.5 py-px font-mono text-[10px] font-semibold text-[#032921]">
+            <span className="rounded-full bg-[var(--teal)] px-1.5 py-px font-mono text-[10px] font-semibold text-[var(--on-teal)]">
               {activeCount}
             </span>
           )}
@@ -213,7 +213,7 @@ export function PlayerReportFiltersPanel({
             <Button
               type="button"
               onClick={apply}
-              className="h-8 bg-[var(--teal)] px-4 text-[12px] font-semibold text-[#032921] hover:bg-[var(--teal)] hover:brightness-110"
+              className="h-8 bg-[var(--teal)] px-4 text-[12px] font-semibold text-[var(--on-teal)] hover:bg-[var(--teal)] hover:brightness-110"
             >
               Apply filters
             </Button>

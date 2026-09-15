@@ -52,7 +52,7 @@ export function ReportSection({
       {error ? (
         <p
           role="alert"
-          className="rounded-lg bg-[var(--semantic-red-subtle)] p-4 text-sm text-[var(--semantic-red)]"
+          className="rounded-lg bg-[var(--semantic-red-subtle)] p-4 text-sm text-[var(--red-text)]"
         >
           {error}
         </p>

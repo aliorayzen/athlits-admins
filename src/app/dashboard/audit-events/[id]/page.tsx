@@ -118,9 +118,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
                   outcome.pill,
                 )}
               >
-                <span
-                  className={cn("h-1.5 w-1.5 rounded-full", outcome.dot)}
-                />
+                <span className={cn("h-1.5 w-1.5 rounded-full", outcome.dot)} />
                 {outcome.label}
               </span>
             </div>
@@ -217,11 +215,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
                 subtitle="Values captured before and after the action."
               />
               <div className="grid gap-px bg-[var(--border)] lg:grid-cols-2">
-                <JsonPanel
-                  label="Before"
-                  value={event.before}
-                  tone="neutral"
-                />
+                <JsonPanel label="Before" value={event.before} tone="neutral" />
                 <JsonPanel label="After" value={event.after} tone="teal" />
               </div>
             </section>
@@ -259,7 +253,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
               subtitle="Identity that initiated the event."
             />
             <div className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-4">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[rgba(0,212,170,0.16)] bg-[var(--teal-subtle)] text-[11px] font-semibold text-[var(--teal-text)]">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[rgb(var(--teal-rgb)/0.16)] bg-[var(--teal-subtle)] text-[11px] font-semibold text-[var(--teal-text)]">
                 {auditInitials(event)}
               </div>
               <div className="min-w-0">
@@ -294,11 +288,7 @@ function AuditEventDetail({ event }: { event: AuditEvent }) {
                 }
                 mono
               />
-              <CompactField
-                label="IP address"
-                value={event.ipAddress}
-                mono
-              />
+              <CompactField label="IP address" value={event.ipAddress} mono />
               <CompactField
                 label="Trace ID"
                 value={event.traceId}
@@ -341,7 +331,7 @@ function SectionHeading({
   subtitle: string;
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-[var(--border)] bg-white/[0.01] px-4 py-3.5">
+    <div className="flex items-start gap-3 border-b border-[var(--border)] bg-[var(--tint-1)] px-4 py-3.5">
       <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-[var(--teal-subtle)] text-[var(--teal-text)]">
         <Icon className="h-3.5 w-3.5" />
       </div>
@@ -454,9 +444,7 @@ function JsonPanel({
         <span
           className={cn(
             "h-1.5 w-1.5 rounded-full",
-            tone === "teal"
-              ? "bg-[var(--teal)]"
-              : "bg-[var(--text-4)]",
+            tone === "teal" ? "bg-[var(--teal)]" : "bg-[var(--text-4)]",
           )}
         />
         <span className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]">
@@ -513,8 +501,8 @@ function AuditEventDetailError({
         Audit events
       </Link>
       <div className="flex flex-col items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16 text-center">
-        <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-[rgba(244,63,94,0.2)] bg-[var(--semantic-red-subtle)]">
-          <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+        <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-[rgb(var(--red-rgb)/0.2)] bg-[var(--semantic-red-subtle)]">
+          <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
         </div>
         <h1 className="text-[15px] font-semibold text-[var(--text-1)]">
           Could not load this event

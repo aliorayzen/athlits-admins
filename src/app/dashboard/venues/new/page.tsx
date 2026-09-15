@@ -78,7 +78,7 @@ const FACILITIES: { value: Facility; label: string }[] = [
 ];
 
 const INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-hover)] text-white placeholder:text-white/25 focus:border-[rgba(0,212,170,0.3)] focus:shadow-[0_0_0_3px_rgba(0,212,170,0.06)]";
+  "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[rgb(var(--teal-rgb)/0.3)] focus:shadow-[0_0_0_3px_rgb(var(--teal-rgb)/0.06)]";
 
 const LABEL_CLASS =
   "text-xs font-medium uppercase tracking-wider text-[var(--text-3)]";
@@ -265,7 +265,7 @@ export default function NewVenuePage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Assignment & Payment */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -288,7 +288,7 @@ export default function NewVenuePage() {
                 Venue Manager *
               </Label>
               {noManagers ? (
-                <div className="rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-3.5 py-3 text-[13px] text-[var(--semantic-amber)]">
+                <div className="rounded-lg border border-[rgb(var(--amber-rgb)/0.25)] bg-[var(--semantic-amber-subtle)] px-3.5 py-3 text-[13px] text-[var(--amber-text)]">
                   No venue managers exist yet. A venue must be assigned to one.{" "}
                   <Link
                     href="/dashboard/users/create/venue-manager"
@@ -324,7 +324,7 @@ export default function NewVenuePage() {
                 </select>
               )}
               {managersState === "error" && (
-                <p className="text-xs text-[var(--semantic-red)]">
+                <p className="text-xs text-[var(--red-text)]">
                   Couldn&apos;t load venue managers. Refresh and try again.
                 </p>
               )}
@@ -343,9 +343,7 @@ export default function NewVenuePage() {
                     ...previous,
                     paymentMode,
                     whishPaymentLink:
-                      paymentMode === "CASH"
-                        ? ""
-                        : previous.whishPaymentLink,
+                      paymentMode === "CASH" ? "" : previous.whishPaymentLink,
                   }));
                   if (paymentMode === "CASH") {
                     setWhishPaymentLinkError(null);
@@ -374,7 +372,7 @@ export default function NewVenuePage() {
         </Card>
 
         {/* Basic Info */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -465,7 +463,7 @@ export default function NewVenuePage() {
         </Card>
 
         {/* Location */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -523,7 +521,7 @@ export default function NewVenuePage() {
         </Card>
 
         {/* Operating hours */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -564,7 +562,7 @@ export default function NewVenuePage() {
         </Card>
 
         {/* Settings */}
-        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[0_2px_16px_-4px_rgba(0,0,0,0.3)]">
+        <Card className="border-[var(--border)] bg-[var(--bg-1)] backdrop-blur-sm transition-all hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-2)]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[var(--teal-subtle)] to-[var(--teal-subtle)] ring-1 ring-[var(--teal-subtle)]">
@@ -659,7 +657,7 @@ export default function NewVenuePage() {
                       aria-pressed={active}
                       className={`rounded-md border px-2.5 py-2 text-[12.5px] font-medium transition-all ${
                         active
-                          ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
+                          ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
                           : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]"
                       }`}
                     >
@@ -700,11 +698,11 @@ export default function NewVenuePage() {
         {submitError && (
           <div
             role="alert"
-            className="flex gap-3 rounded-lg border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-[13px] leading-6"
+            className="flex gap-3 rounded-lg border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.08)] px-4 py-3 text-[13px] leading-6"
           >
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-red)]" />
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--red-text)]" />
             <div>
-              <p className="font-medium text-[var(--semantic-red)]">
+              <p className="font-medium text-[var(--red-text)]">
                 The venue was not created
               </p>
               <p className="mt-0.5 text-[var(--text-3)]">{submitError}</p>
@@ -726,7 +724,7 @@ export default function NewVenuePage() {
             type="submit"
             disabled={isLoading || noManagers}
             size="lg"
-            className="bg-[linear-gradient(135deg,var(--teal),#00b894)] px-6 font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] transition-all hover:-translate-y-px hover:brightness-110"
+            className="bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] px-6 font-semibold text-[var(--on-teal)] shadow-[0_1px_12px_-2px_var(--teal-glow)] transition-all hover:-translate-y-px hover:brightness-110"
           >
             {isLoading ? (
               <>

@@ -170,11 +170,16 @@ function buildTimeOptions(
   maxMinutes = MINUTES_PER_DAY - 1,
 ): number[] {
   const options: number[] = [];
-  const firstGridMinute = Math.ceil(minMinutes / TIME_STEP_MINUTES) * TIME_STEP_MINUTES;
+  const firstGridMinute =
+    Math.ceil(minMinutes / TIME_STEP_MINUTES) * TIME_STEP_MINUTES;
   for (let m = firstGridMinute; m <= maxMinutes; m += TIME_STEP_MINUTES) {
     options.push(m);
   }
-  if (current >= 0 && current <= 2 * MINUTES_PER_DAY && !options.includes(current)) {
+  if (
+    current >= 0 &&
+    current <= 2 * MINUTES_PER_DAY &&
+    !options.includes(current)
+  ) {
     options.push(current);
     options.sort((a, b) => a - b);
   }
@@ -307,7 +312,7 @@ export function VenueAvailabilityEditor({
                 className={cn(
                   "w-28 shrink-0 rounded-md border px-2.5 py-1.5 text-left text-[12.5px] font-medium transition-all",
                   isOpen
-                    ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
+                    ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
                     : "border-[var(--border)] bg-[var(--bg-hover)] text-[var(--text-4)] hover:border-[var(--border-strong)] hover:text-[var(--text-2)]",
                 )}
               >
@@ -351,7 +356,7 @@ export function VenueAvailabilityEditor({
                   {invalid && (
                     <p
                       role="alert"
-                      className="basis-full text-[12px] text-[var(--semantic-red)]"
+                      className="basis-full text-[12px] text-[var(--red-text)]"
                     >
                       Closing time must be later than opening time on the same
                       day.
@@ -408,7 +413,7 @@ function TimeSelect({
         "h-9 w-[8.25rem] rounded-md border px-2.5 text-[13px] font-mono tabular-nums outline-none transition-all",
         className,
         invalid &&
-          "border-[rgba(244,63,94,0.45)] focus:border-[rgba(244,63,94,0.6)]",
+          "border-[rgb(var(--red-rgb)/0.45)] focus:border-[rgb(var(--red-rgb)/0.6)]",
       )}
     >
       {buildTimeOptions(value, minMinutes, maxMinutes).map((minutes) => (

@@ -70,75 +70,172 @@
   --color-semantic-red-subtle: var(--semantic-red-subtle);
   --color-semantic-blue: var(--semantic-blue);
   --color-semantic-blue-subtle: var(--semantic-blue-subtle);
+
+  /* Theme-aware neutral tints + elevation */
+  --color-tint-1: var(--tint-1);
+  --color-tint-2: var(--tint-2);
+  --color-tint-3: var(--tint-3);
+  --color-tint-4: var(--tint-4);
+  --color-tint-5: var(--tint-5);
+  --color-tint-6: var(--tint-6);
+  --color-tint-7: var(--tint-7);
+  --shadow-e1: var(--shadow-1);
+  --shadow-e2: var(--shadow-2);
+  --shadow-e3: var(--shadow-3);
+  --color-teal-deep: var(--teal-deep);
+  --color-teal-hi: var(--teal-hi);
+  --color-on-teal: var(--on-teal);
+  --color-on-amber: var(--on-amber);
+  --color-green-text: var(--green-text);
+  --color-amber-text: var(--amber-text);
+  --color-red-text: var(--red-text);
+  --color-blue-text: var(--blue-text);
 }
 
-/* ── Light mode ── */
+/* ── Light mode (default canvas) ───────────────────────────────────────────
+   Neutrals are tinted toward the brand teal (hue 195, chroma 0.002–0.008) so
+   surfaces read as cool porcelain rather than default gray-50. Every text and
+   fill value below was solved against WCAG, not picked by eye — see
+   docs/superpowers/specs/2026-09-14-light-mode-conversion-design.md.
+   Light accents are DARKER than their dark-mode counterparts: each solid fill
+   is set so a white label clears 4.6:1, which also satisfies SC 1.4.11 against
+   the card. Do not substitute the dark-mode accent values here; #00d4aa on
+   white is 1.9:1 and unreadable. ─────────────────────────────────────────── */
 :root {
   /* Theme native form controls (time/date pickers, scrollbars) per theme. */
   color-scheme: light;
-  --background: #f5f4f2;
-  --foreground: #0b0f14;
-  --card: #ffffff;
-  --card-foreground: #0b0f14;
-  --popover: #ffffff;
-  --popover-foreground: #0b0f14;
-  --primary: #00b89e;
+  --background: #f1f5f5;
+  --foreground: #131c22;
+  --card: #fbfdfd;
+  --card-foreground: #131c22;
+  --popover: #fbfdfd;
+  --popover-foreground: #131c22;
+  --primary: #008567;
   --primary-foreground: #ffffff;
-  --secondary: #edece8;
-  --secondary-foreground: #0b0f14;
-  --muted: #edece8;
-  --muted-foreground: #62666e;
-  --accent: #edece8;
-  --accent-foreground: #0b0f14;
-  --destructive: #f43f5e;
-  --border: rgba(0, 0, 0, 0.07);
-  --input: rgba(0, 0, 0, 0.07);
-  --ring: #00d4aa;
-  --chart-1: #00d4aa;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #6366f1;
-  --chart-5: #a78bfa;
+  --secondary: #e9efef;
+  --secondary-foreground: #131c22;
+  --muted: #e9efef;
+  --muted-foreground: #424c54;
+  --accent: #e9efef;
+  --accent-foreground: #131c22;
+  --destructive: #d53b4b;
+  --border: rgba(9, 20, 26, 0.065);
+  --input: rgba(9, 20, 26, 0.065);
+  --ring: #008567;
+  --chart-1: #009e7d;
+  --chart-2: #c56c0c;
+  --chart-3: #6b79ea;
+  --chart-4: #db4f59;
+  --chart-5: #9470cd;
   --radius: 0.625rem;
-  --gold: #f59e0b;
+  --gold: #b55d00;
   --gold-foreground: #ffffff;
-  --gold-muted: rgba(245, 158, 11, 0.12);
-  --arena: #00d4aa;
+  --gold-muted: #ffebdc;
+  --arena: #008567;
   --arena-foreground: #ffffff;
-  --arena-muted: rgba(0, 212, 170, 0.1);
-  --sidebar: #f5f4f2;
-  --sidebar-foreground: #0b0f14;
-  --sidebar-primary: #00d4aa;
+  --arena-muted: #dff7ee;
+  --sidebar: #e9efef;
+  --sidebar-foreground: #131c22;
+  --sidebar-primary: #008567;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #edece8;
-  --sidebar-accent-foreground: #0b0f14;
-  --sidebar-border: rgba(0, 0, 0, 0.07);
-  --sidebar-ring: #00d4aa;
+  --sidebar-accent: #dfe7e7;
+  --sidebar-accent-foreground: #131c22;
+  --sidebar-border: rgba(9, 20, 26, 0.065);
+  --sidebar-ring: #008567;
 
   /* Surface stack (light) */
-  --bg-0: #f5f4f2;
-  --bg-1: #ffffff;
-  --bg-2: #f0efed;
-  --bg-3: #e8e7e4;
-  --bg-hover: rgba(0, 0, 0, 0.03);
-  --bg-active: rgba(0, 0, 0, 0.05);
-  --border-strong: rgba(0, 0, 0, 0.12);
-  --text-1: #0b0f14;
-  --text-2: #555d6e;
-  --text-3: #838999;
-  --text-4: #a0a5b0;
-  --teal: #00d4aa;
-  --teal-subtle: rgba(0, 212, 170, 0.08);
-  --teal-text: #00a88a;
-  --teal-glow: rgba(0, 212, 170, 0.12);
-  --semantic-green: #10b981;
-  --semantic-green-subtle: rgba(16, 185, 129, 0.1);
-  --semantic-amber: #f59e0b;
-  --semantic-amber-subtle: rgba(245, 158, 11, 0.1);
-  --semantic-red: #f43f5e;
-  --semantic-red-subtle: rgba(244, 63, 94, 0.08);
-  --semantic-blue: #6366f1;
-  --semantic-blue-subtle: rgba(99, 102, 241, 0.1);
+  --bg-0: #f1f5f5;
+  --bg-1: #fbfdfd;
+  --bg-2: #e9efef;
+  --bg-3: #dfe7e7;
+  --bg-hover: rgba(9, 20, 26, 0.032);
+  --bg-active: rgba(9, 20, 26, 0.048);
+  --border-strong: rgba(9, 20, 26, 0.13);
+
+  /* Text hierarchy. Unlike dark, every light step clears AA against bg-2 —
+     there is not enough range to spend a step on a decorative-only value. */
+  --text-1: #131c22;
+  --text-2: #424c54;
+  --text-3: #525d65;
+  --text-4: #626c74;
+
+  /* Brand teal */
+  --teal: #008567;
+  --teal-subtle: #dff7ee;
+  --teal-text: #007960;
+  --teal-glow: rgba(0, 133, 103, 0.16);
+
+  /* Semantic colors */
+  --semantic-green: #008653;
+  --semantic-green-subtle: #e0f7e9;
+  --semantic-amber: #b55d00;
+  --semantic-amber-subtle: #ffebdc;
+  --semantic-red: #d53b4b;
+  --semantic-red-subtle: #ffe6e5;
+  --semantic-blue: #5d68e3;
+  --semantic-blue-subtle: #e8efff;
+  --green-text: #007847;
+  --amber-text: #aa5300;
+  --red-text: #c52a3f;
+  --blue-text: #545dd8;
+
+  /* Neutral tint scale — theme-aware replacements for hardcoded white-alpha.
+     Light tints with ink, dark tints with white, so a single token expresses
+     "one step away from the current surface" in either theme. */
+  --tint-1: rgba(9, 20, 26, 0.02);
+  --tint-2: rgba(9, 20, 26, 0.032);
+  --tint-3: rgba(9, 20, 26, 0.048);
+  --tint-4: rgba(9, 20, 26, 0.065);
+  --tint-5: rgba(9, 20, 26, 0.09);
+  --tint-6: rgba(9, 20, 26, 0.13);
+  --tint-7: rgba(9, 20, 26, 0.19);
+
+  /* Elevation. Dark builds depth from border + surface step + accent glow and
+     needs almost no shadow; light needs real shadow or every card reads flat. */
+  --shadow-1: 0 1px 2px rgba(9, 20, 26, 0.05), 0 1px 1px rgba(9, 20, 26, 0.03);
+  --shadow-2:
+    0 2px 4px -1px rgba(9, 20, 26, 0.06), 0 4px 12px -2px rgba(9, 20, 26, 0.06);
+  --shadow-3:
+    0 8px 28px -6px rgba(9, 20, 26, 0.12), 0 2px 6px -1px rgba(9, 20, 26, 0.06);
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+
+  /* Accent channel triplets. Alpha-bearing accent literals across the app
+     compose as rgb(var(--teal-rgb) / <alpha>), so a single definition flips the
+     hue per theme while each call site keeps its own alpha. */
+  --teal-rgb: 0 133 103;
+  --amber-rgb: 181 93 0;
+  --indigo-rgb: 93 104 227;
+  --green-rgb: 0 134 83;
+  --red-rgb: 213 59 75;
+  --green-deep: #006b42;
+
+  /* Gradient stops + the ink that sits ON a filled accent. Light fills are dark
+     enough for a white label; dark fills are bright and need dark ink. */
+  --teal-deep: #006b52;
+  --teal-hi: #00a07c;
+  --teal-hi-deep: #00875f;
+  --amber-deep: #8f4900;
+  --amber-hi: #cf6f00;
+  --on-teal: #ffffff;
+  --on-amber: #ffffff;
+  --on-danger: #ffffff;
+  --on-info: #ffffff;
+
+  /* Sidebar mesh. Light recedes behind the content surface instead of glowing
+     in front of it, so the base steps DOWN in lightness and the accent radials
+     carry more alpha to stay perceptible against a bright ground. */
+  --sidebar-mesh-a: #eef3f3;
+  --sidebar-mesh-b: #e7eeee;
+  --sidebar-mesh-c: #e0e9e9;
+  --sidebar-glow-teal: 0.1;
+  --sidebar-glow-teal-mid: 0.045;
+  --sidebar-glow-indigo: 0.05;
+  --sidebar-glow-amber: 0.05;
+  --sidebar-grain-opacity: 0.3;
+  --sidebar-grain-blend: multiply;
+
+  /* Modal scrim. Needs more weight on light, where a 10% wash reads as nothing. */
+  --scrim: rgba(9, 20, 26, 0.28);
 }
 
 /* ── Dark mode ── */
@@ -197,7 +294,7 @@
   --text-1: #f2f3f5;
   --text-2: #b8bcc5;
   --text-3: #838999;
-  --text-4: #555d6e;
+  --text-4: #5f6775;
 
   /* Brand teal */
   --teal: #00d4aa;
@@ -207,13 +304,66 @@
 
   /* Semantic colors */
   --semantic-green: #10b981;
-  --semantic-green-subtle: rgba(16, 185, 129, 0.1);
+  --semantic-green-subtle: rgb(var(--green-rgb)/0.1);
   --semantic-amber: #f59e0b;
   --semantic-amber-subtle: rgba(245, 158, 11, 0.1);
   --semantic-red: #f43f5e;
-  --semantic-red-subtle: rgba(244, 63, 94, 0.08);
-  --semantic-blue: #6366f1;
-  --semantic-blue-subtle: rgba(99, 102, 241, 0.1);
+  --semantic-red-subtle: rgb(var(--red-rgb)/0.08);
+  --semantic-blue: #7882ef;
+  --semantic-blue-subtle: rgba(120, 130, 239, 0.12);
+  --green-text: var(--semantic-green);
+  --amber-text: var(--semantic-amber);
+  --red-text: var(--semantic-red);
+  --blue-text: var(--semantic-blue);
+
+  /* Neutral tint scale — same seven steps, tinted with light instead of ink. */
+  --tint-1: rgba(255, 255, 255, 0.015);
+  --tint-2: rgba(255, 255, 255, 0.025);
+  --tint-3: rgba(255, 255, 255, 0.04);
+  --tint-4: rgba(255, 255, 255, 0.065);
+  --tint-5: rgba(255, 255, 255, 0.09);
+  --tint-6: rgba(255, 255, 255, 0.13);
+  --tint-7: rgba(255, 255, 255, 0.2);
+
+  /* Elevation reads from the surface step and border on dark, so shadows stay
+     near-invisible — they only anchor floating layers against the canvas. */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2:
+    0 2px 6px -1px rgba(0, 0, 0, 0.4), 0 6px 18px -4px rgba(0, 0, 0, 0.35);
+  --shadow-3:
+    0 12px 34px -8px rgba(0, 0, 0, 0.6), 0 3px 8px -2px rgba(0, 0, 0, 0.4);
+  --inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+  /* Accent channel triplets — see :root for the rationale. */
+  --teal-rgb: 0 212 170;
+  --amber-rgb: 245 158 11;
+  --indigo-rgb: 99 102 241;
+  --green-rgb: 16 185 129;
+  --red-rgb: 244 63 94;
+  --green-deep: var(--green-deep);
+
+  --teal-deep: #00b894;
+  --teal-hi: #1be2ba;
+  --teal-hi-deep: #0cc89f;
+  --amber-deep: #d97706;
+  --amber-hi: #fbbf24;
+  --on-teal: #032921;
+  --on-amber: #1a1204;
+  --on-danger: #130505;
+  --on-info: #070815;
+
+  /* Sidebar mesh — see :root. */
+  --sidebar-mesh-a: #070a12;
+  --sidebar-mesh-b: #05070d;
+  --sidebar-mesh-c: #04060b;
+  --sidebar-glow-teal: 0.09;
+  --sidebar-glow-teal-mid: 0.03;
+  --sidebar-glow-indigo: 0.04;
+  --sidebar-glow-amber: 0.018;
+  --sidebar-grain-opacity: 0.55;
+  --sidebar-grain-blend: overlay;
+
+  --scrim: rgba(0, 0, 0, 0.5);
 }
 
 @layer base {
@@ -229,13 +379,13 @@
 
   /* Branded focus ring */
   :focus-visible {
-    outline: 2px solid rgba(0, 212, 170, 0.4);
+    outline: 2px solid rgb(var(--teal-rgb) / 0.4);
     outline-offset: 2px;
   }
 
   /* Branded text selection */
   ::selection {
-    background: rgba(0, 212, 170, 0.2);
+    background: rgb(var(--teal-rgb) / 0.2);
     color: #fff;
   }
 }
@@ -505,7 +655,7 @@ textarea:disabled,
 
 /* Login screen — branded selection + caret (top-design: micro-craft). */
 .login-screen ::selection {
-  background: rgba(0, 212, 170, 0.35);
+  background: rgb(var(--teal-rgb) / 0.35);
   color: #ffffff;
 }
 .login-screen input {
@@ -792,7 +942,11 @@ textarea:disabled,
   inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(0, 212, 170, 0.3), transparent 40%);
+  background: linear-gradient(
+    135deg,
+    rgb(var(--teal-rgb) / 0.3),
+    transparent 40%
+  );
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -838,25 +992,30 @@ textarea:disabled,
 .sidebar-v2 {
   /* Multi-point gradient mesh — no tiled pattern */
   background:
-    linear-gradient(270deg, rgba(255, 255, 255, 0.025) 0%, transparent 3%),
+    linear-gradient(270deg, var(--tint-2) 0%, transparent 3%),
     radial-gradient(
       ellipse 340px 280px at 50% -80px,
-      rgba(0, 212, 170, 0.09) 0%,
-      rgba(0, 212, 170, 0.03) 40%,
+      rgb(var(--teal-rgb) / var(--sidebar-glow-teal)) 0%,
+      rgb(var(--teal-rgb) / var(--sidebar-glow-teal-mid)) 40%,
       transparent 75%
     ),
     radial-gradient(
       ellipse 380px 420px at -20% 45%,
-      rgba(99, 102, 241, 0.04) 0%,
+      rgb(var(--indigo-rgb) / var(--sidebar-glow-indigo)) 0%,
       transparent 70%
     ),
     radial-gradient(
       ellipse 300px 240px at 50% 110%,
-      rgba(245, 158, 11, 0.018) 0%,
+      rgb(var(--amber-rgb) / var(--sidebar-glow-amber)) 0%,
       transparent 65%
     ),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.018) 0%, transparent 18%),
-    linear-gradient(180deg, #070a12 0%, #05070d 55%, #04060b 100%);
+    linear-gradient(180deg, var(--tint-2) 0%, transparent 18%),
+    linear-gradient(
+      180deg,
+      var(--sidebar-mesh-a) 0%,
+      var(--sidebar-mesh-b) 55%,
+      var(--sidebar-mesh-c) 100%
+    );
 }
 
 /* Noise grain overlay via pseudo-element */
@@ -866,8 +1025,8 @@ textarea:disabled,
   inset: 0;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.045 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   background-size: 160px 160px;
-  opacity: 0.55;
-  mix-blend-mode: overlay;
+  opacity: var(--sidebar-grain-opacity);
+  mix-blend-mode: var(--sidebar-grain-blend);
   pointer-events: none;
   z-index: 0;
 }
@@ -880,8 +1039,8 @@ textarea:disabled,
 .sidebar-v2 .sv2-workspace:hover {
   transform: translateY(-1px);
   box-shadow:
-    0 6px 18px -8px rgba(0, 212, 170, 0.25),
-    0 0 0 1px rgba(0, 212, 170, 0.06) inset;
+    0 6px 18px -8px rgb(var(--teal-rgb) / 0.25),
+    0 0 0 1px rgb(var(--teal-rgb) / 0.06) inset;
 }
 .sidebar-v2 .sv2-workspace:active {
   transform: translateY(0);
@@ -890,10 +1049,10 @@ textarea:disabled,
 
 /* Section color dots with glow */
 .sidebar-v2 .sv2-group-dot-teal {
-  box-shadow: 0 0 5px rgba(0, 212, 170, 0.5);
+  box-shadow: 0 0 5px rgb(var(--teal-rgb) / 0.5);
 }
 .sidebar-v2 .sv2-group-dot-amber {
-  box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+  box-shadow: 0 0 5px rgb(var(--amber-rgb) / 0.5);
 }
 
 /* Stat dots glow */
@@ -933,7 +1092,7 @@ textarea:disabled,
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 212, 170, 0.18) 50%,
+    rgb(var(--teal-rgb) / 0.18) 50%,
     transparent
   );
   transform: translateX(-100%);
@@ -1076,10 +1235,8 @@ textarea:disabled,
   top: 2px;
   bottom: 2px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 1px 2px rgba(0, 0, 0, 0.25);
+  background: var(--tint-4);
+  box-shadow: var(--inset-hi), var(--shadow-1);
   transition:
     transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1156,32 +1313,32 @@ textarea:disabled,
 .venues-v2 .vv2-thumb-fallback.vv2-g1 {
   background: linear-gradient(
     135deg,
-    rgba(0, 212, 170, 0.25) 0%,
-    rgba(0, 212, 170, 0.06) 100%
+    rgb(var(--teal-rgb) / 0.25) 0%,
+    rgb(var(--teal-rgb) / 0.06) 100%
   );
   color: var(--teal-text);
 }
 .venues-v2 .vv2-thumb-fallback.vv2-g2 {
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.22) 0%,
-    rgba(99, 102, 241, 0.04) 100%
+    rgb(var(--indigo-rgb) / 0.22) 0%,
+    rgb(var(--indigo-rgb) / 0.04) 100%
   );
   color: #a5b4fc;
 }
 .venues-v2 .vv2-thumb-fallback.vv2-g3 {
   background: linear-gradient(
     135deg,
-    rgba(245, 158, 11, 0.2) 0%,
-    rgba(245, 158, 11, 0.04) 100%
+    rgb(var(--amber-rgb) / 0.2) 0%,
+    rgb(var(--amber-rgb) / 0.04) 100%
   );
   color: #fcd34d;
 }
 .venues-v2 .vv2-thumb-fallback.vv2-g4 {
   background: linear-gradient(
     135deg,
-    rgba(244, 63, 94, 0.2) 0%,
-    rgba(244, 63, 94, 0.04) 100%
+    rgb(var(--red-rgb) / 0.2) 0%,
+    rgb(var(--red-rgb) / 0.04) 100%
   );
   color: #fda4af;
 }
@@ -1198,7 +1355,7 @@ textarea:disabled,
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 212, 170, 0.3) 50%,
+    rgb(var(--teal-rgb) / 0.3) 50%,
     transparent
   );
   transform: translateX(-100%);
@@ -1319,7 +1476,7 @@ textarea:disabled,
 .invoices-v2 .iv2-kpi-hero:hover {
   background: radial-gradient(
     ellipse at center,
-    rgba(0, 212, 170, 0.04),
+    rgb(var(--teal-rgb) / 0.04),
     transparent 70%
   );
 }
@@ -1363,9 +1520,7 @@ textarea:disabled,
   bottom: 2px;
   border-radius: 4px;
   background: var(--bg-2);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--inset-hi), var(--shadow-1);
   transition:
     transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1488,10 +1643,10 @@ textarea:disabled,
 
 /* Mark Paid button — pre-action green glow + lift */
 .invoices-v2 .iv2-btn-paid:hover {
-  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-color: rgb(var(--green-rgb) / 0.35) !important;
   color: var(--green-text, #34d399) !important;
-  background: rgba(16, 185, 129, 0.1) !important;
-  box-shadow: 0 4px 14px -6px rgba(16, 185, 129, 0.5);
+  background: rgb(var(--green-rgb) / 0.1) !important;
+  box-shadow: 0 4px 14px -6px rgb(var(--green-rgb) / 0.5);
   transform: translateY(-1px);
 }
 .invoices-v2 .iv2-btn-paid:active {
@@ -1510,7 +1665,7 @@ textarea:disabled,
 .invoices-v2 .iv2-amount-void {
   color: var(--text-4);
   text-decoration: line-through;
-  text-decoration-color: rgba(255, 255, 255, 0.15);
+  text-decoration-color: var(--tint-6);
 }
 
 /* Demo banner fade-in */
@@ -1945,9 +2100,7 @@ textarea:disabled,
   bottom: 2px;
   border-radius: 4px;
   background: var(--bg-2);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--inset-hi), var(--shadow-1);
   transition:
     transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1984,38 +2137,38 @@ textarea:disabled,
 .users-v2 .uv2-avatar.uv2-g1 {
   background: linear-gradient(
     135deg,
-    rgba(0, 212, 170, 0.28),
-    rgba(0, 212, 170, 0.08)
+    rgb(var(--teal-rgb) / 0.28),
+    rgb(var(--teal-rgb) / 0.08)
   );
   color: var(--teal-text);
-  border-color: rgba(0, 212, 170, 0.22);
+  border-color: rgb(var(--teal-rgb) / 0.22);
 }
 .users-v2 .uv2-avatar.uv2-g2 {
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.26),
-    rgba(99, 102, 241, 0.06)
+    rgb(var(--indigo-rgb) / 0.26),
+    rgb(var(--indigo-rgb) / 0.06)
   );
   color: #a5b4fc;
-  border-color: rgba(99, 102, 241, 0.22);
+  border-color: rgb(var(--indigo-rgb) / 0.22);
 }
 .users-v2 .uv2-avatar.uv2-g3 {
   background: linear-gradient(
     135deg,
-    rgba(245, 158, 11, 0.24),
-    rgba(245, 158, 11, 0.06)
+    rgb(var(--amber-rgb) / 0.24),
+    rgb(var(--amber-rgb) / 0.06)
   );
   color: #fcd34d;
-  border-color: rgba(245, 158, 11, 0.22);
+  border-color: rgb(var(--amber-rgb) / 0.22);
 }
 .users-v2 .uv2-avatar.uv2-g4 {
   background: linear-gradient(
     135deg,
-    rgba(244, 63, 94, 0.24),
-    rgba(244, 63, 94, 0.06)
+    rgb(var(--red-rgb) / 0.24),
+    rgb(var(--red-rgb) / 0.06)
   );
   color: #fda4af;
-  border-color: rgba(244, 63, 94, 0.22);
+  border-color: rgb(var(--red-rgb) / 0.22);
 }
 .users-v2 .uv2-avatar.uv2-g5 {
   background: linear-gradient(
@@ -2105,39 +2258,43 @@ textarea:disabled,
 .users-v2 .uv2-vstack-g1 {
   background: linear-gradient(
     135deg,
-    rgba(0, 212, 170, 0.3),
-    rgba(0, 212, 170, 0.1)
+    rgb(var(--teal-rgb) / 0.3),
+    rgb(var(--teal-rgb) / 0.1)
   );
   color: var(--teal-text);
 }
 .users-v2 .uv2-vstack-g2 {
   background: linear-gradient(
     135deg,
-    rgba(99, 102, 241, 0.26),
-    rgba(99, 102, 241, 0.05)
+    rgb(var(--indigo-rgb) / 0.26),
+    rgb(var(--indigo-rgb) / 0.05)
   );
   color: #a5b4fc;
 }
 .users-v2 .uv2-vstack-g3 {
   background: linear-gradient(
     135deg,
-    rgba(245, 158, 11, 0.24),
-    rgba(245, 158, 11, 0.05)
+    rgb(var(--amber-rgb) / 0.24),
+    rgb(var(--amber-rgb) / 0.05)
   );
   color: #fcd34d;
 }
 .users-v2 .uv2-vstack-g4 {
   background: linear-gradient(
     135deg,
-    rgba(244, 63, 94, 0.24),
-    rgba(244, 63, 94, 0.05)
+    rgb(var(--red-rgb) / 0.24),
+    rgb(var(--red-rgb) / 0.05)
   );
   color: #fda4af;
 }
 
 /* Is-me row subtle teal wash */
 .users-v2 .uv2-tr-me {
-  background: linear-gradient(90deg, rgba(0, 212, 170, 0.03), transparent 60%);
+  background: linear-gradient(
+    90deg,
+    rgb(var(--teal-rgb) / 0.03),
+    transparent 60%
+  );
 }
 
 /* Demo banner */
@@ -2187,32 +2344,32 @@ textarea:disabled,
 }
 .users-create-v2 .uv2c-role-card:hover:not(.uv2c-role-card-selected) {
   border-color: var(--border-strong);
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--tint-2);
   transform: translateY(-1px);
 }
 
 .users-create-v2 .uv2c-role-card-selected-admin {
-  border-color: rgba(0, 212, 170, 0.3) !important;
+  border-color: rgb(var(--teal-rgb) / 0.3) !important;
   background: linear-gradient(
     180deg,
-    rgba(0, 212, 170, 0.06),
-    rgba(0, 212, 170, 0.02)
+    rgb(var(--teal-rgb) / 0.06),
+    rgb(var(--teal-rgb) / 0.02)
   );
   box-shadow:
-    0 0 0 3px rgba(0, 212, 170, 0.08),
-    0 6px 18px -8px rgba(0, 212, 170, 0.25);
+    0 0 0 3px rgb(var(--teal-rgb) / 0.08),
+    0 6px 18px -8px rgb(var(--teal-rgb) / 0.25);
 }
 
 .users-create-v2 .uv2c-role-card-selected-vm {
-  border-color: rgba(245, 158, 11, 0.3) !important;
+  border-color: rgb(var(--amber-rgb) / 0.3) !important;
   background: linear-gradient(
     180deg,
-    rgba(245, 158, 11, 0.05),
-    rgba(245, 158, 11, 0.01)
+    rgb(var(--amber-rgb) / 0.05),
+    rgb(var(--amber-rgb) / 0.01)
   );
   box-shadow:
-    0 0 0 3px rgba(245, 158, 11, 0.06),
-    0 6px 18px -8px rgba(245, 158, 11, 0.22);
+    0 0 0 3px rgb(var(--amber-rgb) / 0.06),
+    0 6px 18px -8px rgb(var(--amber-rgb) / 0.22);
 }
 
 /* Reduced motion */
@@ -2246,9 +2403,7 @@ textarea:disabled,
   bottom: 2px;
   border-radius: 4px;
   background: var(--bg-2);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 1px 2px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--inset-hi), var(--shadow-1);
   transition:
     transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
     width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -2261,15 +2416,15 @@ textarea:disabled,
 }
 .settings-v2 .sv2-tab-dot-blue {
   background: var(--semantic-blue);
-  box-shadow: 0 0 5px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 0 5px rgb(var(--indigo-rgb) / 0.4);
 }
 .settings-v2 .sv2-tab-dot-amber {
   background: var(--semantic-amber);
-  box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 0 5px rgb(var(--amber-rgb) / 0.4);
 }
 .settings-v2 .sv2-tab-dot-red {
   background: var(--semantic-red);
-  box-shadow: 0 0 5px rgba(244, 63, 94, 0.4);
+  box-shadow: 0 0 5px rgb(var(--red-rgb) / 0.4);
 }
 
 /* Card staggered entrance */
@@ -2330,8 +2485,8 @@ textarea:disabled,
   width: 36px;
   height: 20px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.1));
+  background: var(--tint-5);
+  border: 1px solid var(--border-strong, var(--tint-5));
   cursor: pointer;
   flex-shrink: 0;
   transition:
@@ -2349,10 +2504,10 @@ textarea:disabled,
   border-radius: 50%;
   background: var(--text-3);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-1);
 }
 .settings-v2 .sv2-switch:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--tint-5);
 }
 .settings-v2 .sv2-switch-on {
   background: var(--teal);
@@ -2372,10 +2527,10 @@ textarea:disabled,
   transform: translateY(-2px);
 }
 .settings-v2 .sv2-theme-card-selected {
-  border-color: rgba(0, 212, 170, 0.3) !important;
+  border-color: rgb(var(--teal-rgb) / 0.3) !important;
   box-shadow:
-    0 0 0 3px rgba(0, 212, 170, 0.08),
-    0 6px 18px -8px rgba(0, 212, 170, 0.25);
+    0 0 0 3px rgb(var(--teal-rgb) / 0.08),
+    0 6px 18px -8px rgb(var(--teal-rgb) / 0.25);
 }
 
 /* Copy-trail on hover */
@@ -2392,9 +2547,9 @@ textarea:disabled,
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .settings-v2 .sv2-danger-btn:hover:not(:disabled) {
-  background: rgba(244, 63, 94, 0.12) !important;
-  border-color: rgba(244, 63, 94, 0.35) !important;
-  box-shadow: 0 4px 14px -6px rgba(244, 63, 94, 0.3);
+  background: rgb(var(--red-rgb) / 0.12) !important;
+  border-color: rgb(var(--red-rgb) / 0.35) !important;
+  box-shadow: 0 4px 14px -6px rgb(var(--red-rgb) / 0.3);
   transform: translateY(-1px);
 }
 

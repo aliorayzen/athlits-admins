@@ -87,7 +87,7 @@ import {
 } from "@/components/venue-availability-editor";
 
 const CONTRACT_INPUT_CLASS =
-  "border-[var(--border)] bg-[var(--bg-0)] text-white placeholder:text-white/25 focus:border-[var(--teal)]/40 focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
+  "border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--teal)]/40 focus:ring-[3px] focus:ring-[var(--teal-subtle)]";
 const CONTRACT_LABEL_CLASS =
   "text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--text-4)]";
 
@@ -305,8 +305,8 @@ export default function VenueDetailPage() {
                 variant={venue.status === "ACTIVE" ? "default" : "secondary"}
                 className={
                   venue.status === "ACTIVE"
-                    ? "shrink-0 gap-1.5 bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]"
-                    : "shrink-0 gap-1.5 bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]"
+                    ? "shrink-0 gap-1.5 bg-[var(--semantic-green-subtle)] text-[var(--green-text)]"
+                    : "shrink-0 gap-1.5 bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]"
                 }
               >
                 <span
@@ -374,7 +374,7 @@ export default function VenueDetailPage() {
                   value={managerId}
                   onChange={(e) => setManagerId(e.target.value)}
                   placeholder="Enter venue manager UUID"
-                  className="border-[var(--border)] bg-[var(--bg-0)] font-mono text-white placeholder:text-white/25 focus:border-[var(--teal)]/40"
+                  className="border-[var(--border)] bg-[var(--bg-0)] font-mono text-[var(--text-1)] placeholder:text-[var(--text-4)] focus:border-[var(--teal)]/40"
                 />
               </div>
               <DialogFooter>
@@ -388,7 +388,7 @@ export default function VenueDetailPage() {
                 <Button
                   onClick={handleAssignManager}
                   disabled={!managerId.trim()}
-                  className="bg-[linear-gradient(135deg,var(--teal),#00b894)] font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
+                  className="bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] font-semibold text-[var(--on-teal)] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
                 >
                   Assign
                 </Button>
@@ -407,7 +407,7 @@ export default function VenueDetailPage() {
               </Link>
               <Link
                 href={`/dashboard/venues/${venue.id}/staff/new`}
-                className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 text-sm font-medium text-[var(--semantic-amber)] transition-colors outline-none hover:bg-[rgba(245,158,11,0.16)] focus-visible:ring-3 focus-visible:ring-[rgba(245,158,11,0.18)] active:translate-y-px"
+                className="inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-[rgb(var(--amber-rgb)/0.25)] bg-[var(--semantic-amber-subtle)] px-2.5 text-sm font-medium text-[var(--amber-text)] transition-colors outline-none hover:bg-[rgb(var(--amber-rgb)/0.16)] focus-visible:ring-3 focus-visible:ring-[rgb(var(--amber-rgb)/0.18)] active:translate-y-px"
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 Create staff
@@ -426,8 +426,8 @@ export default function VenueDetailPage() {
                   {...props}
                   className={
                     venue.status === "ACTIVE"
-                      ? "border-[var(--border-strong)] bg-[var(--bg-2)] text-[var(--semantic-amber)] hover:bg-[var(--semantic-amber-subtle)]"
-                      : "bg-[linear-gradient(135deg,var(--teal),#00b894)] font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
+                      ? "border-[var(--border-strong)] bg-[var(--bg-2)] text-[var(--amber-text)] hover:bg-[var(--semantic-amber-subtle)]"
+                      : "bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] font-semibold text-[var(--on-teal)] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
                   }
                   variant={venue.status === "ACTIVE" ? "outline" : "default"}
                 >
@@ -455,8 +455,8 @@ export default function VenueDetailPage() {
                   onClick={handleStatusToggle}
                   className={
                     venue.status === "ACTIVE"
-                      ? "bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)] hover:bg-[rgba(245,158,11,0.2)]"
-                      : "bg-[linear-gradient(135deg,var(--teal),#00b894)] text-[var(--bg-0)] hover:brightness-110"
+                      ? "bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)] hover:bg-[rgb(var(--amber-rgb)/0.2)]"
+                      : "bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] text-[var(--bg-0)] hover:brightness-110"
                   }
                 >
                   {venue.status === "ACTIVE" ? "Suspend" : "Activate"}
@@ -549,7 +549,7 @@ export default function VenueDetailPage() {
                 {activeContract ? (
                   <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--semantic-green-subtle)] bg-[var(--semantic-green-subtle)] px-4 py-3">
                     <div>
-                      <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--semantic-green)]">
+                      <div className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--green-text)]">
                         <span className="h-1.5 w-1.5 rounded-full bg-[var(--semantic-green)]" />
                         Active contract
                       </div>
@@ -565,7 +565,7 @@ export default function VenueDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-[var(--semantic-amber-subtle)] bg-[var(--semantic-amber-subtle)] px-4 py-3 text-[12.5px] leading-5 text-[var(--semantic-amber)]">
+                  <div className="rounded-lg border border-[var(--semantic-amber-subtle)] bg-[var(--semantic-amber-subtle)] px-4 py-3 text-[12.5px] leading-5 text-[var(--amber-text)]">
                     No active contract. Venue-manager finance endpoints return
                     404 until one is created.
                   </div>
@@ -582,7 +582,7 @@ export default function VenueDetailPage() {
                 {contractError && (
                   <div
                     role="alert"
-                    className="rounded-lg border border-[rgba(244,63,94,0.24)] bg-[rgba(244,63,94,0.08)] px-3 py-2.5 text-[12.5px] leading-5 text-[var(--semantic-red)]"
+                    className="rounded-lg border border-[rgb(var(--red-rgb)/0.24)] bg-[rgb(var(--red-rgb)/0.08)] px-3 py-2.5 text-[12.5px] leading-5 text-[var(--red-text)]"
                   >
                     {contractError}
                   </div>
@@ -597,7 +597,7 @@ export default function VenueDetailPage() {
                     type="button"
                     onClick={saveContract}
                     disabled={contractSaving || contractIsUnchanged}
-                    className="bg-[linear-gradient(135deg,var(--teal),#00b894)] font-semibold text-[#060a0e] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
+                    className="bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] font-semibold text-[var(--on-teal)] shadow-[0_1px_12px_-2px_var(--teal-glow)] hover:-translate-y-px hover:brightness-110"
                   >
                     {contractSaving ? (
                       <>
@@ -660,7 +660,7 @@ export default function VenueDetailPage() {
               {venue.managerId ? (
                 <Link
                   href={`/dashboard/users/venue-managers?search=${encodeURIComponent(managerName || venue.managerId)}`}
-                  className="rounded-md bg-[var(--bg-2)] px-2 py-0.5 text-xs font-medium text-[var(--semantic-amber)] hover:underline hover:underline-offset-2"
+                  className="rounded-md bg-[var(--bg-2)] px-2 py-0.5 text-xs font-medium text-[var(--amber-text)] hover:underline hover:underline-offset-2"
                 >
                   {managerName || `Manager #${venue.managerId}`}
                 </Link>
@@ -699,18 +699,18 @@ export default function VenueDetailPage() {
       <section className="rounded-2xl border border-[var(--border)] bg-[var(--bg-1)]">
         <header className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
           <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-2)]">
-            <Layers className="h-4 w-4 text-[var(--text-3)]" />
-          </div>
-          <div>
-            <h2 className="text-[15px] font-semibold text-[var(--text-1)]">
-              Courts
-            </h2>
-            <p className="text-xs text-[var(--text-4)]">
-              {courts.length} court{courts.length === 1 ? "" : "s"} registered
-              &middot; select a court to manage it
-            </p>
-          </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--bg-2)]">
+              <Layers className="h-4 w-4 text-[var(--text-3)]" />
+            </div>
+            <div>
+              <h2 className="text-[15px] font-semibold text-[var(--text-1)]">
+                Courts
+              </h2>
+              <p className="text-xs text-[var(--text-4)]">
+                {courts.length} court{courts.length === 1 ? "" : "s"} registered
+                &middot; select a court to manage it
+              </p>
+            </div>
           </div>
           <Link href={`/dashboard/venues/${venue.id}/courts/new`}>
             <Button className="bg-[var(--teal)] font-semibold text-[var(--bg-0)] hover:brightness-110">
@@ -759,7 +759,7 @@ export default function VenueDetailPage() {
                     key={court.id}
                     href={`/dashboard/venues/${venue.id}/courts/${court.id}`}
                     aria-label={`Manage ${court.name}`}
-                    className="group flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 outline-none transition-colors hover:border-[rgba(0,212,170,0.22)] hover:bg-[var(--teal-subtle)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
+                    className="group flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3 outline-none transition-colors hover:border-[rgb(var(--teal-rgb)/0.22)] hover:bg-[var(--teal-subtle)] focus-visible:border-[var(--teal)] focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
                   >
                     {content}
                   </Link>
@@ -847,7 +847,10 @@ function VenueOperatingHours({
             {timeZoneId ?? "Venue local time"}
           </p>
         </div>
-        <Clock className="h-3.5 w-3.5 text-[var(--teal-text)]/70" aria-hidden="true" />
+        <Clock
+          className="h-3.5 w-3.5 text-[var(--teal-text)]/70"
+          aria-hidden="true"
+        />
       </div>
 
       {days.length === 0 ? (
@@ -908,7 +911,7 @@ function BoolBadge({
     <span
       className={
         on
-          ? "rounded-md bg-[var(--semantic-green-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--semantic-green)]"
+          ? "rounded-md bg-[var(--semantic-green-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--green-text)]"
           : "rounded-md bg-[var(--bg-2)] px-2 py-0.5 text-xs font-medium text-[var(--text-4)]"
       }
     >

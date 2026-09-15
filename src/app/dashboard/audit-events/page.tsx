@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -224,7 +219,7 @@ export default function AuditEventsPage() {
             type="button"
             onClick={handleExport}
             disabled={isExporting}
-            className="gap-1.5 border border-[rgba(0,212,170,0.22)] bg-[var(--teal)] px-3.5 text-[13px] font-semibold text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:bg-[var(--teal)] hover:brightness-110"
+            className="gap-1.5 border border-[rgb(var(--teal-rgb)/0.22)] bg-[var(--teal)] px-3.5 text-[13px] font-semibold text-[var(--on-teal)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)] hover:bg-[var(--teal)] hover:brightness-110"
           >
             {isExporting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -248,13 +243,13 @@ export default function AuditEventsPage() {
               className={cn(
                 "gap-1.5 border-[var(--border)] bg-[var(--bg-1)] text-[12.5px] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]",
                 filtersOpen &&
-                  "border-[rgba(0,212,170,0.22)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
+                  "border-[rgb(var(--teal-rgb)/0.22)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
               )}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Filters
               {appliedCount > 0 && (
-                <span className="ml-0.5 rounded-full bg-[var(--teal)] px-1.5 py-px font-mono text-[10px] font-semibold text-[#032921]">
+                <span className="ml-0.5 rounded-full bg-[var(--teal)] px-1.5 py-px font-mono text-[10px] font-semibold text-[var(--on-teal)]">
                   {appliedCount}
                 </span>
               )}
@@ -369,7 +364,8 @@ export default function AuditEventsPage() {
                   onChange={(event) =>
                     setDraftFilters((current) => ({
                       ...current,
-                      outcome: event.target.value as AuditFilterDraft["outcome"],
+                      outcome: event.target
+                        .value as AuditFilterDraft["outcome"],
                     }))
                   }
                   className="h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] px-3 text-[12.5px] text-[var(--text-2)] outline-none transition-all focus:border-[var(--teal)] focus:ring-[3px] focus:ring-[var(--teal-subtle)]"
@@ -401,7 +397,7 @@ export default function AuditEventsPage() {
               <div className="flex items-end gap-2">
                 <Button
                   type="submit"
-                  className="h-[38px] flex-1 bg-[var(--teal)] text-[12.5px] font-semibold text-[#032921] hover:bg-[var(--teal)] hover:brightness-110"
+                  className="h-[38px] flex-1 bg-[var(--teal)] text-[12.5px] font-semibold text-[var(--on-teal)] hover:bg-[var(--teal)] hover:brightness-110"
                 >
                   Apply filters
                 </Button>
@@ -423,10 +419,10 @@ export default function AuditEventsPage() {
       {error && data && (
         <div
           role="alert"
-          className="flex items-center justify-between gap-3 rounded-lg border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3"
+          className="flex items-center justify-between gap-3 rounded-lg border border-[rgb(var(--amber-rgb)/0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3"
         >
           <div className="flex min-w-0 items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--semantic-amber)]" />
+            <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--amber-text)]" />
             <p className="truncate text-[12.5px] text-[var(--text-2)]">
               {error}
             </p>
@@ -434,7 +430,7 @@ export default function AuditEventsPage() {
           <button
             type="button"
             onClick={() => setReloadToken((token) => token + 1)}
-            className="shrink-0 text-[12px] font-medium text-[var(--semantic-amber)] hover:underline"
+            className="shrink-0 text-[12px] font-medium text-[var(--amber-text)] hover:underline"
           >
             Retry
           </button>
@@ -521,15 +517,11 @@ function AuditEventsBody({
   onPage: (page: number) => void;
 }) {
   if (isLoading) return <AuditEventsSkeleton />;
-  if (!data && error) return <AuditEventsError message={error} onRetry={onRetry} />;
+  if (!data && error)
+    return <AuditEventsError message={error} onRetry={onRetry} />;
   if (!data) return null;
   if (rows.length === 0) {
-    return (
-      <AuditEventsEmpty
-        filtered={appliedCount > 0}
-        onClear={onClear}
-      />
-    );
+    return <AuditEventsEmpty filtered={appliedCount > 0} onClear={onClear} />;
   }
 
   return (
@@ -542,20 +534,25 @@ function AuditEventsBody({
       <div className="overflow-x-auto">
         <table className="w-full min-w-[880px] border-collapse text-left">
           <thead>
-            <tr className="bg-white/[0.012]">
-              {["Time (Beirut)", "What happened", "Performed by", "Context", "Outcome", ""].map(
-                (heading, index) => (
-                  <th
-                    key={`${heading}-${index}`}
-                    className={cn(
-                      "border-b border-[var(--border)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]",
-                      index === 5 && "w-10",
-                    )}
-                  >
-                    {heading}
-                  </th>
-                ),
-              )}
+            <tr className="bg-[var(--tint-1)]">
+              {[
+                "Time (Beirut)",
+                "What happened",
+                "Performed by",
+                "Context",
+                "Outcome",
+                "",
+              ].map((heading, index) => (
+                <th
+                  key={`${heading}-${index}`}
+                  className={cn(
+                    "border-b border-[var(--border)] px-4 py-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]",
+                    index === 5 && "w-10",
+                  )}
+                >
+                  {heading}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -579,8 +576,8 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
   const outcome = auditOutcomeTone(event.outcome);
   const context = auditContextLabel(event);
   return (
-    <tr className="group transition-colors hover:bg-white/[0.018]">
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+    <tr className="group transition-colors hover:bg-[var(--tint-2)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex flex-col gap-0.5 whitespace-nowrap">
           <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-2)]">
             {formatAuditTimestamp(event.occurredAt)}
@@ -590,7 +587,7 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           </span>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="max-w-[430px] space-y-1.5">
           <p className="text-[12.5px] font-medium leading-[1.45] text-[var(--text-1)]">
             {auditEventSummary(event)}
@@ -612,9 +609,9 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           </div>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[rgba(0,212,170,0.16)] bg-[var(--teal-subtle)] text-[10px] font-semibold text-[var(--teal-text)]">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[rgb(var(--teal-rgb)/0.16)] bg-[var(--teal-subtle)] text-[10px] font-semibold text-[var(--teal-text)]">
             {auditInitials(event)}
           </div>
           <div className="min-w-0">
@@ -627,7 +624,7 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           </div>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex max-w-[220px] flex-col gap-0.5">
           <span className="text-[12px] font-medium text-[var(--text-2)]">
             {context.primary}
@@ -639,7 +636,7 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           )}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10.5px] font-medium",
@@ -650,7 +647,7 @@ function AuditEventRow({ event }: { event: AuditEvent }) {
           {outcome.label}
         </span>
       </td>
-      <td className="border-t border-white/[0.035] px-3 py-3 text-right align-middle">
+      <td className="border-t border-[var(--tint-3)] px-3 py-3 text-right align-middle">
         <Link
           href={`/dashboard/audit-events/${encodeURIComponent(event.id)}`}
           aria-label={`View audit event ${event.id}`}
@@ -677,12 +674,13 @@ function Pagination({
   const totalPages = Math.max(1, data.totalPages);
   const current = data.number;
   const start = data.totalElements === 0 ? 0 : current * pageSize + 1;
-  const end = current * pageSize + (data.numberOfElements ?? data.content.length);
+  const end =
+    current * pageSize + (data.numberOfElements ?? data.content.length);
   const first = data.first ?? current === 0;
   const last = data.last ?? current + 1 >= totalPages;
 
   return (
-    <div className="flex flex-col gap-3 border-t border-[var(--border)] bg-white/[0.008] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-4)]">
         Showing {start} to {end} of {data.totalElements}
       </span>
@@ -777,7 +775,7 @@ function AuditEventsSkeleton() {
       <div className="border-b border-[var(--border)] px-4 py-3">
         <Skeleton className="h-3 w-48" />
       </div>
-      <div className="divide-y divide-white/[0.035]">
+      <div className="divide-y divide-[var(--tint-3)]">
         {Array.from({ length: 8 }).map((_, index) => (
           <div key={index} className="flex items-center gap-4 px-4 py-3">
             <Skeleton className="h-7 w-32" />
@@ -801,8 +799,8 @@ function AuditEventsError({
 }) {
   return (
     <div className="flex flex-col items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16 text-center">
-      <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-[rgba(244,63,94,0.2)] bg-[var(--semantic-red-subtle)]">
-        <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+      <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl border border-[rgb(var(--red-rgb)/0.2)] bg-[var(--semantic-red-subtle)]">
+        <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
       </div>
       <h2 className="text-[15px] font-semibold text-[var(--text-1)]">
         Could not load audit events

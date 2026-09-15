@@ -30,7 +30,9 @@ export async function GET(request: Request) {
       const next = new URL(location, current).toString();
       if (!isGoogleMapsUrl(next)) {
         return Response.json(
-          { message: "The Google Maps link redirected to an unsupported site." },
+          {
+            message: "The Google Maps link redirected to an unsupported site.",
+          },
           { status: 400 },
         );
       }
@@ -43,7 +45,10 @@ export async function GET(request: Request) {
     );
   } catch {
     return Response.json(
-      { message: "Could not open this Google Maps link. Try the full share link." },
+      {
+        message:
+          "Could not open this Google Maps link. Try the full share link.",
+      },
       { status: 422 },
     );
   }

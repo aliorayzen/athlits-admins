@@ -134,7 +134,7 @@ interface OtpInputProps {
 function OtpInput({ value, onChange, hasError, disabled }: OtpInputProps) {
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const reduceMotion = usePrefersReducedMotion();
-  const inputShadow = "inset 0 1px 0 rgba(255,255,255,0.03)";
+  const inputShadow = "inset 0 1px 0 var(--tint-2)";
 
   const handleChange = useCallback(
     (index: number, char: string) => {
@@ -187,7 +187,7 @@ function OtpInput({ value, onChange, hasError, disabled }: OtpInputProps) {
           : hasError
             ? "border-[var(--semantic-red)]"
             : hasDig
-              ? "border-[rgba(0,212,170,0.25)] bg-[rgba(0,212,170,0.04)]"
+              ? "border-[rgb(var(--teal-rgb)/0.25)] bg-[rgb(var(--teal-rgb)/0.04)]"
               : "border-[var(--border)]";
         const style: React.CSSProperties = { boxShadow: inputShadow };
         if (hasDig && !reduceMotion) {
@@ -213,7 +213,7 @@ function OtpInput({ value, onChange, hasError, disabled }: OtpInputProps) {
             }}
             aria-label={`Digit ${i + 1}`}
             aria-invalid={hasError}
-            className={`h-14 w-12 rounded-[var(--radius)] border-[1.5px] bg-[var(--bg-1)] text-center font-mono text-[20px] font-bold text-[var(--text-1)] outline-none transition-all duration-200 focus:border-[var(--teal)] focus:bg-[rgba(0,212,170,0.03)] focus:ring-[3px] focus:ring-[rgba(0,212,170,0.1)] disabled:cursor-not-allowed ${borderColor}`}
+            className={`h-14 w-12 rounded-[var(--radius)] border-[1.5px] bg-[var(--bg-1)] text-center font-mono text-[20px] font-bold text-[var(--text-1)] outline-none transition-all duration-200 focus:border-[var(--teal)] focus:bg-[rgb(var(--teal-rgb)/0.03)] focus:ring-[3px] focus:ring-[rgb(var(--teal-rgb)/0.1)] disabled:cursor-not-allowed ${borderColor}`}
             style={style}
           />
         );
@@ -231,7 +231,7 @@ function Constellation() {
         fill="none"
         className="constellation-svg block h-full w-full"
       >
-        <g opacity="0.12" stroke="#00d4aa" strokeWidth="1">
+        <g opacity="0.12" stroke="var(--teal)" strokeWidth="1">
           <line x1="60" y1="28" x2="130" y2="18" />
           <line x1="130" y1="18" x2="200" y2="30" />
           <line x1="200" y1="30" x2="265" y2="14" />
@@ -241,14 +241,14 @@ function Constellation() {
           <line x1="445" y1="32" x2="490" y2="20" />
         </g>
         <g className="dots">
-          <circle cx="60" cy="28" r="2.5" fill="#00d4aa" />
-          <circle cx="130" cy="18" r="2.5" fill="#00d4aa" />
-          <circle cx="200" cy="30" r="2.5" fill="#00d4aa" />
-          <circle cx="265" cy="14" r="3" fill="#00d4aa" />
-          <circle cx="330" cy="26" r="2.5" fill="#00d4aa" />
-          <circle cx="395" cy="18" r="2.5" fill="#00d4aa" />
-          <circle cx="445" cy="32" r="2.5" fill="#00d4aa" />
-          <circle cx="490" cy="20" r="2.5" fill="#00d4aa" />
+          <circle cx="60" cy="28" r="2.5" fill="var(--teal)" />
+          <circle cx="130" cy="18" r="2.5" fill="var(--teal)" />
+          <circle cx="200" cy="30" r="2.5" fill="var(--teal)" />
+          <circle cx="265" cy="14" r="3" fill="var(--teal)" />
+          <circle cx="330" cy="26" r="2.5" fill="var(--teal)" />
+          <circle cx="395" cy="18" r="2.5" fill="var(--teal)" />
+          <circle cx="445" cy="32" r="2.5" fill="var(--teal)" />
+          <circle cx="490" cy="20" r="2.5" fill="var(--teal)" />
         </g>
       </svg>
       <div className="mt-2.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--text-4)]">
@@ -277,7 +277,7 @@ function SsoButton({
       type="button"
       disabled
       aria-disabled="true"
-      className="group relative flex items-center justify-center gap-2.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg-1)] px-4 py-3 text-[13px] font-medium text-[var(--text-3)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] opacity-55 transition-opacity duration-200 hover:opacity-70 disabled:cursor-not-allowed"
+      className="group relative flex items-center justify-center gap-2.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--bg-1)] px-4 py-3 text-[13px] font-medium text-[var(--text-3)] shadow-[inset_0_1px_0_var(--tint-2)] opacity-55 transition-opacity duration-200 hover:opacity-70 disabled:cursor-not-allowed"
     >
       {icon}
       <span className="flex-1 text-left">{provider}</span>
@@ -505,8 +505,8 @@ export default function LoginPage() {
         className="login-aura pointer-events-none absolute inset-0 z-0"
         style={{
           background: `
-            radial-gradient(ellipse 800px 500px at 50% 45%, rgba(0,212,170,0.12) 0%, rgba(0,212,170,0.04) 30%, transparent 65%),
-            radial-gradient(ellipse 400px 300px at 50% 30%, rgba(245,158,11,0.04) 0%, transparent 60%)
+            radial-gradient(ellipse 800px 500px at 50% 45%, rgb(var(--teal-rgb)/0.12) 0%, rgb(var(--teal-rgb)/0.04) 30%, transparent 65%),
+            radial-gradient(ellipse 400px 300px at 50% 30%, rgb(var(--amber-rgb)/0.04) 0%, transparent 60%)
           `,
         }}
       />
@@ -528,7 +528,7 @@ export default function LoginPage() {
       >
         <AthlitsLogo
           size={26}
-          className="h-[26px] w-[26px] drop-shadow-[0_0_10px_rgba(0,212,170,0.22)] transition-[filter] duration-200 group-hover:drop-shadow-[0_0_16px_rgba(0,212,170,0.4)]"
+          className="h-[26px] w-[26px] drop-shadow-[0_0_10px_rgb(var(--teal-rgb)/0.22)] transition-[filter] duration-200 group-hover:drop-shadow-[0_0_16px_rgb(var(--teal-rgb)/0.4)]"
         />
         <span>Athlits</span>
       </Link>
@@ -543,15 +543,8 @@ export default function LoginPage() {
             <>
               {/* Hero heading — time-aware greeting */}
               <h1
-                className="animate-stagger-1 text-balance font-extrabold leading-[1.05] tracking-[-0.03em]"
-                style={{
-                  fontSize: "clamp(44px, 6vw, 56px)",
-                  backgroundImage:
-                    "linear-gradient(165deg, #ffffff 0%, #e6e8ec 45%, #a8e6d5 130%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
+                className="animate-stagger-1 text-balance font-extrabold leading-[1.05] tracking-[-0.03em] text-[var(--text-1)]"
+                style={{ fontSize: "clamp(44px, 6vw, 56px)" }}
               >
                 {greeting}
               </h1>
@@ -575,7 +568,7 @@ export default function LoginPage() {
                     Work email
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium text-[var(--text-4)]">
-                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-[var(--bg-1)] px-1.5 text-[11px] shadow-[inset_0_-1px_0_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-[var(--bg-1)] px-1.5 text-[11px] shadow-[inset_0_-1px_0_var(--tint-6),inset_0_1px_0_var(--tint-3)]">
                       ⏎
                     </span>
                     to continue
@@ -584,10 +577,10 @@ export default function LoginPage() {
 
                 <div
                   ref={emailPillRef}
-                  className={`relative flex w-full items-center rounded-full border bg-[var(--bg-1)] py-1.5 pl-5 pr-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all duration-200 focus-within:-translate-y-px focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_0_0_3px_rgba(0,212,170,0.1),0_0_32px_-4px_rgba(0,212,170,0.35)] ${
+                  className={`relative flex w-full items-center rounded-full border bg-[var(--bg-1)] py-1.5 pl-5 pr-1.5 shadow-[inset_0_1px_0_var(--tint-2)] transition-all duration-200 focus-within:-translate-y-px focus-within:shadow-[inset_0_1px_0_var(--tint-2),0_0_0_3px_rgb(var(--teal-rgb)/0.1),0_0_32px_-4px_rgb(var(--teal-rgb)/0.35)] ${
                     emailError || emailSendError
-                      ? "border-[var(--semantic-red)] shadow-[inset_0_1px_0_rgba(255,255,255,0.03),0_4px_14px_-4px_rgba(244,63,94,0.3)] focus-within:border-[var(--semantic-red)]"
-                      : "border-[var(--border)] focus-within:border-[rgba(0,212,170,0.35)]"
+                      ? "border-[var(--semantic-red)] shadow-[inset_0_1px_0_var(--tint-2),0_4px_14px_-4px_rgb(var(--red-rgb)/0.3)] focus-within:border-[var(--semantic-red)]"
+                      : "border-[var(--border)] focus-within:border-[rgb(var(--teal-rgb)/0.35)]"
                   }`}
                 >
                   <input
@@ -623,7 +616,7 @@ export default function LoginPage() {
                     type="submit"
                     disabled={isLoading}
                     aria-label="Send login code"
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--teal),#00b894)] text-[#060a0e] shadow-[0_0_16px_-4px_rgba(0,212,170,0.35)] transition-all duration-200 hover:-translate-y-px hover:scale-[1.04] hover:brightness-110 hover:shadow-[0_0_24px_-4px_rgba(0,212,170,0.5)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-70"
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] text-[var(--on-teal)] shadow-[0_0_16px_-4px_rgb(var(--teal-rgb)/0.35)] transition-all duration-200 hover:-translate-y-px hover:scale-[1.04] hover:brightness-110 hover:shadow-[0_0_24px_-4px_rgb(var(--teal-rgb)/0.5)] active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -635,7 +628,7 @@ export default function LoginPage() {
 
                 {emailError && (
                   <p
-                    className="mt-2 text-left text-xs text-[var(--semantic-red)]"
+                    className="mt-2 text-left text-xs text-[var(--red-text)]"
                     role="alert"
                   >
                     Enter a valid email address
@@ -644,7 +637,7 @@ export default function LoginPage() {
                 {emailSendError && !emailError && (
                   <div
                     role="alert"
-                    className="mt-3 flex items-start gap-2 rounded-[var(--radius)] border border-[var(--semantic-red)]/40 bg-[var(--semantic-red)]/10 px-3 py-2 text-left text-xs text-[var(--semantic-red)] shadow-[0_4px_12px_-4px_rgba(244,63,94,0.25)]"
+                    className="mt-3 flex items-start gap-2 rounded-[var(--radius)] border border-[var(--semantic-red)]/40 bg-[var(--semantic-red)]/10 px-3 py-2 text-left text-xs text-[var(--red-text)] shadow-[0_4px_12px_-4px_rgb(var(--red-rgb)/0.25)]"
                   >
                     <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                     <span>{emailSendError}</span>
@@ -727,15 +720,8 @@ export default function LoginPage() {
             <>
               {/* OTP: Verify heading */}
               <h1
-                className="animate-stagger-1 text-balance font-extrabold leading-[1.1] tracking-[-0.03em]"
-                style={{
-                  fontSize: "clamp(40px, 5.5vw, 52px)",
-                  backgroundImage:
-                    "linear-gradient(165deg, #ffffff 0%, #e6e8ec 45%, #a8e6d5 130%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
+                className="animate-stagger-1 text-balance font-extrabold leading-[1.1] tracking-[-0.03em] text-[var(--text-1)]"
+                style={{ fontSize: "clamp(40px, 5.5vw, 52px)" }}
               >
                 Verify
               </h1>
@@ -757,7 +743,7 @@ export default function LoginPage() {
                     6-digit code
                   </span>
                   <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-medium text-[var(--text-4)]">
-                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-[var(--bg-1)] px-1.5 text-[11px] shadow-[inset_0_-1px_0_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                    <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-[5px] border border-[var(--border)] bg-[var(--bg-1)] px-1.5 text-[11px] shadow-[inset_0_-1px_0_var(--tint-6),inset_0_1px_0_var(--tint-3)]">
                       ⌘V
                     </span>
                     to paste
@@ -785,7 +771,7 @@ export default function LoginPage() {
                   {expiry && (
                     <span
                       className={`tabular-nums ${
-                        expiry.expired ? "text-[var(--semantic-red)]" : ""
+                        expiry.expired ? "text-[var(--red-text)]" : ""
                       }`}
                     >
                       {expiry.expired
@@ -798,7 +784,7 @@ export default function LoginPage() {
                 {otpError && (
                   <div
                     role="alert"
-                    className="mt-4 flex items-start gap-2 rounded-[var(--radius)] border border-[var(--semantic-red)]/40 bg-[var(--semantic-red)]/10 px-3 py-2 text-left text-xs text-[var(--semantic-red)] shadow-[0_4px_12px_-4px_rgba(244,63,94,0.25)]"
+                    className="mt-4 flex items-start gap-2 rounded-[var(--radius)] border border-[var(--semantic-red)]/40 bg-[var(--semantic-red)]/10 px-3 py-2 text-left text-xs text-[var(--red-text)] shadow-[0_4px_12px_-4px_rgb(var(--red-rgb)/0.25)]"
                   >
                     {attemptsLeft === 0 ? (
                       <Lock className="mt-0.5 h-4 w-4 shrink-0" />
@@ -823,7 +809,7 @@ export default function LoginPage() {
                       </span>
                     ) : (
                       <span
-                        className="text-[var(--semantic-green)]"
+                        className="text-[var(--green-text)]"
                         style={
                           reduceMotion
                             ? undefined

@@ -156,10 +156,10 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
         align="start"
         sideOffset={8}
         alignOffset={-4}
-        className="w-[360px] max-w-[92vw] overflow-hidden rounded-lg border border-white/[0.08] bg-[#0a0d14] p-0 text-[var(--text-1)] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)] ring-0"
+        className="w-[360px] max-w-[92vw] overflow-hidden rounded-lg border border-[var(--tint-5)] bg-[var(--bg-1)] p-0 text-[var(--text-1)] shadow-[var(--shadow-3)] ring-0"
       >
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-[var(--tint-4)] px-4 py-3">
           <div className="flex items-center gap-2">
             {view === "shortcuts" ? (
               <>
@@ -191,7 +191,7 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
         {view === "main" ? (
           <>
             {/* Search */}
-            <div className="border-b border-white/[0.04] p-3">
+            <div className="border-b border-[var(--tint-3)] p-3">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[var(--text-4)]" />
                 <input
@@ -199,7 +199,7 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search help…"
-                  className="h-8 w-full rounded-md border border-white/[0.06] bg-white/[0.02] pl-[32px] pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--teal)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
+                  className="h-8 w-full rounded-md border border-[var(--tint-4)] bg-[var(--tint-2)] pl-[32px] pr-3 text-[12.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] focus:border-[var(--teal)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]"
                 />
               </div>
             </div>
@@ -240,11 +240,11 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center gap-2 border-t border-white/[0.06] bg-white/[0.015] px-3 py-2">
+            <div className="flex items-center gap-2 border-t border-[var(--tint-4)] bg-[var(--tint-1)] px-3 py-2">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-[var(--tint-5)] bg-[var(--tint-2)] px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
               >
                 <LifeBuoy className="h-[12px] w-[12px]" />
                 Contact support
@@ -253,7 +253,7 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
                 type="button"
                 onClick={() => setOpen(false)}
                 title="System status"
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:bg-white/[0.04] hover:text-[var(--text-1)]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-[var(--tint-5)] bg-[var(--tint-2)] px-2 py-1.5 text-[11.5px] font-medium text-[var(--text-2)] transition-all hover:bg-[var(--tint-3)] hover:text-[var(--text-1)]"
               >
                 <span
                   className="h-1.5 w-1.5 rounded-full bg-[var(--semantic-green)] shadow-[0_0_5px_var(--semantic-green)]"
@@ -265,7 +265,7 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
           </>
         ) : (
           /* ─── Shortcuts view ─── */
-          <div className="flex flex-col divide-y divide-white/[0.04]">
+          <div className="flex flex-col divide-y divide-[var(--tint-3)]">
             {SHORTCUTS.map((s) => (
               <div
                 key={s.label}
@@ -278,7 +278,7 @@ export function HelpPopover({ renderTrigger }: HelpPopoverProps) {
                   {s.keys.map((k) => (
                     <kbd
                       key={k}
-                      className="inline-flex min-w-[20px] items-center justify-center rounded border border-white/[0.08] bg-white/[0.03] px-1.5 py-[1.5px] font-mono text-[10px] font-medium text-[var(--text-3)]"
+                      className="inline-flex min-w-[20px] items-center justify-center rounded border border-[var(--tint-5)] bg-[var(--tint-2)] px-1.5 py-[1.5px] font-mono text-[10px] font-medium text-[var(--text-3)]"
                     >
                       {k}
                     </kbd>
@@ -303,7 +303,7 @@ function HelpItemRow({
   const Icon = item.icon;
   const content = (
     <>
-      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-[6px] border border-white/[0.06] bg-white/[0.02] text-[var(--text-3)] transition-colors group-hover:border-[rgba(0,212,170,0.18)] group-hover:bg-[var(--teal-subtle)] group-hover:text-[var(--teal-text)]">
+      <div className="grid h-7 w-7 shrink-0 place-items-center rounded-[6px] border border-[var(--tint-4)] bg-[var(--tint-2)] text-[var(--text-3)] transition-colors group-hover:border-[rgb(var(--teal-rgb)/0.18)] group-hover:bg-[var(--teal-subtle)] group-hover:text-[var(--teal-text)]">
         <Icon className="h-[13px] w-[13px]" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
@@ -320,7 +320,7 @@ function HelpItemRow({
         )}
       </div>
       {item.kbd && (
-        <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border border-white/[0.08] bg-white/[0.03] px-1.5 py-[1.5px] font-mono text-[10px] font-medium text-[var(--text-3)]">
+        <kbd className="inline-flex min-w-[20px] items-center justify-center rounded border border-[var(--tint-5)] bg-[var(--tint-2)] px-1.5 py-[1.5px] font-mono text-[10px] font-medium text-[var(--text-3)]">
           {item.kbd}
         </kbd>
       )}
@@ -328,7 +328,7 @@ function HelpItemRow({
   );
 
   const className = cn(
-    "group flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-white/[0.03]",
+    "group flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left transition-colors hover:bg-[var(--tint-2)]",
   );
 
   if (item.href) {

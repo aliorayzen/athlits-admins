@@ -255,8 +255,8 @@ export default function CreateAdminPage() {
                 value="Pending - first login"
               />
             </div>
-            <div className="mt-3.5 flex gap-2 rounded-md border border-[rgba(99,102,241,0.14)] bg-[rgba(99,102,241,0.08)] px-3 py-2.5">
-              <Info className="mt-px h-[13px] w-[13px] flex-shrink-0 text-[var(--semantic-blue)]" />
+            <div className="mt-3.5 flex gap-2 rounded-md border border-[rgb(var(--indigo-rgb)/0.14)] bg-[rgb(var(--indigo-rgb)/0.08)] px-3 py-2.5">
+              <Info className="mt-px h-[13px] w-[13px] flex-shrink-0 text-[var(--blue-text)]" />
               <div className="text-[11.5px] leading-[1.5] text-[var(--text-2)]">
                 They&apos;ll appear in the directory with{" "}
                 <strong>Pending</strong> status until first login.

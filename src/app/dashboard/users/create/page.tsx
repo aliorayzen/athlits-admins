@@ -18,8 +18,8 @@ export default function CreateUserChooserPage() {
           Create a user
         </h1>
         <p className="text-[13.5px] tracking-[-0.003em] text-[var(--text-3)]">
-          Choose the kind of user to add. Venue staff start from a managed
-          venue so their owner and access scope are explicit.
+          Choose the kind of user to add. Venue staff start from a managed venue
+          so their owner and access scope are explicit.
         </p>
       </div>
 

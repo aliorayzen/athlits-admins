@@ -14,19 +14,19 @@ import { InvoiceDocument } from "./invoice-document";
 const STATUS_PILL: Record<InvoiceStatus, { label: string; cls: string }> = {
   GENERATED: {
     label: "Generated",
-    cls: "border-[rgba(99,102,241,0.25)] bg-[rgba(99,102,241,0.1)] text-[var(--semantic-blue)]",
+    cls: "border-[rgb(var(--indigo-rgb)/0.25)] bg-[rgb(var(--indigo-rgb)/0.1)] text-[var(--blue-text)]",
   },
   PAID: {
     label: "Paid",
-    cls: "border-[rgba(16,185,129,0.25)] bg-[rgba(16,185,129,0.1)] text-[var(--semantic-green)]",
+    cls: "border-[rgb(var(--green-rgb)/0.25)] bg-[rgb(var(--green-rgb)/0.1)] text-[var(--green-text)]",
   },
   OVERDUE: {
     label: "Overdue",
-    cls: "border-[rgba(244,63,94,0.25)] bg-[rgba(244,63,94,0.1)] text-[var(--semantic-red)]",
+    cls: "border-[rgb(var(--red-rgb)/0.25)] bg-[rgb(var(--red-rgb)/0.1)] text-[var(--red-text)]",
   },
   VOID: {
     label: "Void",
-    cls: "border-[var(--border)] bg-white/[0.04] text-[var(--text-4)]",
+    cls: "border-[var(--border)] bg-[var(--tint-3)] text-[var(--text-4)]",
   },
 };
 
@@ -102,7 +102,7 @@ export function InvoicePdfDialog({
             {/* ─── Themed header ─── */}
             <header className="flex items-center justify-between gap-4 border-b border-[var(--border)] px-5 py-3">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-[rgba(0,212,170,0.2)] bg-[linear-gradient(135deg,rgba(0,212,170,0.14),rgba(0,212,170,0.03))]">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-[rgb(var(--teal-rgb)/0.2)] bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.14),rgb(var(--teal-rgb)/0.03))]">
                   <FileText className="h-[15px] w-[15px] text-[var(--teal-text)]" />
                 </div>
                 <div className="min-w-0">
@@ -192,7 +192,7 @@ function HeaderBtn({
       disabled={disabled}
       title={label}
       aria-label={label}
-      className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(0,212,170,0.2)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:bg-[var(--bg-2)] disabled:hover:text-[var(--text-2)]"
+      className="inline-flex items-center gap-1.5 rounded-md border border-[var(--border)] bg-[var(--bg-2)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--text-2)] transition-all hover:border-[rgb(var(--teal-rgb)/0.2)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--border)] disabled:hover:bg-[var(--bg-2)] disabled:hover:text-[var(--text-2)]"
     >
       <Icon className={cn("h-[13px] w-[13px]", spinning && "animate-spin")} />
       <span className="hidden sm:inline">{shortLabel}</span>

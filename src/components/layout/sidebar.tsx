@@ -151,8 +151,8 @@ function NavRow({
       className={cn(
         "sv2-nav-row relative mb-px flex items-center gap-2.5 rounded-[6px] text-[13px]",
         isActive
-          ? "sv2-nav-row-active border border-[rgba(0,212,170,0.16)] bg-[linear-gradient(90deg,rgba(0,212,170,0.13),rgba(0,212,170,0.04)_70%,transparent),linear-gradient(180deg,rgba(255,255,255,0.015),transparent_50%)] px-2.5 py-1.5 font-medium text-white"
-          : "px-2.5 py-[7px] font-normal text-[#a8aebb] hover:bg-white/[0.035] hover:text-white",
+          ? "sv2-nav-row-active border border-[rgb(var(--teal-rgb)/0.16)] bg-[linear-gradient(90deg,rgb(var(--teal-rgb)/0.13),rgb(var(--teal-rgb)/0.04)_70%,transparent),linear-gradient(180deg,var(--tint-1),transparent_50%)] px-2.5 py-1.5 font-medium text-[var(--text-1)]"
+          : "px-2.5 py-[7px] font-normal text-[var(--text-2)] hover:bg-[var(--tint-3)] hover:text-[var(--text-1)]",
       )}
     >
       {isActive && (
@@ -161,17 +161,17 @@ function NavRow({
       <Icon
         className={cn(
           "h-4 w-4 shrink-0 transition-opacity",
-          isActive ? "text-[#39e0bb] opacity-100" : "opacity-55",
+          isActive ? "text-[var(--teal-text)] opacity-100" : "opacity-55",
         )}
       />
       <span className="flex-1 tracking-[-0.005em]">{label}</span>
       {badge !== undefined && (
-        <span className="inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-[var(--semantic-red-subtle)] px-[5px] text-[10px] font-semibold leading-none tabular-nums text-[var(--semantic-red)]">
+        <span className="inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-[var(--semantic-red-subtle)] px-[5px] text-[10px] font-semibold leading-none tabular-nums text-[var(--red-text)]">
           {badge}
         </span>
       )}
       {count !== undefined && badge === undefined && (
-        <span className="font-mono text-[11px] font-medium tabular-nums text-[#545967]">
+        <span className="font-mono text-[11px] font-medium tabular-nums text-[var(--text-3)]">
           {count}
         </span>
       )}
@@ -180,8 +180,8 @@ function NavRow({
           className={cn(
             "font-mono text-[10px] font-medium tabular-nums transition-opacity",
             isActive
-              ? "text-[#39e0bb] opacity-85"
-              : "text-[#545967] opacity-35",
+              ? "text-[var(--teal-text)] opacity-85"
+              : "text-[var(--text-3)] opacity-35",
           )}
         >
           {kbd}
@@ -214,7 +214,13 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
     navSections.splice(1, 0, {
       label: "Analytics",
       dotTone: "teal",
-      items: [{ href: "/dashboard/analytics", label: "Store Analytics", icon: BarChart3 }],
+      items: [
+        {
+          href: "/dashboard/analytics",
+          label: "Store Analytics",
+          icon: BarChart3,
+        },
+      ],
     });
   }
 
@@ -235,33 +241,33 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
           type="button"
           aria-label="Athlits Admin Console workspace"
           title="Athlits Admin Console"
-          className="sv2-workspace mx-3 mb-2 mt-3 flex items-center gap-2.5 rounded-[8px] border border-white/[0.06] bg-[linear-gradient(180deg,rgba(0,212,170,0.04),rgba(0,212,170,0.015)_60%,transparent)] px-2.5 py-2 text-left hover:border-[rgba(0,212,170,0.16)] hover:bg-[linear-gradient(180deg,rgba(0,212,170,0.06),rgba(0,212,170,0.02))]"
+          className="sv2-workspace mx-3 mb-2 mt-3 flex items-center gap-2.5 rounded-[8px] border border-[var(--tint-4)] bg-[linear-gradient(180deg,rgb(var(--teal-rgb)/0.04),rgb(var(--teal-rgb)/0.015)_60%,transparent)] px-2.5 py-2 text-left hover:border-[rgb(var(--teal-rgb)/0.16)] hover:bg-[linear-gradient(180deg,rgb(var(--teal-rgb)/0.06),rgb(var(--teal-rgb)/0.02))]"
         >
-          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-[rgba(0,212,170,0.18)] bg-[linear-gradient(135deg,rgba(0,212,170,0.14),rgba(0,212,170,0.04))]">
+          <div className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-[rgb(var(--teal-rgb)/0.18)] bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.14),rgb(var(--teal-rgb)/0.04))]">
             <AthlitsLogo size={18} className="h-[18px] w-[18px]" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-px">
-            <div className="text-[13px] font-semibold leading-tight tracking-[-0.01em] text-white">
+            <div className="text-[13px] font-semibold leading-tight tracking-[-0.01em] text-[var(--text-1)]">
               Athlits
             </div>
-            <div className="text-[10px] font-medium uppercase leading-[1.3] tracking-[0.04em] text-[#39e0bb]">
+            <div className="text-[10px] font-medium uppercase leading-[1.3] tracking-[0.04em] text-[var(--teal-text)]">
               Admin Console
             </div>
           </div>
-          <ChevronsUpDown className="h-3 w-3 shrink-0 text-[#545967] opacity-60" />
+          <ChevronsUpDown className="h-3 w-3 shrink-0 text-[var(--text-3)] opacity-60" />
         </button>
 
         {/* ══════════════ Search ══════════════ */}
         <button
           type="button"
           aria-label="Open search (Ctrl+K)"
-          className="mx-3 mb-2 flex items-center gap-2 rounded-[6px] border border-white/[0.06] bg-white/[0.015] px-2.5 py-[7px] transition-all hover:border-white/10 hover:bg-white/[0.03] focus-visible:border-[var(--teal)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
+          className="mx-3 mb-2 flex items-center gap-2 rounded-[6px] border border-[var(--tint-4)] bg-[var(--tint-1)] px-2.5 py-[7px] transition-all hover:border-[var(--tint-5)] hover:bg-[var(--tint-2)] focus-visible:border-[var(--teal)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
         >
-          <Search className="h-[13px] w-[13px] shrink-0 text-[#545967]" />
-          <span className="flex-1 text-left text-[12.5px] text-[#737986]">
+          <Search className="h-[13px] w-[13px] shrink-0 text-[var(--text-3)]" />
+          <span className="flex-1 text-left text-[12.5px] text-[var(--text-3)]">
             Search
           </span>
-          <kbd className="inline-flex items-center rounded border border-white/[0.06] bg-white/[0.04] px-[5px] py-px font-mono text-[10px] font-medium leading-[1.4] text-[#737986]">
+          <kbd className="inline-flex items-center rounded border border-[var(--tint-4)] bg-[var(--tint-3)] px-[5px] py-px font-mono text-[10px] font-medium leading-[1.4] text-[var(--text-3)]">
             ⌘K
           </kbd>
         </button>
@@ -271,7 +277,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
           role="group"
           aria-label="Venue status summary"
           title="Venue status"
-          className="sv2-stats mx-3 mb-2 flex cursor-pointer rounded-[6px] border border-white/[0.06] bg-white/[0.012] px-1 py-2.5 hover:border-white/10"
+          className="sv2-stats mx-3 mb-2 flex cursor-pointer rounded-[6px] border border-[var(--tint-4)] bg-[var(--tint-1)] px-1 py-2.5 hover:border-[var(--tint-5)]"
         >
           <div
             className="relative flex-1 px-1 text-center"
@@ -281,11 +287,11 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 : `${stats.venuesTotal} total venues`
             }
           >
-            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-white">
+            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-[var(--text-1)]">
               {formatStat(stats.venuesTotal)}
             </div>
-            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[#545967]">
-              <span className="h-1 w-1 rounded-full bg-[#545967]" />
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
+              <span className="h-1 w-1 rounded-full bg-[var(--text-3)]" />
               Venues
             </div>
           </div>
@@ -297,11 +303,11 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 : `${stats.venuesActive} active venues`
             }
           >
-            <span className="absolute inset-y-1 left-0 w-px bg-white/[0.06]" />
-            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-[var(--semantic-green)]">
+            <span className="absolute inset-y-1 left-0 w-px bg-[var(--tint-4)]" />
+            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-[var(--green-text)]">
               {formatStat(stats.venuesActive)}
             </div>
-            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[#545967]">
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
               <span className="sv2-stat-dot-ok h-1 w-1 rounded-full bg-[var(--semantic-green)]" />
               Active
             </div>
@@ -316,11 +322,11 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                   }`
             }
           >
-            <span className="absolute inset-y-1 left-0 w-px bg-white/[0.06]" />
-            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-[var(--semantic-red)]">
+            <span className="absolute inset-y-1 left-0 w-px bg-[var(--tint-4)]" />
+            <div className="sv2-stat-value text-[17px] font-bold leading-[1.05] tracking-[-0.025em] tabular-nums text-[var(--red-text)]">
               {formatStat(stats.invoicesOverdue)}
             </div>
-            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[#545967]">
+            <div className="mt-0.5 flex items-center justify-center gap-1 text-[9px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]">
               <span className="sv2-stat-dot-alert h-1 w-1 rounded-full bg-[var(--semantic-red)]" />
               Overdue
             </div>
@@ -334,7 +340,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
         >
           {navSections.map((section, si) => (
             <div key={section.label} className={cn(si === 0 ? "mt-1" : "mt-3")}>
-              <div className="flex items-center gap-[7px] px-2.5 pb-1.5 pt-2 text-[#545967]">
+              <div className="flex items-center gap-[7px] px-2.5 pb-1.5 pt-2 text-[var(--text-3)]">
                 <span
                   className={cn(
                     "h-[5px] w-[5px] shrink-0 rounded-full",
@@ -343,10 +349,10 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                       : "sv2-group-dot-amber bg-[var(--semantic-amber)]",
                   )}
                 />
-                <span className="flex-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#737986]">
+                <span className="flex-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--text-3)]">
                   {section.label}
                 </span>
-                <span className="font-mono text-[10px] font-medium tabular-nums text-[#545967]">
+                <span className="font-mono text-[10px] font-medium tabular-nums text-[var(--text-3)]">
                   {section.items.length}
                 </span>
               </div>
@@ -364,8 +370,8 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
         </nav>
 
         {/* ══════════════ Footer ══════════════ */}
-        <div className="relative border-t border-white/[0.06] p-2">
-          <div className="pointer-events-none absolute inset-x-[14px] top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent)]" />
+        <div className="relative border-t border-[var(--tint-4)] p-2">
+          <div className="pointer-events-none absolute inset-x-[14px] top-0 h-px bg-[linear-gradient(90deg,transparent,var(--tint-5),transparent)]" />
 
           <HelpPopover
             renderTrigger={(props) => (
@@ -374,7 +380,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                 type="button"
                 aria-label="Help and documentation"
                 title="Help & Docs"
-                className="mb-0.5 flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-1.5 text-[12.5px] text-[#737986] transition-all hover:bg-white/[0.035] hover:text-white data-[popup-open]:bg-white/[0.04] data-[popup-open]:text-white"
+                className="mb-0.5 flex w-full items-center gap-2.5 rounded-[6px] px-2.5 py-1.5 text-[12.5px] text-[var(--text-3)] transition-all hover:bg-[var(--tint-3)] hover:text-[var(--text-1)] data-[popup-open]:bg-[var(--tint-3)] data-[popup-open]:text-[var(--text-1)]"
               >
                 <HelpCircle
                   className="h-[15px] w-[15px] opacity-50"
@@ -385,18 +391,18 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
             )}
           />
 
-          <div className="mx-3 my-1 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)]" />
+          <div className="mx-3 my-1 h-px bg-[linear-gradient(90deg,transparent,var(--tint-4),transparent)]" />
 
-          <div className="group flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 transition-colors hover:bg-white/[0.035]">
-            <div className="relative grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-[rgba(0,212,170,0.16)] bg-[linear-gradient(135deg,rgba(0,212,170,0.18),rgba(0,212,170,0.04))] text-[11px] font-semibold tracking-[0.02em] text-[#39e0bb]">
+          <div className="group flex items-center gap-2.5 rounded-[6px] px-2.5 py-2 transition-colors hover:bg-[var(--tint-3)]">
+            <div className="relative grid h-[30px] w-[30px] shrink-0 place-items-center rounded-full border border-[rgb(var(--teal-rgb)/0.16)] bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.18),rgb(var(--teal-rgb)/0.04))] text-[11px] font-semibold tracking-[0.02em] text-[var(--teal-text)]">
               {initials || "AA"}
-              <div className="absolute -bottom-px -right-px h-[9px] w-[9px] rounded-full border-2 border-[#060810] bg-[var(--semantic-green)]" />
+              <div className="absolute -bottom-px -right-px h-[9px] w-[9px] rounded-full border-2 border-[var(--bg-1)] bg-[var(--semantic-green)]" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-px">
-              <div className="truncate text-[12.5px] font-medium leading-tight tracking-[-0.005em] text-white">
+              <div className="truncate text-[12.5px] font-medium leading-tight tracking-[-0.005em] text-[var(--text-1)]">
                 {displayName || "Admin"}
               </div>
-              <div className="text-[10.5px] leading-[1.3] text-[#545967]">
+              <div className="text-[10.5px] leading-[1.3] text-[var(--text-3)]">
                 Administrator
               </div>
             </div>
@@ -405,7 +411,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
               onClick={logout}
               title="Sign out"
               aria-label="Sign out"
-              className="grid h-[26px] w-[26px] place-items-center rounded-[6px] text-[#545967] opacity-0 transition-all hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)] group-hover:opacity-100"
+              className="grid h-[26px] w-[26px] place-items-center rounded-[6px] text-[var(--text-3)] opacity-0 transition-all hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--red-text)] group-hover:opacity-100"
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
@@ -418,7 +424,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="hidden h-screen w-[260px] shrink-0 border-r border-white/[0.06] lg:block">
+    <aside className="hidden h-screen w-[260px] shrink-0 border-r border-[var(--tint-4)] lg:block">
       <NavContent />
     </aside>
   );
@@ -437,7 +443,10 @@ export function MobileNav() {
           </Button>
         )}
       />
-      <SheetContent side="left" className="w-[260px] border-white/[0.06] p-0">
+      <SheetContent
+        side="left"
+        className="w-[260px] border-[var(--tint-4)] p-0"
+      >
         <SheetTitle className="sr-only">Navigation</SheetTitle>
         <NavContent onNavigate={() => setOpen(false)} />
       </SheetContent>

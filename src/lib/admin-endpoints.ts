@@ -95,25 +95,142 @@ export const adminEndpoints = {
       path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/conflicts`,
     };
   },
-  courtLayout: (venueId: string, courtId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/layout` }),
-  updateCourtLayout: (venueId: string, courtId: string): AdminEndpoint => ({ method: "PUT", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/layout` }),
-  courtRules: (venueId: string, courtId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules` }),
-  createCourtRule: (venueId: string, courtId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules` }),
-  deleteCourtRule: (venueId: string, courtId: string, ruleId: string): AdminEndpoint => ({ method: "DELETE", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules/${segment(ruleId)}` }),
-  courtSports: (venueId: string, courtId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports` }),
-  createCourtSport: (venueId: string, courtId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports` }),
-  courtSport: (venueId: string, courtId: string, sportId: string, method: "DELETE" | "PUT"): AdminEndpoint => ({ method, path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}` }),
-  courtEquipment: (venueId: string, courtId: string, sportId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment` }),
-  createCourtEquipment: (venueId: string, courtId: string, sportId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment` }),
-  courtEquipmentItem: (venueId: string, courtId: string, sportId: string, equipmentId: string, method: "DELETE" | "PUT"): AdminEndpoint => ({ method, path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment/${segment(equipmentId)}` }),
-  courtPricing: (venueId: string, courtId: string, sportId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing` }),
-  createCourtPricing: (venueId: string, courtId: string, sportId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing` }),
-  createBasePricing: (venueId: string, courtId: string, sportId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/base` }),
-  courtPricingRule: (venueId: string, courtId: string, sportId: string, ruleId: string, method: "DELETE" | "PUT"): AdminEndpoint => ({ method, path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/${segment(ruleId)}` }),
-  courtPricingGroup: (venueId: string, courtId: string, sportId: string, groupId: string, method: "DELETE" | "PUT"): AdminEndpoint => ({ method, path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/groups/${segment(groupId)}` }),
-  venueDiscounts: (venueId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/discounts` }),
-  createVenueDiscount: (venueId: string): AdminEndpoint => ({ method: "POST", path: `/api/admin/v1/venues/${segment(venueId)}/discounts` }),
-  venueDiscount: (venueId: string, discountId: string, method: "DELETE" | "PUT"): AdminEndpoint => ({ method, path: `/api/admin/v1/venues/${segment(venueId)}/discounts/${segment(discountId)}` }),
-  venuePromotions: (venueId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/promotions` }),
-  promotionRedemptions: (venueId: string, promotionId: string): AdminEndpoint => ({ method: "GET", path: `/api/admin/v1/venues/${segment(venueId)}/promotions/${segment(promotionId)}/redemptions` }),
+  courtLayout: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/layout`,
+  }),
+  updateCourtLayout: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "PUT",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/layout`,
+  }),
+  courtRules: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules`,
+  }),
+  createCourtRule: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules`,
+  }),
+  deleteCourtRule: (
+    venueId: string,
+    courtId: string,
+    ruleId: string,
+  ): AdminEndpoint => ({
+    method: "DELETE",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/rules/${segment(ruleId)}`,
+  }),
+  courtSports: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports`,
+  }),
+  createCourtSport: (venueId: string, courtId: string): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports`,
+  }),
+  courtSport: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+    method: "DELETE" | "PUT",
+  ): AdminEndpoint => ({
+    method,
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}`,
+  }),
+  courtEquipment: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+  ): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment`,
+  }),
+  createCourtEquipment: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+  ): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment`,
+  }),
+  courtEquipmentItem: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+    equipmentId: string,
+    method: "DELETE" | "PUT",
+  ): AdminEndpoint => ({
+    method,
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/equipment/${segment(equipmentId)}`,
+  }),
+  courtPricing: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+  ): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing`,
+  }),
+  createCourtPricing: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+  ): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing`,
+  }),
+  createBasePricing: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+  ): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/base`,
+  }),
+  courtPricingRule: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+    ruleId: string,
+    method: "DELETE" | "PUT",
+  ): AdminEndpoint => ({
+    method,
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/${segment(ruleId)}`,
+  }),
+  courtPricingGroup: (
+    venueId: string,
+    courtId: string,
+    sportId: string,
+    groupId: string,
+    method: "DELETE" | "PUT",
+  ): AdminEndpoint => ({
+    method,
+    path: `/api/admin/v1/venues/${segment(venueId)}/courts/${segment(courtId)}/sports/${segment(sportId)}/pricing/groups/${segment(groupId)}`,
+  }),
+  venueDiscounts: (venueId: string): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/discounts`,
+  }),
+  createVenueDiscount: (venueId: string): AdminEndpoint => ({
+    method: "POST",
+    path: `/api/admin/v1/venues/${segment(venueId)}/discounts`,
+  }),
+  venueDiscount: (
+    venueId: string,
+    discountId: string,
+    method: "DELETE" | "PUT",
+  ): AdminEndpoint => ({
+    method,
+    path: `/api/admin/v1/venues/${segment(venueId)}/discounts/${segment(discountId)}`,
+  }),
+  venuePromotions: (venueId: string): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/promotions`,
+  }),
+  promotionRedemptions: (
+    venueId: string,
+    promotionId: string,
+  ): AdminEndpoint => ({
+    method: "GET",
+    path: `/api/admin/v1/venues/${segment(venueId)}/promotions/${segment(promotionId)}/redemptions`,
+  }),
 };

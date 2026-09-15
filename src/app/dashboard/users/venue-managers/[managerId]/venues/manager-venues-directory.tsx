@@ -82,7 +82,7 @@ export function ManagerVenuesDirectory({
               Venues
             </h1>
             {!isLoading && !error && (
-              <span className="rounded-full border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-2 py-0.5 font-mono text-[11px] text-[var(--semantic-amber)]">
+              <span className="rounded-full border border-[rgb(var(--amber-rgb)/0.2)] bg-[var(--semantic-amber-subtle)] px-2 py-0.5 font-mono text-[11px] text-[var(--amber-text)]">
                 {venues.length}
               </span>
             )}
@@ -96,7 +96,10 @@ export function ManagerVenuesDirectory({
       {isLoading ? (
         <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
           {[0, 1, 2].map((item) => (
-            <div key={item} className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-4 last:border-b-0">
+            <div
+              key={item}
+              className="flex items-center gap-3 border-b border-[var(--border)] px-4 py-4 last:border-b-0"
+            >
               <Skeleton className="h-9 w-9 rounded-md" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-3.5 w-40" />
@@ -108,9 +111,13 @@ export function ManagerVenuesDirectory({
         </div>
       ) : error ? (
         <div className="flex flex-col items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] px-5 py-14 text-center">
-          <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
-          <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">Couldn&apos;t load venues</h2>
-          <p className="mt-1 max-w-md text-[13px] text-[var(--text-3)]">{error}</p>
+          <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
+          <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">
+            Couldn&apos;t load venues
+          </h2>
+          <p className="mt-1 max-w-md text-[13px] text-[var(--text-3)]">
+            {error}
+          </p>
           <Button variant="outline" onClick={retry} className="mt-4 gap-1.5">
             <RefreshCw className="h-3.5 w-3.5" />
             Try again
@@ -119,7 +126,9 @@ export function ManagerVenuesDirectory({
       ) : venues.length === 0 ? (
         <div className="flex flex-col items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] px-5 py-14 text-center">
           <Building2 className="h-7 w-7 text-[var(--text-4)]" />
-          <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">No assigned venues</h2>
+          <h2 className="mt-3 text-sm font-semibold text-[var(--text-1)]">
+            No assigned venues
+          </h2>
           <p className="mt-1 text-[13px] text-[var(--text-3)]">
             {managerLabel} does not currently manage a venue.
           </p>
@@ -132,17 +141,19 @@ export function ManagerVenuesDirectory({
               href={`/dashboard/venues/${venue.id}`}
               className="group flex items-center gap-3 border-b border-[var(--border)] px-4 py-3.5 transition-colors last:border-b-0 hover:bg-[var(--semantic-amber-subtle)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--semantic-amber-subtle)]"
             >
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-[rgba(245,158,11,0.18)] bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-[rgb(var(--amber-rgb)/0.18)] bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]">
                 <Building2 className="h-4 w-4" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13.5px] font-medium text-[var(--text-1)]">{venue.name}</span>
+                <span className="block truncate text-[13.5px] font-medium text-[var(--text-1)]">
+                  {venue.name}
+                </span>
                 <span className="mt-0.5 flex items-center gap-1 text-[11.5px] text-[var(--text-4)]">
                   <MapPin className="h-3 w-3" />
                   {venue.city}
                 </span>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-3)] transition-colors group-hover:text-[var(--semantic-amber)]">
+              <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--text-3)] transition-colors group-hover:text-[var(--amber-text)]">
                 Choose
                 <ArrowRight className="h-3.5 w-3.5" />
               </span>

@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { Banknote, CalendarDays } from "lucide-react";
 
-import { CURRENCY_OPTIONS } from "@/lib/currencies";
+import { currencyOptionsFor } from "@/lib/currencies";
 import type { ContractDraft } from "@/lib/contracts";
 import type { FeeModel } from "@/types/api";
 import { cn } from "@/lib/utils";
@@ -56,7 +56,7 @@ export function ContractTermsEditor({
       <div>
         <div id={feeModelLabelId} className={labelClassName}>
           Fee model
-          <span className="ml-1 text-[var(--semantic-red)]">*</span>
+          <span className="ml-1 text-[var(--red-text)]">*</span>
         </div>
         <div
           role="radiogroup"
@@ -76,7 +76,7 @@ export function ContractTermsEditor({
                 className={cn(
                   "rounded-lg border p-3 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60",
                   active
-                    ? "border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.08)]"
+                    ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[rgb(var(--teal-rgb)/0.08)]"
                     : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)]",
                 )}
               >
@@ -104,7 +104,7 @@ export function ContractTermsEditor({
             {draft.feeModel === "PER_RESERVATION"
               ? "Per-court fee"
               : "Fixed monthly fee"}
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </label>
           <input
             id={feeInputId}
@@ -129,7 +129,7 @@ export function ContractTermsEditor({
         <div className="space-y-2">
           <label htmlFor={currencyId} className={labelClassName}>
             Currency
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </label>
           <select
             id={currencyId}
@@ -141,7 +141,7 @@ export function ContractTermsEditor({
               inputClassName,
             )}
           >
-            {CURRENCY_OPTIONS.map((currency) => (
+            {currencyOptionsFor(draft.currencyCode).map((currency) => (
               <option key={currency.code} value={currency.code}>
                 {currency.code} - {currency.label}
               </option>
@@ -152,7 +152,7 @@ export function ContractTermsEditor({
         <div className="space-y-2">
           <label htmlFor={graceId} className={labelClassName}>
             Grace period days
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </label>
           <input
             id={graceId}
@@ -178,7 +178,7 @@ export function ContractTermsEditor({
         <div className="space-y-2">
           <label htmlFor={startDateId} className={labelClassName}>
             Start date
-            <span className="ml-1 text-[var(--semantic-red)]">*</span>
+            <span className="ml-1 text-[var(--red-text)]">*</span>
           </label>
           <div className="relative">
             <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-4)]" />

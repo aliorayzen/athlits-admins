@@ -68,7 +68,8 @@ function formatDateTime(value: string): string {
 
 function timeRemaining(value: string): string {
   const milliseconds = new Date(value).getTime() - Date.now();
-  if (!Number.isFinite(milliseconds) || milliseconds <= 0) return "Expiring now";
+  if (!Number.isFinite(milliseconds) || milliseconds <= 0)
+    return "Expiring now";
   const hours = Math.ceil(milliseconds / 3_600_000);
   if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} left`;
   const days = Math.ceil(hours / 24);
@@ -84,8 +85,9 @@ function initials(account: RestorableAccountDto): string {
 
 export function RestorableAccountsDirectory() {
   const [phase, setPhase] = useState<Phase>("loading");
-  const [data, setData] =
-    useState<PageResponse<RestorableAccountDto> | null>(null);
+  const [data, setData] = useState<PageResponse<RestorableAccountDto> | null>(
+    null,
+  );
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("deadline");
   const [page, setPage] = useState(0);
@@ -185,9 +187,9 @@ export function RestorableAccountsDirectory() {
 
       <div
         role="note"
-        className="flex items-start gap-3 rounded-lg border border-[rgba(99,102,241,0.22)] bg-[rgba(99,102,241,0.07)] px-4 py-3"
+        className="flex items-start gap-3 rounded-lg border border-[rgb(var(--indigo-rgb)/0.22)] bg-[rgb(var(--indigo-rgb)/0.07)] px-4 py-3"
       >
-        <CircleHelp className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-blue)]" />
+        <CircleHelp className="mt-0.5 h-4 w-4 shrink-0 text-[var(--blue-text)]" />
         <div className="space-y-0.5">
           <p className="text-[12.5px] font-medium text-[var(--text-2)]">
             One-month restoration window
@@ -324,7 +326,7 @@ function DirectoryBody({
     >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[900px] border-separate border-spacing-0">
-          <thead className="bg-white/[0.012]">
+          <thead className="bg-[var(--tint-1)]">
             <tr>
               <Th className="pl-4">Account</Th>
               <Th>Phone</Th>
@@ -367,10 +369,10 @@ function AccountRow({
     `${account.firstName ?? ""} ${account.lastName ?? ""}`.trim() ||
     "Unnamed account";
   return (
-    <tr className="group transition-colors hover:bg-white/[0.015]">
-      <td className="border-t border-white/[0.035] px-4 py-3">
+    <tr className="group transition-colors hover:bg-[var(--tint-1)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3">
         <div className="flex min-w-[240px] items-center gap-2.5">
-          <Avatar className="h-9 w-9 border border-[rgba(0,212,170,0.16)]">
+          <Avatar className="h-9 w-9 border border-[rgb(var(--teal-rgb)/0.16)]">
             {account.profilePictureUrl && (
               <AvatarImage src={account.profilePictureUrl} alt="" />
             )}
@@ -388,7 +390,7 @@ function AccountRow({
           </div>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3">
         {account.phoneNumber ? (
           <span className="inline-flex items-center gap-1.5 font-mono text-[12px] text-[var(--text-2)]">
             <Phone className="h-[11px] w-[11px] text-[var(--text-4)]" />
@@ -398,12 +400,12 @@ function AccountRow({
           <span className="text-[12px] text-[var(--text-4)]">Not provided</span>
         )}
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3">
         <DateCell icon={Trash2} value={account.deletionRequestedAt} />
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3">
         <div className="flex flex-col gap-px whitespace-nowrap">
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--semantic-amber)]">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--amber-text)]">
             <CalendarClock className="h-3 w-3" />
             {timeRemaining(account.permanentDeletionAt)}
           </span>
@@ -412,7 +414,7 @@ function AccountRow({
           </span>
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 text-right">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right">
         <RestoreDialog
           account={account}
           onRestored={onRestored}
@@ -449,8 +451,7 @@ function RestoreDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
-  const name =
-    `${account.firstName ?? ""} ${account.lastName ?? ""}`.trim();
+  const name = `${account.firstName ?? ""} ${account.lastName ?? ""}`.trim();
 
   async function handleRestore() {
     setIsRestoring(true);
@@ -480,16 +481,13 @@ function RestoreDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) => !isRestoring && setOpen(next)}
-    >
+    <Dialog open={open} onOpenChange={(next) => !isRestoring && setOpen(next)}>
       <DialogTrigger
         render={(props) => (
           <button
             {...props}
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(0,212,170,0.25)] bg-[var(--teal-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--teal-text)] transition-colors hover:bg-[rgba(0,212,170,0.15)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
+            className="inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--teal-rgb)/0.25)] bg-[var(--teal-subtle)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--teal-text)] transition-colors hover:bg-[rgb(var(--teal-rgb)/0.15)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--teal-subtle)]"
           >
             <RotateCcw className="h-[13px] w-[13px]" />
             Restore
@@ -513,11 +511,11 @@ function RestoreDialog({
           <p className="font-mono text-[11px] text-[var(--text-3)]">
             {account.email}
           </p>
-          <p className="mt-1 text-[11px] text-[var(--semantic-amber)]">
+          <p className="mt-1 text-[11px] text-[var(--amber-text)]">
             Restore before {formatDateTime(account.permanentDeletionAt)}
           </p>
         </div>
-        <DialogFooter className="border-[var(--border)] bg-white/[0.008]">
+        <DialogFooter className="border-[var(--border)] bg-[var(--tint-1)]">
           <Button
             type="button"
             variant="outline"
@@ -531,7 +529,7 @@ function RestoreDialog({
             type="button"
             disabled={isRestoring}
             onClick={handleRestore}
-            className="gap-1.5 border border-[rgba(0,212,170,0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] font-semibold text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)]"
+            className="gap-1.5 border border-[rgb(var(--teal-rgb)/0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] font-semibold text-[var(--on-teal)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)]"
           >
             {isRestoring ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -581,7 +579,7 @@ function Pagination({
   const start = data.totalElements === 0 ? 0 : current * data.size + 1;
   const end = current * data.size + count;
   return (
-    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-white/[0.008] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="font-mono text-[12px] tabular-nums text-[var(--text-4)]">
         Showing {start}-{end} of {data.totalElements}
       </span>
@@ -640,7 +638,7 @@ function DirectorySkeleton() {
       {Array.from({ length: 7 }).map((_, index) => (
         <div
           key={index}
-          className="flex items-center gap-3 border-b border-white/[0.035] px-4 py-3 last:border-b-0"
+          className="flex items-center gap-3 border-b border-[var(--tint-3)] px-4 py-3 last:border-b-0"
         >
           <Skeleton className="h-9 w-9 rounded-full" />
           <div className="flex flex-1 flex-col gap-1.5">
@@ -665,15 +663,13 @@ function ErrorState({
 }) {
   return (
     <div className="flex flex-col items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(244,63,94,0.25)] bg-[var(--semantic-red-subtle)]">
-        <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgb(var(--red-rgb)/0.25)] bg-[var(--semantic-red-subtle)]">
+        <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
       </div>
       <p className="text-base font-medium text-[var(--text-1)]">
         Couldn&apos;t load restorable accounts
       </p>
-      <p className="mt-1.5 max-w-sm text-sm text-[var(--text-3)]">
-        {message}
-      </p>
+      <p className="mt-1.5 max-w-sm text-sm text-[var(--text-3)]">{message}</p>
       <Button
         variant="outline"
         onClick={onRetry}

@@ -338,7 +338,9 @@ function buildLineItems(inv: InvoiceResponse): InvoiceLineItem[] {
         : `${line.totalBookings} ${line.totalBookings === 1 ? "booking" : "bookings"}`;
 
       return {
-        description: isFixed ? "Fixed monthly platform fee" : "Per-reservation fee",
+        description: isFixed
+          ? "Fixed monthly platform fee"
+          : "Per-reservation fee",
         detail: `Contract #${line.contractId} · ${fmtDate(line.servicePeriodStart)} to ${fmtDate(line.servicePeriodEnd)} · ${basis}${rate == null ? "" : ` at ${fmtMoney(rate, lineCurrency)}`}`,
         amount: line.amountDue,
       };

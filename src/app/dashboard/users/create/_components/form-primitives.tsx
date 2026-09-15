@@ -30,36 +30,36 @@ interface AccentClasses {
 const ACCENT: Record<Accent, AccentClasses> = {
   teal: {
     badge:
-      "border-[rgba(0,212,170,0.14)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
+      "border-[rgb(var(--teal-rgb)/0.14)] bg-[var(--teal-subtle)] text-[var(--teal-text)]",
     text: "text-[var(--teal-text)]",
     inputFocus:
       "focus:border-[var(--teal)] focus:shadow-[0_0_0_3px_var(--teal-subtle)]",
   },
   amber: {
     badge:
-      "border-[rgba(245,158,11,0.14)] bg-[rgba(245,158,11,0.1)] text-[var(--semantic-amber)]",
-    text: "text-[var(--semantic-amber)]",
+      "border-[rgb(var(--amber-rgb)/0.14)] bg-[rgb(var(--amber-rgb)/0.1)] text-[var(--amber-text)]",
+    text: "text-[var(--amber-text)]",
     inputFocus:
-      "focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]",
+      "focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]",
   },
 };
 
 const SUBMIT_ACCENT: Record<Accent, string> = {
-  teal: "border-[rgba(0,212,170,0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] text-[#032921] shadow-[0_0_20px_-6px_rgba(0,212,170,0.35)] hover:-translate-y-px hover:bg-[linear-gradient(135deg,#1be2ba_0%,#0cc89f_100%)] hover:shadow-[0_0_28px_-6px_rgba(0,212,170,0.5)]",
+  teal: "border-[rgb(var(--teal-rgb)/0.3)] bg-[linear-gradient(135deg,#00d4aa_0%,#00b894_100%)] text-[var(--on-teal)] shadow-[0_0_20px_-6px_rgb(var(--teal-rgb)/0.35)] hover:-translate-y-px hover:bg-[linear-gradient(135deg,#1be2ba_0%,#0cc89f_100%)] hover:shadow-[0_0_28px_-6px_rgb(var(--teal-rgb)/0.5)]",
   amber:
-    "border-[rgba(245,158,11,0.3)] bg-[linear-gradient(135deg,#f59e0b_0%,#d97706_100%)] text-[#1a1100] shadow-[0_0_20px_-6px_rgba(245,158,11,0.35)] hover:-translate-y-px hover:bg-[linear-gradient(135deg,#fbbf24_0%,#ea8c06_100%)] hover:shadow-[0_0_28px_-6px_rgba(245,158,11,0.5)]",
+    "border-[rgb(var(--amber-rgb)/0.3)] bg-[linear-gradient(135deg,#f59e0b_0%,#d97706_100%)] text-[var(--on-amber)] shadow-[0_0_20px_-6px_rgb(var(--amber-rgb)/0.35)] hover:-translate-y-px hover:bg-[linear-gradient(135deg,#fbbf24_0%,#ea8c06_100%)] hover:shadow-[0_0_28px_-6px_rgb(var(--amber-rgb)/0.5)]",
 };
 
 const PREVIEW_AVATAR: Record<Accent, string> = {
-  teal: "border-[rgba(0,212,170,0.22)] bg-[linear-gradient(135deg,rgba(0,212,170,0.28),rgba(0,212,170,0.08))] text-[var(--teal-text)]",
+  teal: "border-[rgb(var(--teal-rgb)/0.22)] bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.28),rgb(var(--teal-rgb)/0.08))] text-[var(--teal-text)]",
   amber:
-    "border-[rgba(245,158,11,0.22)] bg-[linear-gradient(135deg,rgba(245,158,11,0.28),rgba(245,158,11,0.08))] text-[var(--semantic-amber)]",
+    "border-[rgb(var(--amber-rgb)/0.22)] bg-[linear-gradient(135deg,rgb(var(--amber-rgb)/0.28),rgb(var(--amber-rgb)/0.08))] text-[var(--amber-text)]",
 };
 
 const PREVIEW_BADGE: Record<Accent, string> = {
-  teal: "border-[rgba(0,212,170,0.14)] bg-[rgba(0,212,170,0.1)] text-[var(--teal-text)]",
+  teal: "border-[rgb(var(--teal-rgb)/0.14)] bg-[rgb(var(--teal-rgb)/0.1)] text-[var(--teal-text)]",
   amber:
-    "border-[rgba(245,158,11,0.14)] bg-[rgba(245,158,11,0.1)] text-[var(--semantic-amber)]",
+    "border-[rgb(var(--amber-rgb)/0.14)] bg-[rgb(var(--amber-rgb)/0.1)] text-[var(--amber-text)]",
 };
 
 /* ── Form sections + fields ──────────────────────────────────── */
@@ -157,9 +157,7 @@ export function TextField({
         <span>
           {label}
           {required && (
-            <span className="ml-1.5 text-[var(--semantic-red)] opacity-85">
-              *
-            </span>
+            <span className="ml-1.5 text-[var(--red-text)] opacity-85">*</span>
           )}
         </span>
       </label>
@@ -168,9 +166,9 @@ export function TextField({
           className={cn(
             "relative flex h-[38px] overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)] transition-all",
             error
-              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus-within:border-[var(--semantic-red)]"
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgb(var(--red-rgb)/0.12)] focus-within:border-[var(--semantic-red)]"
               : accent === "amber"
-                ? "focus-within:border-[var(--semantic-amber)] focus-within:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]"
+                ? "focus-within:border-[var(--semantic-amber)] focus-within:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]"
                 : "focus-within:border-[var(--teal)] focus-within:shadow-[0_0_0_3px_var(--teal-subtle)]",
           )}
         >
@@ -205,7 +203,7 @@ export function TextField({
             className={cn(
               "h-[38px] w-full rounded-md border border-[var(--border)] bg-[var(--bg-0)] pl-[34px] pr-3 text-[13.5px] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)]",
               error
-                ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
+                ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgb(var(--red-rgb)/0.12)] focus:border-[var(--semantic-red)]"
                 : ACCENT[accent].inputFocus,
             )}
           />
@@ -215,7 +213,7 @@ export function TextField({
         <p
           id={errorId}
           role="alert"
-          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--red-text)]"
         >
           {error}
         </p>
@@ -225,8 +223,8 @@ export function TextField({
           className={cn(
             "mt-0.5 flex items-start gap-1.5 text-[11px] leading-[1.4]",
             hint.tone === "info"
-              ? "text-[var(--semantic-blue)]"
-              : "text-[var(--semantic-amber)]",
+              ? "text-[var(--blue-text)]"
+              : "text-[var(--amber-text)]",
           )}
         >
           <HintIcon className="mt-0.5 h-[11px] w-[11px] flex-shrink-0" />
@@ -239,7 +237,7 @@ export function TextField({
 
 export function StrengthMeter({ strength }: { strength: 0 | 1 | 2 | 3 | 4 }) {
   const toneAt = (i: number): string => {
-    if (i >= strength) return "bg-white/[0.05]";
+    if (i >= strength) return "bg-[var(--tint-4)]";
     if (strength <= 2) return "bg-[var(--semantic-amber)]";
     return "bg-[var(--semantic-green)]";
   };
@@ -273,7 +271,7 @@ export function FormFooter({
   cancelHref: string;
 }) {
   return (
-    <div className="flex items-center justify-between border-t border-[var(--border)] bg-white/[0.008] px-6 py-4">
+    <div className="flex items-center justify-between border-t border-[var(--border)] bg-[var(--tint-1)] px-6 py-4">
       <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-4)]">
         <kbd className="inline-flex items-center rounded border border-[var(--border-strong)] bg-[var(--bg-2)] px-1.5 py-[1.5px] font-mono text-[10px] leading-none text-[var(--text-3)]">
           ⌘

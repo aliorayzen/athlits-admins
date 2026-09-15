@@ -278,7 +278,9 @@ function normalizeCourtRecord(record: CourtRecord): CourtRecord {
   };
 }
 
-function normalizeBookableVenue(v: BookableVenueResponse): BookableVenueResponse {
+function normalizeBookableVenue(
+  v: BookableVenueResponse,
+): BookableVenueResponse {
   return {
     ...v,
     id: ensureStringId(v.id),
@@ -406,8 +408,7 @@ function normalizeInvoiceBreakdown(
           charge.courtName?.trim() ||
           undefined,
         reservationId:
-          charge.reservationId === null ||
-          charge.reservationId === undefined
+          charge.reservationId === null || charge.reservationId === undefined
             ? charge.reservationId
             : ensureStringId(charge.reservationId),
         sessions: (charge.sessions ?? []).map((session) => ({
@@ -476,29 +477,26 @@ function normalizeAuditEvent(value: unknown): AuditEvent {
   const metadata = raw.metadata ?? raw.details ?? raw.payload ?? null;
   const metadataRecord = asRecord(metadata);
 
-  const actorFirstName = firstString([actor, raw], [
-    "firstName",
-    "actorFirstName",
-  ]);
-  const actorLastName = firstString([actor, raw], [
-    "lastName",
-    "actorLastName",
-  ]);
+  const actorFirstName = firstString(
+    [actor, raw],
+    ["firstName", "actorFirstName"],
+  );
+  const actorLastName = firstString(
+    [actor, raw],
+    ["lastName", "actorLastName"],
+  );
   const derivedActorName = [actorFirstName, actorLastName]
     .filter(Boolean)
     .join(" ");
 
   return {
     id:
-      firstString([raw], ["id", "eventId", "auditEventId"]) ??
-      "unknown-event",
+      firstString([raw], ["id", "eventId", "auditEventId"]) ?? "unknown-event",
     occurredAt:
-      firstString([raw], [
-        "occurredAt",
-        "createdAt",
-        "timestamp",
-        "eventTime",
-      ]) ?? "",
+      firstString(
+        [raw],
+        ["occurredAt", "createdAt", "timestamp", "eventTime"],
+      ) ?? "",
     summary: firstString([raw], ["summary", "eventSummary"]),
     category: firstString([raw], ["category", "eventCategory"]),
     scope: firstString([raw], ["scope", "eventScope"]),
@@ -508,85 +506,61 @@ function normalizeAuditEvent(value: unknown): AuditEvent {
     outcome: normalizeAuditOutcome(
       firstString([raw], ["outcome", "status", "result"]),
     ),
-    actorId: firstString([actor, raw], [
-      "id",
-      "actorId",
-      "actorUserId",
-      "userId",
-    ]),
-    actorEmail: firstString([actor, raw], [
-      "email",
-      "actorEmail",
-      "userEmail",
-    ]),
+    actorId: firstString(
+      [actor, raw],
+      ["id", "actorId", "actorUserId", "userId"],
+    ),
+    actorEmail: firstString([actor, raw], ["email", "actorEmail", "userEmail"]),
     actorName:
-      firstString([actor, raw], [
-        "name",
-        "displayName",
-        "actorDisplayName",
-        "actorName",
-        "userName",
-      ]) ||
+      firstString(
+        [actor, raw],
+        ["name", "displayName", "actorDisplayName", "actorName", "userName"],
+      ) ||
       derivedActorName ||
       null,
-    actorRole: firstString([actor, raw], [
-      "role",
-      "actorRole",
-      "actorType",
-      "userRole",
-    ]),
-    affectedUserId: firstString([raw], [
-      "affectedUserId",
-      "targetUserId",
-    ]),
-    affectedUserName: firstString([raw], [
-      "affectedUserDisplayName",
-      "affectedUserName",
-      "targetUserDisplayName",
-      "targetUserName",
-    ]),
+    actorRole: firstString(
+      [actor, raw],
+      ["role", "actorRole", "actorType", "userRole"],
+    ),
+    affectedUserId: firstString([raw], ["affectedUserId", "targetUserId"]),
+    affectedUserName: firstString(
+      [raw],
+      [
+        "affectedUserDisplayName",
+        "affectedUserName",
+        "targetUserDisplayName",
+        "targetUserName",
+      ],
+    ),
     venueId: firstString([raw], ["venueId"]),
     venueName: firstString([raw], ["venueNameSnapshot", "venueName"]),
     bookingId: firstString([raw], ["bookingId"]),
-    entityType: firstString([entity, raw], [
-      "type",
-      "entityType",
-      "resourceType",
-      "targetType",
-    ]),
-    entityId: firstString([entity, raw], [
-      "id",
-      "entityId",
-      "resourceId",
-      "targetId",
-    ]),
-    requestMethod: firstString([request, raw], [
-      "method",
-      "requestMethod",
-      "httpMethod",
-    ]),
-    requestPath: firstString([request, raw], [
-      "path",
-      "requestPath",
-      "endpoint",
-      "uri",
-    ]),
-    ipAddress: firstString([request, raw], [
-      "ipAddress",
-      "clientIp",
-      "ip",
-    ]),
+    entityType: firstString(
+      [entity, raw],
+      ["type", "entityType", "resourceType", "targetType"],
+    ),
+    entityId: firstString(
+      [entity, raw],
+      ["id", "entityId", "resourceId", "targetId"],
+    ),
+    requestMethod: firstString(
+      [request, raw],
+      ["method", "requestMethod", "httpMethod"],
+    ),
+    requestPath: firstString(
+      [request, raw],
+      ["path", "requestPath", "endpoint", "uri"],
+    ),
+    ipAddress: firstString([request, raw], ["ipAddress", "clientIp", "ip"]),
     userAgent: firstString([request, raw], ["userAgent"]),
-    traceId: firstString([request, raw], [
-      "traceId",
-      "requestId",
-      "correlationId",
-    ]),
-    reason: firstString([raw, metadataRecord], [
-      "reason",
-      "message",
-      "description",
-    ]),
+    traceId: firstString(
+      [request, raw],
+      ["traceId", "requestId", "correlationId"],
+    ),
+    reason: firstString(
+      [raw, metadataRecord],
+      ["reason", "message", "description"],
+    ),
     metadata,
     before:
       raw.before ??

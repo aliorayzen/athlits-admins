@@ -21,6 +21,7 @@ import {
   Loader2,
   Mail,
   Receipt,
+  ShieldOff,
   RefreshCw,
   Search,
   XCircle,
@@ -50,6 +51,12 @@ import { cn } from "@/lib/utils";
 import { InvoicePdfDialog } from "./_components/invoice-pdf-dialog";
 import { InvoiceBreakdownSheet } from "./_components/invoice-breakdown-sheet";
 import { SuspendVmDialog } from "./_components/invoice-suspend-dialog";
+import {
+  RowActionItem,
+  RowActionsGroup,
+  RowActionsMenu,
+  RowActionsSeparator,
+} from "@/components/row-actions-menu";
 import { InvoiceExportMenu } from "./_components/invoice-export-menu";
 import {
   InvoiceFiltersPopover,
@@ -67,7 +74,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -78,7 +84,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
@@ -631,7 +636,7 @@ function InvoicesContent() {
         </div>
         <div className="flex items-center gap-2">
           {phase === "ready" && kpiValues.overdueCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-[rgba(244,63,94,0.22)] bg-[rgba(244,63,94,0.1)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--semantic-red)]">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-[rgb(var(--red-rgb)/0.22)] bg-[rgb(var(--red-rgb)/0.1)] px-2.5 py-1.5 text-[12px] font-medium text-[var(--red-text)]">
               <span className="iv2-urgency-pulse h-1.5 w-1.5 rounded-full bg-[var(--semantic-red)] shadow-[0_0_6px_var(--semantic-red)]" />
               <AlertTriangle className="h-3 w-3" />
               {kpiValues.overdueCount} overdue
@@ -654,7 +659,7 @@ function InvoicesContent() {
 
       {/* ═══════════ KPI strip ═══════════ */}
       {phase !== "error" && (
-        <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.01)_0%,transparent_50%),var(--bg-1)] sm:grid-cols-4">
+        <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-1)_0%,transparent_50%),var(--bg-1)] sm:grid-cols-4">
           <KpiCell
             hero
             label="Outstanding balance"
@@ -684,7 +689,7 @@ function InvoicesContent() {
           <KpiCell
             label="Collected (MTD)"
             dotClass="bg-[var(--semantic-green)] iv2-dot-ok"
-            valueToneClass="text-[var(--semantic-green)]"
+            valueToneClass="text-[var(--green-text)]"
             value={
               isKpiLoading
                 ? "—"
@@ -704,7 +709,7 @@ function InvoicesContent() {
           <KpiCell
             label="Overdue"
             dotClass="bg-[var(--semantic-red)] iv2-dot-alert"
-            valueToneClass="text-[var(--semantic-red)]"
+            valueToneClass="text-[var(--red-text)]"
             value={
               isKpiLoading
                 ? "—"
@@ -757,8 +762,8 @@ function InvoicesContent() {
 
       {/* ═══════════ Aging breakdown (only if overdue > 0) ═══════════ */}
       {!isLoading && aging.count > 0 && (
-        <div className="grid grid-cols-[auto_repeat(4,minmax(0,1fr))] gap-4 rounded-lg border border-[rgba(244,63,94,0.12)] bg-[linear-gradient(180deg,rgba(244,63,94,0.04),rgba(244,63,94,0.01))] px-5 py-3">
-          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--semantic-red)]">
+        <div className="grid grid-cols-[auto_repeat(4,minmax(0,1fr))] gap-4 rounded-lg border border-[rgb(var(--red-rgb)/0.12)] bg-[linear-gradient(180deg,rgb(var(--red-rgb)/0.04),rgb(var(--red-rgb)/0.01))] px-5 py-3">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--red-text)]">
             <AlertTriangle className="h-3 w-3" />
             Aging
           </div>
@@ -799,7 +804,7 @@ function InvoicesContent() {
 
       {/* ═══════════ Bulk selection bar ═══════════ */}
       {selectedIds.size > 0 && (
-        <div className="iv2-bulk-bar flex items-center justify-between gap-4 rounded-md border border-[rgba(0,212,170,0.18)] bg-[linear-gradient(180deg,rgba(0,212,170,0.08),rgba(0,212,170,0.02)),var(--bg-1)] px-3.5 py-2">
+        <div className="iv2-bulk-bar flex items-center justify-between gap-4 rounded-md border border-[rgb(var(--teal-rgb)/0.18)] bg-[linear-gradient(180deg,rgb(var(--teal-rgb)/0.08),rgb(var(--teal-rgb)/0.02)),var(--bg-1)] px-3.5 py-2">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--teal-subtle)] px-2.5 py-[3px] font-mono text-[11px] font-semibold text-[var(--teal-text)]">
               {selectedIds.size} selected
@@ -936,7 +941,7 @@ function InvoicesContent() {
             <>
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0">
-                  <thead className="bg-white/[0.012]">
+                  <thead className="bg-[var(--tint-1)]">
                     <tr>
                       <Th className="w-10 pl-4 pr-0">
                         <Checkbox
@@ -1035,7 +1040,7 @@ function InvoicesContent() {
             <Button
               onClick={() => void handleBulkMarkPaid()}
               disabled={!bulkPaidRef.trim() || bulkBusy}
-              className="gap-2 bg-[linear-gradient(135deg,var(--semantic-green)_0%,#059669_100%)] font-medium text-white shadow-[0_0_20px_-4px_rgba(16,185,129,0.35)] hover:brightness-110"
+              className="gap-2 bg-[linear-gradient(135deg,var(--semantic-green)_0%,#059669_100%)] font-medium text-[var(--on-teal)] shadow-[0_0_20px_-4px_rgb(var(--green-rgb)/0.35)] hover:brightness-110"
             >
               {bulkBusy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1086,7 +1091,7 @@ function InvoicesContent() {
                 void handleBulkVoid();
               }}
               disabled={bulkBusy}
-              className="bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)] hover:bg-[var(--semantic-red-subtle)] hover:brightness-125"
+              className="bg-[var(--semantic-red-subtle)] text-[var(--red-text)] hover:bg-[var(--semantic-red-subtle)] hover:brightness-125"
             >
               {bulkBusy ? "Voiding…" : "Void Invoices"}
             </AlertDialogAction>
@@ -1170,7 +1175,7 @@ function InvoicesPagination({
   const isLast = pageData?.last ?? pageIndex + 1 >= totalPages;
 
   return (
-    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-white/[0.008] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="font-mono text-[12px] tabular-nums text-[var(--text-4)]">
         {total === 0 ? "No results" : `Showing ${start}-${end} of ${total}`}
         {outstanding > 0 && (
@@ -1251,7 +1256,7 @@ function InvoicePageButton({
       className={cn(
         "grid h-7 min-w-7 place-items-center rounded-md border px-1.5 font-mono text-[12px] tabular-nums transition-all disabled:cursor-not-allowed disabled:opacity-40",
         active
-          ? "border-[rgba(0,212,170,0.3)] bg-[rgba(0,212,170,0.1)] text-[var(--teal-text)]"
+          ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[rgb(var(--teal-rgb)/0.1)] text-[var(--teal-text)]"
           : "border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] hover:border-[var(--border-strong)] hover:text-[var(--text-1)]",
       )}
     >
@@ -1342,11 +1347,11 @@ function AgingBucket({
   const percent = maxAmount > 0 ? Math.max(0, (amount / maxAmount) * 100) : 0;
   const toneMap = {
     amber: {
-      text: "text-[var(--semantic-amber)]",
+      text: "text-[var(--amber-text)]",
       bg: "bg-[var(--semantic-amber)]",
     },
     orange: { text: "text-[#fb923c]", bg: "bg-[#fb923c]" },
-    red: { text: "text-[var(--semantic-red)]", bg: "bg-[var(--semantic-red)]" },
+    red: { text: "text-[var(--red-text)]", bg: "bg-[var(--semantic-red)]" },
     crimson: { text: "text-[#be123c]", bg: "bg-[#be123c]" },
   } as const;
   const t = toneMap[tone];
@@ -1363,7 +1368,7 @@ function AgingBucket({
           {count > 0 ? formatCurrency(amount, currency) : "—"}
         </span>
       </div>
-      <div className="mt-0.5 h-[3px] overflow-hidden rounded-sm bg-white/[0.04]">
+      <div className="mt-0.5 h-[3px] overflow-hidden rounded-sm bg-[var(--tint-3)]">
         <span
           className={cn("iv2-aging-bar-fill", t.bg)}
           style={{ width: `${percent}%` }}
@@ -1393,11 +1398,11 @@ function BulkBtn({
       className={cn(
         "inline-flex items-center gap-1.5 rounded border border-[var(--border-strong)] bg-[var(--bg-2)] px-2.5 py-[5px] text-[12px] font-medium text-[var(--text-2)] transition-all",
         variant === "success" &&
-          "hover:border-[rgba(16,185,129,0.3)] hover:bg-[rgba(16,185,129,0.08)] hover:text-[var(--semantic-green)] hover:shadow-[0_4px_14px_-6px_rgba(16,185,129,0.4)]",
+          "hover:border-[rgb(var(--green-rgb)/0.3)] hover:bg-[rgb(var(--green-rgb)/0.08)] hover:text-[var(--green-text)] hover:shadow-[0_4px_14px_-6px_rgb(var(--green-rgb)/0.4)]",
         variant === "danger" &&
-          "hover:border-[rgba(244,63,94,0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]",
+          "hover:border-[rgb(var(--red-rgb)/0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--red-text)]",
         variant === "neutral" &&
-          "hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]",
+          "hover:border-[rgb(var(--teal-rgb)/0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]",
       )}
     >
       {children}
@@ -1454,13 +1459,13 @@ function Checkbox({
       {state === "checked" && (
         <span
           aria-hidden="true"
-          className="absolute left-[3px] top-0 h-2 w-1 rotate-45 border-b-[1.5px] border-r-[1.5px] border-[#032921]"
+          className="absolute left-[3px] top-0 h-2 w-1 rotate-45 border-b-[1.5px] border-r-[1.5px] border-[var(--on-teal)]"
         />
       )}
       {state === "indeterminate" && (
         <span
           aria-hidden="true"
-          className="absolute left-[2px] right-[2px] top-1/2 h-[1.5px] -translate-y-1/2 bg-[#032921]"
+          className="absolute left-[2px] right-[2px] top-1/2 h-[1.5px] -translate-y-1/2 bg-[var(--on-teal)]"
         />
       )}
     </button>
@@ -1504,10 +1509,10 @@ function InvoiceRow({
   const gradientKey = hashGradient(invoice.venueId);
 
   const gradientClass = {
-    g1: "bg-[linear-gradient(135deg,rgba(0,212,170,0.25)_0%,rgba(0,212,170,0.06)_100%)] text-[var(--teal-text)]",
-    g2: "bg-[linear-gradient(135deg,rgba(99,102,241,0.22)_0%,rgba(99,102,241,0.04)_100%)] text-[#a5b4fc]",
-    g3: "bg-[linear-gradient(135deg,rgba(245,158,11,0.2)_0%,rgba(245,158,11,0.04)_100%)] text-[#fcd34d]",
-    g4: "bg-[linear-gradient(135deg,rgba(244,63,94,0.2)_0%,rgba(244,63,94,0.04)_100%)] text-[#fda4af]",
+    g1: "bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.25)_0%,rgb(var(--teal-rgb)/0.06)_100%)] text-[var(--teal-text)]",
+    g2: "bg-[linear-gradient(135deg,rgb(var(--indigo-rgb)/0.22)_0%,rgb(var(--indigo-rgb)/0.04)_100%)] text-[#a5b4fc]",
+    g3: "bg-[linear-gradient(135deg,rgb(var(--amber-rgb)/0.2)_0%,rgb(var(--amber-rgb)/0.04)_100%)] text-[var(--amber-text)]",
+    g4: "bg-[linear-gradient(135deg,rgb(var(--red-rgb)/0.2)_0%,rgb(var(--red-rgb)/0.04)_100%)] text-[var(--red-text)]",
   }[gradientKey];
 
   return (
@@ -1517,23 +1522,23 @@ function InvoiceRow({
         urgency === "overdue" && "iv2-tr-overdue",
         urgency === "due-soon" && "iv2-tr-due-soon",
         isSelected
-          ? "bg-[rgba(0,212,170,0.04)] hover:bg-[rgba(0,212,170,0.055)]"
-          : "hover:bg-[rgba(255,255,255,0.015)]",
+          ? "bg-[rgb(var(--teal-rgb)/0.04)] hover:bg-[rgb(var(--teal-rgb)/0.055)]"
+          : "hover:bg-[var(--tint-1)]",
       )}
     >
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <Checkbox
           checked={isSelected}
           onChange={onToggle}
           ariaLabel={`Select invoice ${invoice.id.slice(0, 8)}`}
         />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <span className="inline-block rounded border border-[var(--border)] bg-[var(--bg-2)] px-[7px] py-[2px] font-mono text-[11.5px] font-medium tabular-nums text-[var(--text-2)]">
           #{invoice.id.slice(0, 8).toUpperCase()}
         </span>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex items-center gap-2.5">
           <div
             className={cn(
@@ -1567,21 +1572,21 @@ function InvoiceRow({
           </div>
         </div>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <span className="whitespace-nowrap text-[12px] tabular-nums text-[var(--text-3)]">
           {formatPeriod(invoice.periodStart, invoice.periodEnd)}
         </span>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <AmountCell invoice={invoice} />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <StatusPill status={invoice.status} />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <DueDateCell invoice={invoice} urgency={urgency} />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 text-right align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right align-middle">
         <RowActions
           invoice={invoice}
           onVoid={onVoid}
@@ -1597,8 +1602,8 @@ function InvoiceRow({
 
 function AmountCell({ invoice }: { invoice: InvoiceResponse }) {
   const toneClass = {
-    PAID: "text-[var(--semantic-green)]",
-    OVERDUE: "text-[var(--semantic-red)]",
+    PAID: "text-[var(--green-text)]",
+    OVERDUE: "text-[var(--red-text)]",
     GENERATED: "text-[var(--text-1)]",
     VOID: "iv2-amount-void",
   }[invoice.status];
@@ -1620,7 +1625,7 @@ function AmountCell({ invoice }: { invoice: InvoiceResponse }) {
 function StatusPill({ status }: { status: InvoiceStatus }) {
   if (status === "GENERATED") {
     return (
-      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(99,102,241,0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--semantic-blue)]">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgb(var(--indigo-rgb)/0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--blue-text)]">
         <FileText className="h-[11px] w-[11px]" />
         <span>Generated</span>
       </span>
@@ -1628,7 +1633,7 @@ function StatusPill({ status }: { status: InvoiceStatus }) {
   }
   if (status === "PAID") {
     return (
-      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(16,185,129,0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--semantic-green)]">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgb(var(--green-rgb)/0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--green-text)]">
         <CheckCircle className="h-[11px] w-[11px]" />
         <span>Paid</span>
       </span>
@@ -1636,14 +1641,14 @@ function StatusPill({ status }: { status: InvoiceStatus }) {
   }
   if (status === "OVERDUE") {
     return (
-      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-[rgba(244,63,94,0.2)] bg-[rgba(244,63,94,0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--semantic-red)]">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-[rgb(var(--red-rgb)/0.2)] bg-[rgb(var(--red-rgb)/0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--red-text)]">
         <span className="iv2-status-dot-overdue h-[5px] w-[5px] rounded-full bg-[var(--semantic-red)] shadow-[0_0_6px_var(--semantic-red)]" />
         <span>Overdue</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/[0.04] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--text-4)]">
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--tint-3)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--text-4)]">
       <Ban className="h-[11px] w-[11px]" />
       <span>Void</span>
     </span>
@@ -1671,7 +1676,7 @@ function DueDateCell({
           {formatDate(invoice.dueDate)}
         </span>
         {invoice.paidAt && (
-          <span className="font-mono text-[10px] text-[var(--semantic-green)]">
+          <span className="font-mono text-[10px] text-[var(--green-text)]">
             Paid {formatDate(invoice.paidAt)}
           </span>
         )}
@@ -1682,10 +1687,10 @@ function DueDateCell({
     const days = daysBetween(new Date().toISOString(), invoice.dueDate);
     return (
       <div className="flex flex-col gap-[1px] whitespace-nowrap">
-        <span className="text-[12px] font-medium text-[var(--semantic-red)]">
+        <span className="text-[12px] font-medium text-[var(--red-text)]">
           Overdue by {days} {days === 1 ? "day" : "days"}
         </span>
-        <span className="font-mono text-[10px] font-medium text-[var(--semantic-red)]">
+        <span className="font-mono text-[10px] font-medium text-[var(--red-text)]">
           was {formatDate(invoice.dueDate)}
         </span>
       </div>
@@ -1695,12 +1700,12 @@ function DueDateCell({
     const days = daysBetween(invoice.dueDate, new Date().toISOString());
     return (
       <div className="flex flex-col gap-[1px] whitespace-nowrap">
-        <span className="text-[12px] font-medium text-[var(--semantic-amber)]">
+        <span className="text-[12px] font-medium text-[var(--amber-text)]">
           {days === 0
             ? "Due today"
             : `Due in ${days} ${days === 1 ? "day" : "days"}`}
         </span>
-        <span className="font-mono text-[10px] font-medium text-[var(--semantic-amber)]">
+        <span className="font-mono text-[10px] font-medium text-[var(--amber-text)]">
           {formatDate(invoice.dueDate)}
         </span>
       </div>
@@ -1735,37 +1740,87 @@ function RowActions({
   onBreakdown: () => void;
 }) {
   const isTerminal = invoice.status === "PAID" || invoice.status === "VOID";
+  const shortId = invoice.id.slice(0, 8).toUpperCase();
+
+  // Each dialog is controlled from here so a menu item can open it. A trigger
+  // nested inside the menu would be unmounted the moment the menu closed,
+  // taking its dialog with it.
+  const [dialog, setDialog] = useState<"paid" | "void" | "suspend" | null>(
+    null,
+  );
+  const close = () => setDialog(null);
+
   return (
-    <div className="flex items-center justify-end gap-1">
-      <button
-        type="button"
-        onClick={onBreakdown}
-        title="View charge breakdown"
-        aria-label={`View invoice ${invoice.id.slice(0, 8)} charge breakdown`}
-        className="grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
-      >
-        <Receipt className="h-[13px] w-[13px]" />
-      </button>
-      <button
-        type="button"
-        onClick={onPdf}
-        title="View PDF"
-        aria-label={`View invoice ${invoice.id.slice(0, 8)} PDF`}
-        className="iv2-btn-pdf grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(0,212,170,0.18)] hover:bg-[var(--teal-subtle)] hover:text-[var(--teal-text)]"
-      >
-        <FileText className="h-[13px] w-[13px]" />
-      </button>
-      {invoice.status === "OVERDUE" && (
-        <SuspendVmDialog invoice={invoice} onChanged={onChanged} />
-      )}
-      {isTerminal ? (
-        <SettledChip status={invoice.status} />
-      ) : (
-        <>
-          <MarkPaidDialog invoice={invoice} onPaid={onPaid} />
-          <VoidDialog invoice={invoice} onVoid={onVoid} />
-        </>
-      )}
+    <div className="flex items-center justify-end gap-2">
+      {/* A settled invoice still says so in the row; the status is information,
+          not an action, so it stays outside the menu. */}
+      {isTerminal && <SettledChip status={invoice.status} />}
+
+      <RowActionsMenu label={`invoice ${shortId}`}>
+        <RowActionsGroup label="View">
+          <RowActionItem icon={Receipt} onSelect={onBreakdown}>
+            Charge breakdown
+          </RowActionItem>
+          <RowActionItem icon={FileText} onSelect={onPdf}>
+            Invoice PDF
+          </RowActionItem>
+        </RowActionsGroup>
+
+        {!isTerminal && (
+          <>
+            <RowActionsSeparator />
+            <RowActionsGroup label="Settle">
+              <RowActionItem
+                icon={CheckCircle}
+                onSelect={() => setDialog("paid")}
+              >
+                Mark as paid
+              </RowActionItem>
+              <RowActionItem
+                icon={XCircle}
+                tone="danger"
+                onSelect={() => setDialog("void")}
+              >
+                Void invoice
+              </RowActionItem>
+            </RowActionsGroup>
+          </>
+        )}
+
+        {invoice.status === "OVERDUE" && (
+          <>
+            <RowActionsSeparator />
+            <RowActionsGroup label="Escalate">
+              <RowActionItem
+                icon={ShieldOff}
+                tone="danger"
+                onSelect={() => setDialog("suspend")}
+              >
+                Suspend venue manager
+              </RowActionItem>
+            </RowActionsGroup>
+          </>
+        )}
+      </RowActionsMenu>
+
+      <MarkPaidDialog
+        invoice={invoice}
+        onPaid={onPaid}
+        open={dialog === "paid"}
+        onOpenChange={(next) => (next ? setDialog("paid") : close())}
+      />
+      <VoidDialog
+        invoice={invoice}
+        onVoid={onVoid}
+        open={dialog === "void"}
+        onOpenChange={(next) => (next ? setDialog("void") : close())}
+      />
+      <SuspendVmDialog
+        invoice={invoice}
+        onChanged={onChanged}
+        open={dialog === "suspend"}
+        onOpenChange={(next) => (next ? setDialog("suspend") : close())}
+      />
     </div>
   );
 }
@@ -1773,14 +1828,14 @@ function RowActions({
 function SettledChip({ status }: { status: InvoiceStatus }) {
   if (status === "PAID") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-[rgba(16,185,129,0.1)] bg-[rgba(16,185,129,0.05)] px-2 py-1 text-[10.5px] font-medium text-[var(--semantic-green)]">
+      <span className="inline-flex items-center gap-1 rounded-full border border-[rgb(var(--green-rgb)/0.1)] bg-[rgb(var(--green-rgb)/0.05)] px-2 py-1 text-[10.5px] font-medium text-[var(--green-text)]">
         <CheckCircle className="h-[10px] w-[10px]" />
         Settled
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-white/[0.02] px-2 py-1 text-[10.5px] font-medium text-[var(--text-4)]">
+    <span className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--tint-2)] px-2 py-1 text-[10.5px] font-medium text-[var(--text-4)]">
       <Ban className="h-[10px] w-[10px]" />
       Voided
     </span>
@@ -1790,14 +1845,18 @@ function SettledChip({ status }: { status: InvoiceStatus }) {
 function MarkPaidDialog({
   invoice,
   onPaid,
+  open,
+  onOpenChange,
 }: {
   invoice: InvoiceResponse;
   onPaid: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const [paymentRef, setPaymentRef] = useState("");
   const [isMarking, setIsMarking] = useState(false);
-  const [open, setOpen] = useState(false);
   const paymentRefId = useId();
+  const setOpen = onOpenChange;
 
   async function handleMarkPaid() {
     setIsMarking(true);
@@ -1815,20 +1874,7 @@ function MarkPaidDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={(props) => (
-          <button
-            {...props}
-            type="button"
-            title="Mark as paid"
-            aria-label={`Mark invoice ${invoice.id.slice(0, 8)} as paid`}
-            className="iv2-btn-paid grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)]"
-          >
-            <CheckCircle className="h-[13px] w-[13px]" />
-          </button>
-        )}
-      />
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
         <DialogHeader>
           <DialogTitle>Mark Invoice as Paid</DialogTitle>
@@ -1869,7 +1915,7 @@ function MarkPaidDialog({
           <Button
             onClick={handleMarkPaid}
             disabled={!paymentRef.trim() || isMarking}
-            className="gap-2 bg-[linear-gradient(135deg,var(--semantic-green)_0%,#059669_100%)] font-medium text-white shadow-[0_0_20px_-4px_rgba(16,185,129,0.35)] hover:brightness-110"
+            className="gap-2 bg-[linear-gradient(135deg,var(--semantic-green)_0%,#059669_100%)] font-medium text-[var(--on-teal)] shadow-[0_0_20px_-4px_rgb(var(--green-rgb)/0.35)] hover:brightness-110"
           >
             {isMarking ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -1887,25 +1933,16 @@ function MarkPaidDialog({
 function VoidDialog({
   invoice,
   onVoid,
+  open,
+  onOpenChange,
 }: {
   invoice: InvoiceResponse;
   onVoid: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={(props) => (
-          <button
-            {...props}
-            type="button"
-            title="Void invoice"
-            aria-label={`Void invoice ${invoice.id.slice(0, 8)}`}
-            className="grid h-11 w-11 place-items-center rounded border border-[var(--border)] bg-[var(--bg-2)] text-[var(--text-3)] opacity-70 transition-all group-hover:opacity-100 hover:border-[rgba(244,63,94,0.3)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
-          >
-            <XCircle className="h-[13px] w-[13px]" />
-          </button>
-        )}
-      />
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="border-[var(--border)] bg-[var(--bg-1)]">
         <AlertDialogHeader>
           <AlertDialogTitle>Void this invoice?</AlertDialogTitle>
@@ -1927,7 +1964,7 @@ function VoidDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onVoid}
-            className="bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)] hover:bg-[var(--semantic-red-subtle)] hover:brightness-125"
+            className="bg-[var(--semantic-red-subtle)] text-[var(--red-text)] hover:bg-[var(--semantic-red-subtle)] hover:brightness-125"
           >
             Void Invoice
           </AlertDialogAction>
@@ -1939,7 +1976,7 @@ function VoidDialog({
 
 function InvoicesSkeleton() {
   return (
-    <div className="divide-y divide-[rgba(255,255,255,0.035)]">
+    <div className="divide-y divide-[var(--tint-3)]">
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="flex items-center gap-3 px-4 py-3">
           <Skeleton className="h-[14px] w-[14px] rounded-[3px]" />
@@ -2021,8 +2058,8 @@ function ErrorState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(244,63,94,0.25)] bg-[var(--semantic-red-subtle)]">
-        <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgb(var(--red-rgb)/0.25)] bg-[var(--semantic-red-subtle)]">
+        <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
       </div>
       <p className="text-base font-medium text-[var(--text-1)]">
         Couldn&apos;t load invoices

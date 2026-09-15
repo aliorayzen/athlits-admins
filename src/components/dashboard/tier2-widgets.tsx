@@ -23,20 +23,20 @@ export function WidgetUnavailable({
   return (
     <div
       className={cn(
-        "dash-fade-up flex min-h-[150px] flex-col rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] px-6 py-[22px]",
+        "dash-fade-up flex min-h-[150px] flex-col rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))] px-6 py-[22px]",
         className,
       )}
     >
       <div className="flex items-center gap-2 text-[13.5px] font-medium text-[var(--text-1)]">
         {title}
         {badge && (
-          <span className="rounded-full bg-[rgba(255,255,255,0.04)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
+          <span className="rounded-full bg-[var(--tint-3)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
             {badge}
           </span>
         )}
       </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
-        <div className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-white/[0.02]">
+        <div className="grid h-10 w-10 place-items-center rounded-full border border-[var(--border)] bg-[var(--tint-2)]">
           <BarChart3 className="h-4 w-4 text-[var(--text-4)]" />
         </div>
         <div className="text-[13px] font-medium text-[var(--text-2)]">

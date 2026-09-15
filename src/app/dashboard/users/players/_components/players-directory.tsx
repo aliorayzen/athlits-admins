@@ -163,16 +163,16 @@ export function PlayersDirectory() {
       {report.error && report.data && (
         <div
           role="alert"
-          className="flex items-center justify-between gap-3 rounded-lg border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3"
+          className="flex items-center justify-between gap-3 rounded-lg border border-[rgb(var(--amber-rgb)/0.2)] bg-[var(--semantic-amber-subtle)] px-4 py-3"
         >
           <span className="flex min-w-0 items-center gap-2 text-[12px] text-[var(--text-2)]">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--semantic-amber)]" />
+            <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--amber-text)]" />
             <span className="truncate">{report.error}</span>
           </span>
           <button
             type="button"
             onClick={report.retry}
-            className="shrink-0 text-[12px] font-medium text-[var(--semantic-amber)] hover:underline"
+            className="shrink-0 text-[12px] font-medium text-[var(--amber-text)] hover:underline"
           >
             Retry
           </button>
@@ -202,7 +202,6 @@ export function PlayersDirectory() {
         onPlayerChanged={report.retry}
         onPage={report.goToPage}
       />
-
     </div>
   );
 }
@@ -236,7 +235,7 @@ function PlayersBody({
     return (
       <div className="grid min-h-64 place-items-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] px-6 text-center">
         <div>
-          <AlertTriangle className="mx-auto h-6 w-6 text-[var(--semantic-red)]" />
+          <AlertTriangle className="mx-auto h-6 w-6 text-[var(--red-text)]" />
           <h2 className="mt-3 text-[14px] font-semibold text-[var(--text-1)]">
             Player reporting is unavailable
           </h2>
@@ -303,18 +302,24 @@ function PlayersBody({
             <col className="w-[15%]" />
             <col className="w-[13%]" />
           </colgroup>
-          <thead className="bg-white/[0.012]">
+          <thead className="bg-[var(--tint-1)]">
             <tr>
-              {["Player", "Account", "Reservations", "Paid", "Net paid", "Last booking", ""].map(
-                (heading, index) => (
-                  <th
-                    key={`${heading}-${index}`}
-                    className="border-b border-[var(--border)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]"
-                  >
-                    {heading}
-                  </th>
-                ),
-              )}
+              {[
+                "Player",
+                "Account",
+                "Reservations",
+                "Paid",
+                "Net paid",
+                "Last booking",
+                "",
+              ].map((heading, index) => (
+                <th
+                  key={`${heading}-${index}`}
+                  className="border-b border-[var(--border)] px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--text-4)]"
+                >
+                  {heading}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -353,8 +358,8 @@ function PlayerRow({
   ].filter(Boolean);
 
   return (
-    <tr className="group hover:bg-white/[0.015]">
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+    <tr className="group hover:bg-[var(--tint-1)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="truncate text-[13px] font-medium text-[var(--text-1)]">
           {fullName}
         </div>
@@ -366,13 +371,13 @@ function PlayerRow({
           {player.phoneNumber && <span>{player.phoneNumber}</span>}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <StatusPill status={player.accountStatus} />
         <div className="mt-1.5 text-[10.5px] text-[var(--text-4)]">
           Registered {formatDate(player.registrationDate)}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="font-mono text-[14px] font-semibold tabular-nums text-[var(--text-2)]">
           {player.totalReservations}
         </div>
@@ -380,15 +385,15 @@ function PlayerRow({
           {statusSummary.join(" · ") || "No status activity"}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
-        <div className="font-mono text-[14px] font-semibold tabular-nums text-[var(--semantic-green)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
+        <div className="font-mono text-[14px] font-semibold tabular-nums text-[var(--green-text)]">
           {player.paidReservations}
         </div>
         <div className="mt-0.5 text-[10px] text-[var(--text-4)]">
           reservations
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <MoneyList amounts={player.netPaid} empty="No net payments" />
         {player.grossPaid.length > 0 && (
           <div className="mt-1 border-t border-[var(--border)] pt-1">
@@ -399,13 +404,13 @@ function PlayerRow({
           </div>
         )}
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[11.5px] text-[var(--text-2)]">
           <CalendarClock className="h-3.5 w-3.5 text-[var(--text-4)]" />
           {formatDate(player.lastBookingDate)}
         </span>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 text-right align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right align-middle">
         <div className="flex items-center justify-end gap-1.5">
           {player.accountStatus !== "DISABLED" && (
             <BlockPlayerDialog
@@ -476,7 +481,7 @@ function BlockPlayerDialog({
             size="icon"
             variant="ghost"
             aria-label={`Block ${fullName}`}
-            className="text-[var(--text-4)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--semantic-red)]"
+            className="text-[var(--text-4)] hover:bg-[var(--semantic-red-subtle)] hover:text-[var(--red-text)]"
           />
         }
       >
@@ -487,11 +492,12 @@ function BlockPlayerDialog({
           <AlertDialogTitle>Block {fullName}?</AlertDialogTitle>
           <AlertDialogDescription>
             Their sessions will be revoked and active upcoming bookings across
-            all venues will be cancelled. This endpoint does not support unblocking.
+            all venues will be cancelled. This endpoint does not support
+            unblocking.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
-          <p role="alert" className="text-sm text-[var(--semantic-red)]">
+          <p role="alert" className="text-sm text-[var(--red-text)]">
             {error}
           </p>
         )}
@@ -527,7 +533,7 @@ function PlayersSkeleton() {
       {Array.from({ length: 7 }).map((_, index) => (
         <div
           key={index}
-          className="grid grid-cols-[1.6fr_1fr_1fr_0.7fr_1fr_0.9fr] gap-5 border-b border-white/[0.035] px-4 py-4 last:border-0"
+          className="grid grid-cols-[1.6fr_1fr_1fr_0.7fr_1fr_0.9fr] gap-5 border-b border-[var(--tint-3)] px-4 py-4 last:border-0"
         >
           {Array.from({ length: 6 }).map((__, cell) => (
             <Skeleton

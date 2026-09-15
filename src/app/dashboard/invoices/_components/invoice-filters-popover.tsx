@@ -88,7 +88,7 @@ export function InvoiceFiltersPopover({
             className={cn(
               "inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-[13px] transition-colors",
               activeCount > 0
-                ? "border-[rgba(0,212,170,0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
+                ? "border-[rgb(var(--teal-rgb)/0.3)] bg-[var(--teal-subtle)] text-[var(--teal-text)]"
                 : "border-[var(--border)] bg-[var(--bg-1)] text-[var(--text-2)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]",
             )}
           >

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -38,10 +32,7 @@ import {
   getVenue,
 } from "@/lib/api";
 import { normalizeEmail } from "@/lib/email";
-import type {
-  StaffPermission,
-  VenueDetailResponse,
-} from "@/types/api";
+import type { StaffPermission, VenueDetailResponse } from "@/types/api";
 import {
   ALL_STAFF_PERMISSIONS,
   expandStaffPermissionDependencies,
@@ -105,11 +96,7 @@ function hasSamePermissions(
 }
 
 type FieldName =
-  | "firstName"
-  | "lastName"
-  | "email"
-  | "tempPassword"
-  | "permissions";
+  "firstName" | "lastName" | "email" | "tempPassword" | "permissions";
 type FieldErrors = Partial<Record<FieldName, string>>;
 
 function validateFields(values: {
@@ -231,11 +218,17 @@ export default function CreateVenueStaffPage() {
     clearFieldError("permissions");
   }
 
-  function setPermissionGroup(group: StaffPermissionOption[], checked: boolean) {
+  function setPermissionGroup(
+    group: StaffPermissionOption[],
+    checked: boolean,
+  ) {
     const groupPermissions = group.map((option) => option.value);
     setPermissions((current) => {
       if (checked) {
-        return expandStaffPermissionDependencies([...current, ...groupPermissions]);
+        return expandStaffPermissionDependencies([
+          ...current,
+          ...groupPermissions,
+        ]);
       }
 
       return groupPermissions.reduce(
@@ -280,7 +273,9 @@ export default function CreateVenueStaffPage() {
 
       const numericVenueId = Number(venue.id);
       if (!Number.isSafeInteger(numericVenueId) || numericVenueId <= 0) {
-        setSubmitError("This venue has an invalid ID and cannot receive staff.");
+        setSubmitError(
+          "This venue has an invalid ID and cannot receive staff.",
+        );
         return;
       }
 
@@ -367,10 +362,7 @@ export default function CreateVenueStaffPage() {
   if (!venue.managerId) {
     return (
       <div className="users-create-v2 max-w-xl">
-        <BackLink
-          href={`/dashboard/venues/${venue.id}`}
-          label={venue.name}
-        />
+        <BackLink href={`/dashboard/venues/${venue.id}`} label={venue.name} />
         <div className="rounded-lg border border-[var(--semantic-amber-subtle)] bg-[var(--semantic-amber-subtle)] p-5">
           <h1 className="text-[16px] font-semibold text-[var(--text-1)]">
             Assign a manager first
@@ -389,7 +381,7 @@ export default function CreateVenueStaffPage() {
       <div className="users-create-v2 max-w-3xl space-y-5">
         <BackLink href={`/dashboard/venues/${venue.id}`} label={venue.name} />
         <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgba(16,185,129,0.12)] text-[var(--semantic-green)]">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[rgb(var(--green-rgb)/0.12)] text-[var(--green-text)]">
             <Users className="h-4.5 w-4.5" />
           </span>
           <div>
@@ -409,7 +401,7 @@ export default function CreateVenueStaffPage() {
         />
         <Link
           href={`/dashboard/venues/${venue.id}`}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 text-[13px] font-semibold text-[#06100d] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[var(--teal)] px-4 text-[13px] font-semibold text-[var(--on-teal)] transition-all hover:brightness-110 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)]"
         >
           Return to venue
           <ArrowRight className="h-4 w-4" />
@@ -434,8 +426,8 @@ export default function CreateVenueStaffPage() {
           Create venue staff
         </h1>
         <p className="max-w-[70ch] text-[13.5px] tracking-[-0.003em] text-[var(--text-3)]">
-          Add a staff account for {venue.name}. Access is limited to the
-          venue permissions you select below.
+          Add a staff account for {venue.name}. Access is limited to the venue
+          permissions you select below.
         </p>
       </div>
 
@@ -527,7 +519,7 @@ export default function CreateVenueStaffPage() {
               desc="Start with a preset, then adjust individual permissions if needed."
             >
               <div className="mb-3.5 flex items-start gap-2.5 rounded-md border border-[var(--border)] bg-[var(--bg-0)] px-3.5 py-3">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--semantic-amber)]" />
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--amber-text)]" />
                 <div className="min-w-0">
                   <p className="truncate text-[13px] font-medium text-[var(--text-1)]">
                     {venue.name}
@@ -544,7 +536,8 @@ export default function CreateVenueStaffPage() {
                     Access presets
                   </p>
                   <span className="font-mono text-[10.5px] text-[var(--text-4)]">
-                    {permissions.length} / {ALL_STAFF_PERMISSIONS.length} selected
+                    {permissions.length} / {ALL_STAFF_PERMISSIONS.length}{" "}
+                    selected
                   </span>
                 </div>
                 <div className="grid gap-2 sm:grid-cols-3">
@@ -561,7 +554,7 @@ export default function CreateVenueStaffPage() {
                         onClick={() => applyPreset(preset.permissions)}
                         className={`rounded-md border px-3 py-2.5 text-left transition-colors ${
                           active
-                            ? "border-[rgba(245,158,11,0.3)] bg-[var(--semantic-amber-subtle)]"
+                            ? "border-[rgb(var(--amber-rgb)/0.3)] bg-[var(--semantic-amber-subtle)]"
                             : "border-[var(--border)] bg-[var(--bg-0)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-2)]"
                         }`}
                       >
@@ -580,7 +573,9 @@ export default function CreateVenueStaffPage() {
               <div
                 className="overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)] divide-y divide-[var(--border)]"
                 aria-describedby={
-                  fieldErrors.permissions ? "staff-permissions-error" : undefined
+                  fieldErrors.permissions
+                    ? "staff-permissions-error"
+                    : undefined
                 }
               >
                 {PERMISSION_GROUPS.map((group) => {
@@ -591,10 +586,12 @@ export default function CreateVenueStaffPage() {
                   const allSelected = selectedInGroup === group.options.length;
                   return (
                     <fieldset key={group.label} className="p-3.5">
-                      <legend className="sr-only">{group.label} permissions</legend>
+                      <legend className="sr-only">
+                        {group.label} permissions
+                      </legend>
                       <div className="mb-2.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <Icon className="h-3.5 w-3.5 text-[var(--semantic-amber)]" />
+                          <Icon className="h-3.5 w-3.5 text-[var(--amber-text)]" />
                           <span className="text-[12.5px] font-semibold text-[var(--text-1)]">
                             {group.label}
                           </span>
@@ -604,8 +601,10 @@ export default function CreateVenueStaffPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => setPermissionGroup(group.options, !allSelected)}
-                          className="text-[10.5px] font-medium text-[var(--semantic-amber)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
+                          onClick={() =>
+                            setPermissionGroup(group.options, !allSelected)
+                          }
+                          className="text-[10.5px] font-medium text-[var(--amber-text)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--semantic-amber-subtle)]"
                         >
                           {allSelected ? "Clear group" : "Select group"}
                         </button>
@@ -623,7 +622,9 @@ export default function CreateVenueStaffPage() {
                                 onCheckedChange={(nextChecked) =>
                                   togglePermission(option.value, nextChecked)
                                 }
-                                aria-invalid={Boolean(fieldErrors.permissions) || undefined}
+                                aria-invalid={
+                                  Boolean(fieldErrors.permissions) || undefined
+                                }
                                 className="mt-0.5 data-checked:border-[var(--semantic-amber)] data-checked:bg-[var(--semantic-amber)] data-checked:text-[var(--bg-0)]"
                               />
                               <span className="min-w-0">
@@ -643,15 +644,16 @@ export default function CreateVenueStaffPage() {
                 })}
               </div>
               <p className="mt-2 text-[10.5px] leading-4 text-[var(--text-4)]">
-                Selecting an action automatically includes its required view permission.
-                Removing a view permission also removes the actions that depend on it.
-                Staff administration and non-assignable mobile permissions are intentionally excluded.
+                Selecting an action automatically includes its required view
+                permission. Removing a view permission also removes the actions
+                that depend on it. Staff administration and non-assignable
+                mobile permissions are intentionally excluded.
               </p>
               {fieldErrors.permissions && (
                 <p
                   id="staff-permissions-error"
                   role="alert"
-                  className="mt-2 text-[11px] text-[var(--semantic-red)]"
+                  className="mt-2 text-[11px] text-[var(--red-text)]"
                 >
                   {fieldErrors.permissions}
                 </p>
@@ -660,7 +662,7 @@ export default function CreateVenueStaffPage() {
               {submitError && (
                 <div
                   role="alert"
-                  className="mt-3.5 flex items-start gap-2 rounded-md border border-[var(--semantic-red-subtle)] bg-[var(--semantic-red-subtle)] px-3 py-2.5 text-[11.5px] leading-5 text-[var(--semantic-red)]"
+                  className="mt-3.5 flex items-start gap-2 rounded-md border border-[var(--semantic-red-subtle)] bg-[var(--semantic-red-subtle)] px-3 py-2.5 text-[11.5px] leading-5 text-[var(--red-text)]"
                 >
                   <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   {submitError}
@@ -701,7 +703,7 @@ export default function CreateVenueStaffPage() {
               <PreviewRow label="Initial status" value="Active" />
             </div>
             <div className="mt-3.5 flex gap-2 rounded-md border border-[var(--semantic-blue-subtle)] bg-[var(--semantic-blue-subtle)] px-3 py-2.5">
-              <Info className="mt-px h-[13px] w-[13px] shrink-0 text-[var(--semantic-blue)]" />
+              <Info className="mt-px h-[13px] w-[13px] shrink-0 text-[var(--blue-text)]" />
               <p className="text-[11.5px] leading-[1.5] text-[var(--text-2)]">
                 They&apos;ll be required to change the temporary password on
                 first login.

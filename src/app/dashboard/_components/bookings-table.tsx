@@ -34,17 +34,17 @@ export function BookingsTable({
       : "No invoices yet. They appear after each billing month closes.";
 
   return (
-    <div className="dash-fade-up stg-7 overflow-hidden rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] py-[22px] pb-3">
+    <div className="dash-fade-up stg-7 overflow-hidden rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))] py-[22px] pb-3">
       <div className="mb-[18px] flex items-center justify-between px-6">
         <div className="flex items-center gap-2 text-[13.5px] font-medium text-[var(--text-1)]">
           {title}
-          <span className="rounded-full bg-[rgba(255,255,255,0.04)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
+          <span className="rounded-full bg-[var(--tint-3)] px-2 py-0.5 font-mono text-[11px] font-medium text-[var(--text-3)]">
             {hint}
           </span>
         </div>
         <Link
           href="/dashboard/invoices"
-          className="inline-flex items-center gap-1 rounded-[10px] border border-[var(--border-strong)] bg-[rgba(255,255,255,0.03)] px-3 py-1.5 text-xs font-medium text-[var(--text-2)] transition-all hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-1)]"
+          className="inline-flex items-center gap-1 rounded-[10px] border border-[var(--border-strong)] bg-[var(--tint-2)] px-3 py-1.5 text-xs font-medium text-[var(--text-2)] transition-all hover:border-[var(--tint-7)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)]"
         >
           View all
           <ChevronRight className="h-3 w-3" />
@@ -61,7 +61,7 @@ export function BookingsTable({
                 (h, i) => (
                   <th
                     key={i}
-                    className="border-b border-[var(--border)] bg-[rgba(255,255,255,0.012)] px-6 py-3 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]"
+                    className="border-b border-[var(--border)] bg-[var(--tint-1)] px-6 py-3 text-left font-mono text-[10.5px] font-medium uppercase tracking-[0.08em] text-[var(--text-3)]"
                   >
                     {h}
                   </th>
@@ -76,7 +76,7 @@ export function BookingsTable({
               return (
                 <tr
                   key={inv.id}
-                  className="border-b border-[rgba(255,255,255,0.035)] last:border-b-0 hover:bg-[rgba(255,255,255,0.022)]"
+                  className="border-b border-[var(--tint-3)] last:border-b-0 hover:bg-[var(--tint-2)]"
                 >
                   <td className="px-6 py-3.5 text-[var(--text-2)]">
                     <div className="flex items-center gap-2.5">
@@ -112,7 +112,7 @@ export function BookingsTable({
                     <div className="flex justify-end gap-1">
                       <Link
                         href={`/dashboard/invoices`}
-                        className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--text-1)]"
+                        className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)]"
                         aria-label="View invoice"
                         title="View"
                       >
@@ -120,7 +120,7 @@ export function BookingsTable({
                       </Link>
                       <button
                         type="button"
-                        className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[var(--text-1)]"
+                        className="grid h-[30px] w-[30px] place-items-center rounded-lg border border-transparent text-[var(--text-3)] transition-all hover:border-[var(--border)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)]"
                         aria-label="More actions"
                         title="More"
                       >

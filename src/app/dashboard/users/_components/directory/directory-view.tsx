@@ -28,28 +28,28 @@ export type Accent = "amber" | "teal" | "blue";
 
 const ACCENT_VARS: Record<Accent, Record<string, string>> = {
   amber: {
-    "--accent": "#f59e0b",
-    "--accent-dark": "#d97706",
-    "--accent-subtle": "rgba(245,158,11,0.1)",
-    "--accent-ring": "rgba(245,158,11,0.3)",
+    "--accent": "var(--semantic-amber)",
+    "--accent-dark": "var(--amber-deep)",
+    "--accent-subtle": "rgb(var(--amber-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--amber-rgb)/0.3)",
     "--accent-on": "#231405",
-    "--accent-glow": "rgba(245,158,11,0.4)",
+    "--accent-glow": "rgb(var(--amber-rgb)/0.4)",
   },
   teal: {
-    "--accent": "#00d4aa",
-    "--accent-dark": "#00b894",
-    "--accent-subtle": "rgba(0,212,170,0.1)",
-    "--accent-ring": "rgba(0,212,170,0.3)",
-    "--accent-on": "#032921",
-    "--accent-glow": "rgba(0,212,170,0.35)",
+    "--accent": "var(--teal)",
+    "--accent-dark": "var(--teal-deep)",
+    "--accent-subtle": "rgb(var(--teal-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--teal-rgb)/0.3)",
+    "--accent-on": "var(--on-teal)",
+    "--accent-glow": "rgb(var(--teal-rgb)/0.35)",
   },
   blue: {
     "--accent": "#6366f1",
     "--accent-dark": "#4f46e5",
-    "--accent-subtle": "rgba(99,102,241,0.1)",
-    "--accent-ring": "rgba(99,102,241,0.3)",
+    "--accent-subtle": "rgb(var(--indigo-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--indigo-rgb)/0.3)",
     "--accent-on": "#f5f6ff",
-    "--accent-glow": "rgba(99,102,241,0.4)",
+    "--accent-glow": "rgb(var(--indigo-rgb)/0.4)",
   },
 };
 
@@ -264,7 +264,7 @@ function Body(props: DirectoryViewProps) {
     >
       <div className="overflow-x-auto">
         <table className="w-full border-separate border-spacing-0">
-          <thead className="bg-white/[0.012]">
+          <thead className="bg-[var(--tint-1)]">
             <tr>
               <Th className="pl-4">{props.personLabel}</Th>
               <Th>Phone</Th>
@@ -295,8 +295,8 @@ function Row({ user, actions }: { user: UserDto; actions?: React.ReactNode }) {
     `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim() || "Unnamed user";
 
   return (
-    <tr className="uv2-tr group transition-colors hover:bg-[rgba(255,255,255,0.015)]">
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+    <tr className="uv2-tr group transition-colors hover:bg-[var(--tint-1)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <div className="flex min-w-[240px] items-center gap-2.5">
           <div
             className={cn(
@@ -332,7 +332,7 @@ function Row({ user, actions }: { user: UserDto; actions?: React.ReactNode }) {
           </div>
         </div>
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         {user.phoneNumber ? (
           <span className="inline-flex items-center gap-1.5 font-mono text-[12px] text-[var(--text-2)]">
             <Phone className="h-[11px] w-[11px] text-[var(--text-4)]" />
@@ -342,16 +342,16 @@ function Row({ user, actions }: { user: UserDto; actions?: React.ReactNode }) {
           <span className="text-[12px] text-[var(--text-4)]">—</span>
         )}
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <StatusPill bucket={bucket} />
       </td>
-      <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 align-middle">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-middle">
         <span className="font-mono text-[12px] tabular-nums text-[var(--text-3)]">
           #{user.id}
         </span>
       </td>
       {actions !== undefined && (
-        <td className="border-t border-[rgba(255,255,255,0.035)] px-4 py-3 text-right align-middle">
+        <td className="border-t border-[var(--tint-3)] px-4 py-3 text-right align-middle">
           {actions}
         </td>
       )}
@@ -362,7 +362,7 @@ function Row({ user, actions }: { user: UserDto; actions?: React.ReactNode }) {
 export function StatusPill({ bucket }: { bucket: StatusBucket }) {
   if (bucket === "active") {
     return (
-      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(16,185,129,0.08)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--semantic-green)]">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgb(var(--green-rgb)/0.08)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--green-text)]">
         <span className="uv2-status-dot-active h-[5px] w-[5px] rounded-full bg-[var(--semantic-green)] shadow-[0_0_5px_var(--semantic-green)]" />
         Active
       </span>
@@ -370,14 +370,14 @@ export function StatusPill({ bucket }: { bucket: StatusBucket }) {
   }
   if (bucket === "pending") {
     return (
-      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgba(99,102,241,0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--semantic-blue)]">
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[rgb(var(--indigo-rgb)/0.1)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--blue-text)]">
         <Clock className="h-[10px] w-[10px]" />
         Pending
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-white/[0.04] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--text-4)]">
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--tint-3)] py-[3px] pl-[7px] pr-[9px] text-[11px] font-medium leading-[1.3] text-[var(--text-4)]">
       <Ban className="h-[10px] w-[10px]" />
       Disabled
     </span>
@@ -401,7 +401,7 @@ function PaginationBar({ dir }: { dir: UserDirectory }) {
   const isLast = data.last ?? pageIndex + 1 >= totalPages;
 
   return (
-    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-white/[0.008] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="font-mono text-[12px] tabular-nums text-[var(--text-4)]">
         {total === 0 ? "No results" : `Showing ${start}–${end} of ${total}`}
       </span>
@@ -528,7 +528,7 @@ function Th({
 function TableSkeleton({ hasActions }: { hasActions: boolean }) {
   return (
     <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-1)]">
-      <div className="divide-y divide-[rgba(255,255,255,0.035)]">
+      <div className="divide-y divide-[var(--tint-3)]">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3">
             <Skeleton className="h-9 w-9 rounded-full" />
@@ -558,8 +558,8 @@ function ErrorState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-1)] py-16">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgba(244,63,94,0.25)] bg-[var(--semantic-red-subtle)]">
-        <AlertTriangle className="h-6 w-6 text-[var(--semantic-red)]" />
+      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-[rgb(var(--red-rgb)/0.25)] bg-[var(--semantic-red-subtle)]">
+        <AlertTriangle className="h-6 w-6 text-[var(--red-text)]" />
       </div>
       <p className="text-base font-medium text-[var(--text-1)]">
         Couldn&apos;t load {noun}

@@ -21,14 +21,14 @@ interface RoleChooserCardProps {
 }
 
 const ICON_TILE: Record<Accent, string> = {
-  teal: "border-[rgba(0,212,170,0.2)] bg-[rgba(0,212,170,0.14)] text-[var(--teal-text)]",
+  teal: "border-[rgb(var(--teal-rgb)/0.2)] bg-[rgb(var(--teal-rgb)/0.14)] text-[var(--teal-text)]",
   amber:
-    "border-[rgba(245,158,11,0.2)] bg-[rgba(245,158,11,0.14)] text-[var(--semantic-amber)]",
+    "border-[rgb(var(--amber-rgb)/0.2)] bg-[rgb(var(--amber-rgb)/0.14)] text-[var(--amber-text)]",
 };
 
 const PERK_ICON: Record<Accent, string> = {
   teal: "text-[var(--teal-text)]",
-  amber: "text-[var(--semantic-amber)]",
+  amber: "text-[var(--amber-text)]",
 };
 
 export function RoleChooserCard({
@@ -80,8 +80,8 @@ export function RoleChooserCard({
         className={cn(
           "absolute right-3.5 top-3.5 grid h-6 w-6 place-items-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-1)] text-[var(--text-4)] transition-all group-hover:translate-x-px",
           accent === "amber"
-            ? "group-hover:border-[rgba(245,158,11,0.4)] group-hover:text-[var(--semantic-amber)]"
-            : "group-hover:border-[rgba(0,212,170,0.4)] group-hover:text-[var(--teal-text)]",
+            ? "group-hover:border-[rgb(var(--amber-rgb)/0.4)] group-hover:text-[var(--amber-text)]"
+            : "group-hover:border-[rgb(var(--teal-rgb)/0.4)] group-hover:text-[var(--teal-text)]",
         )}
       >
         <ArrowRight className="h-[13px] w-[13px]" />

@@ -23,6 +23,10 @@ interface PhoneNumberFieldProps {
   inputClassName?: string;
   labelClassName?: string;
   className?: string;
+  /** Marks the number input invalid. Callers own rendering the message. */
+  invalid?: boolean;
+  /** Id of the caller-rendered error node, for aria-describedby. */
+  errorId?: string;
 }
 
 export function PhoneNumberField({
@@ -35,6 +39,8 @@ export function PhoneNumberField({
   inputClassName,
   labelClassName,
   className,
+  invalid,
+  errorId,
 }: PhoneNumberFieldProps) {
   function handleCountryChange(nextCountryCode: CountryCode) {
     const nationalValue = nationalPhoneInputValue(phoneNumber, countryCode);
@@ -73,12 +79,16 @@ export function PhoneNumberField({
     <div className={cn("space-y-2", className)}>
       <Label className={labelClassName}>
         {phoneLabel}
-        {required && <span className="ml-1 text-[var(--semantic-red)]">*</span>}
+        {required && <span className="ml-1 text-[var(--red-text)]">*</span>}
       </Label>
       <div
         className={cn(
           "grid h-9 grid-cols-[minmax(112px,0.34fr)_1fr] overflow-hidden rounded-md border border-[var(--border)] bg-[var(--bg-0)] text-[var(--text-1)] transition-all focus-within:border-[var(--teal)] focus-within:ring-[3px] focus-within:ring-[var(--teal-subtle)]",
           inputClassName,
+          // Last so it wins over the caller's border in `inputClassName`, and
+          // matches the red outline `Field` gives every other invalid control.
+          invalid &&
+            "border-[var(--semantic-red)] focus-within:border-[var(--semantic-red)] focus-within:ring-[rgb(var(--red-rgb)/0.12)]",
         )}
       >
         <CountryCodeSelect
@@ -93,6 +103,9 @@ export function PhoneNumberField({
           value={inputValue}
           onChange={(event) => handlePhoneChange(event.target.value)}
           placeholder="Local number"
+          aria-required={required}
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? errorId : undefined}
           className="h-full rounded-none border-0 bg-transparent px-3 text-sm text-[var(--text-1)] shadow-none outline-none focus-visible:border-transparent focus-visible:ring-0"
         />
       </div>

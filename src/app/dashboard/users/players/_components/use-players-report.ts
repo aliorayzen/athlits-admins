@@ -86,8 +86,7 @@ function toQuery(
 export function usePlayersReport(): PlayersReportState {
   const [search, setSearchValue] = useState("");
   const [filters, setFiltersValue] = useState(EMPTY_PLAYER_FILTERS);
-  const [sortBy, setSortByValue] =
-    useState<PlayerSortBy>("LAST_BOOKING_DATE");
+  const [sortBy, setSortByValue] = useState<PlayerSortBy>("LAST_BOOKING_DATE");
   const [direction, setDirection] = useState<SortDirection>("DESC");
   const [page, setPage] = useState(0);
   const [data, setData] = useState<PageResponse<PlayerReportItem> | null>(null);

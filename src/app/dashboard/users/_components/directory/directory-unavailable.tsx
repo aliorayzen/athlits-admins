@@ -8,28 +8,28 @@ type Accent = "amber" | "teal" | "blue";
 
 const ACCENT_VARS: Record<Accent, Record<string, string>> = {
   amber: {
-    "--accent": "#f59e0b",
-    "--accent-dark": "#d97706",
-    "--accent-subtle": "rgba(245,158,11,0.1)",
-    "--accent-ring": "rgba(245,158,11,0.3)",
+    "--accent": "var(--semantic-amber)",
+    "--accent-dark": "var(--amber-deep)",
+    "--accent-subtle": "rgb(var(--amber-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--amber-rgb)/0.3)",
     "--accent-on": "#231405",
-    "--accent-glow": "rgba(245,158,11,0.4)",
+    "--accent-glow": "rgb(var(--amber-rgb)/0.4)",
   },
   teal: {
-    "--accent": "#00d4aa",
-    "--accent-dark": "#00b894",
-    "--accent-subtle": "rgba(0,212,170,0.1)",
-    "--accent-ring": "rgba(0,212,170,0.3)",
-    "--accent-on": "#032921",
-    "--accent-glow": "rgba(0,212,170,0.35)",
+    "--accent": "var(--teal)",
+    "--accent-dark": "var(--teal-deep)",
+    "--accent-subtle": "rgb(var(--teal-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--teal-rgb)/0.3)",
+    "--accent-on": "var(--on-teal)",
+    "--accent-glow": "rgb(var(--teal-rgb)/0.35)",
   },
   blue: {
     "--accent": "#6366f1",
     "--accent-dark": "#4f46e5",
-    "--accent-subtle": "rgba(99,102,241,0.1)",
-    "--accent-ring": "rgba(99,102,241,0.3)",
+    "--accent-subtle": "rgb(var(--indigo-rgb)/0.1)",
+    "--accent-ring": "rgb(var(--indigo-rgb)/0.3)",
     "--accent-on": "#f5f6ff",
-    "--accent-glow": "rgba(99,102,241,0.4)",
+    "--accent-glow": "rgb(var(--indigo-rgb)/0.4)",
   },
 };
 

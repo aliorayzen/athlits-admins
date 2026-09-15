@@ -86,13 +86,12 @@ function statusTone(status: string): StatusTone {
 
 const STATUS_CLASSES: Record<StatusTone, string> = {
   green:
-    "bg-[rgba(16,185,129,0.09)] text-[var(--semantic-green)] border-[rgba(16,185,129,0.16)]",
-  red: "bg-[var(--semantic-red-subtle)] text-[var(--semantic-red)] border-[rgba(244,63,94,0.16)]",
+    "bg-[rgb(var(--green-rgb)/0.09)] text-[var(--green-text)] border-[rgb(var(--green-rgb)/0.16)]",
+  red: "bg-[var(--semantic-red-subtle)] text-[var(--red-text)] border-[rgb(var(--red-rgb)/0.16)]",
   amber:
-    "bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)] border-[rgba(245,158,11,0.16)]",
-  blue: "bg-[rgba(99,102,241,0.1)] text-[var(--semantic-blue)] border-[rgba(99,102,241,0.16)]",
-  neutral:
-    "bg-[var(--bg-2)] text-[var(--text-3)] border-[var(--border)]",
+    "bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)] border-[rgb(var(--amber-rgb)/0.16)]",
+  blue: "bg-[rgb(var(--indigo-rgb)/0.1)] text-[var(--blue-text)] border-[rgb(var(--indigo-rgb)/0.16)]",
+  neutral: "bg-[var(--bg-2)] text-[var(--text-3)] border-[var(--border)]",
 };
 
 export function StatusPill({ status }: { status: string }) {
@@ -124,7 +123,7 @@ export function Pagination({
   if (data.totalElements === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-white/[0.008] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-2 border-t border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <span className="font-mono text-[11.5px] tabular-nums text-[var(--text-4)]">
         Showing {start}–{end} of {data.totalElements}
       </span>

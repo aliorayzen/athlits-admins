@@ -20,7 +20,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getAdminPlayerBookings, getApiErrorMessage, getVenues } from "@/lib/api";
+import {
+  getAdminPlayerBookings,
+  getApiErrorMessage,
+  getVenues,
+} from "@/lib/api";
 import type {
   PageResponse,
   PlayerBookingGroup,
@@ -80,8 +84,9 @@ export function PlayerBookingHistory({
   const [draft, setDraft] = useState(EMPTY_HISTORY_FILTERS);
   const [filters, setFilters] = useState(EMPTY_HISTORY_FILTERS);
   const [page, setPage] = useState(0);
-  const [data, setData] =
-    useState<PageResponse<PlayerBookingGroup> | null>(null);
+  const [data, setData] = useState<PageResponse<PlayerBookingGroup> | null>(
+    null,
+  );
   const [venues, setVenues] = useState<VenueSummaryResponse[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -165,7 +170,7 @@ export function PlayerBookingHistory({
   return (
     <section
       aria-labelledby="player-history-title"
-      className="overflow-hidden rounded-lg border border-[rgba(0,212,170,0.18)] bg-[var(--bg-1)] shadow-[0_0_28px_-18px_rgba(0,212,170,0.35)]"
+      className="overflow-hidden rounded-lg border border-[rgb(var(--teal-rgb)/0.18)] bg-[var(--bg-1)] shadow-[0_0_28px_-18px_rgb(var(--teal-rgb)/0.35)]"
     >
       <header className="flex flex-col gap-3 border-b border-[var(--border)] px-4 py-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
@@ -195,7 +200,11 @@ export function PlayerBookingHistory({
             onClick={() => setReloadToken((token) => token + 1)}
             className="h-8 w-8 text-[var(--text-3)] hover:bg-[var(--bg-2)] hover:text-[var(--text-1)]"
           >
-            <RefreshCw className={isFetching ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+            <RefreshCw
+              className={
+                isFetching ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"
+              }
+            />
           </Button>
           <Button
             variant="ghost"
@@ -219,15 +228,15 @@ export function PlayerBookingHistory({
       />
 
       {error && data && (
-        <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-md border border-[rgba(245,158,11,0.2)] bg-[var(--semantic-amber-subtle)] px-3 py-2.5">
+        <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-md border border-[rgb(var(--amber-rgb)/0.2)] bg-[var(--semantic-amber-subtle)] px-3 py-2.5">
           <span className="flex min-w-0 items-center gap-2 text-[12px] text-[var(--text-2)]">
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[var(--semantic-amber)]" />
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[var(--amber-text)]" />
             <span className="truncate">{error}</span>
           </span>
           <button
             type="button"
             onClick={() => setReloadToken((token) => token + 1)}
-            className="text-[11.5px] font-medium text-[var(--semantic-amber)] hover:underline"
+            className="text-[11.5px] font-medium text-[var(--amber-text)] hover:underline"
           >
             Retry
           </button>
@@ -275,7 +284,7 @@ function HistoryFilterBar({
         event.preventDefault();
         onApply();
       }}
-      className="grid gap-2 border-b border-[var(--border)] bg-white/[0.008] px-4 py-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_1.2fr_auto]"
+      className="grid gap-2 border-b border-[var(--border)] bg-[var(--tint-1)] px-4 py-3 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr_1fr_1.2fr_auto]"
     >
       <LabeledControl label="From" htmlFor="history-from">
         <input
@@ -359,7 +368,7 @@ function HistoryFilterBar({
         </button>
         <Button
           type="submit"
-          className="h-8 bg-[var(--teal)] px-3 text-[11.5px] font-semibold text-[#032921] hover:bg-[var(--teal)] hover:brightness-110"
+          className="h-8 bg-[var(--teal)] px-3 text-[11.5px] font-semibold text-[var(--on-teal)] hover:bg-[var(--teal)] hover:brightness-110"
         >
           Apply
         </Button>
@@ -493,7 +502,7 @@ function HistoryBody({
     return (
       <div className="grid min-h-48 place-items-center px-4 text-center">
         <div>
-          <AlertTriangle className="mx-auto h-5 w-5 text-[var(--semantic-red)]" />
+          <AlertTriangle className="mx-auto h-5 w-5 text-[var(--red-text)]" />
           <p className="mt-2 text-[13px] text-[var(--text-2)]">{error}</p>
           <Button
             type="button"
@@ -525,7 +534,11 @@ function HistoryBody({
   }
 
   return (
-    <div className={isFetching ? "opacity-60 transition-opacity" : "transition-opacity"}>
+    <div
+      className={
+        isFetching ? "opacity-60 transition-opacity" : "transition-opacity"
+      }
+    >
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1120px] border-separate border-spacing-0">
           <thead>
@@ -562,8 +575,8 @@ function HistoryBody({
 
 function BookingRow({ booking }: { booking: PlayerBookingGroup }) {
   return (
-    <tr className="hover:bg-white/[0.015]">
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+    <tr className="hover:bg-[var(--tint-1)]">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="whitespace-nowrap text-[12px] font-medium text-[var(--text-2)]">
           {formatDateTime(booking.startAt)}
         </div>
@@ -580,7 +593,7 @@ function BookingRow({ booking }: { booking: PlayerBookingGroup }) {
           <Copy className="h-2.5 w-2.5 shrink-0" />
         </button>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="text-[12px] font-medium text-[var(--text-2)]">
           {booking.venueName}
         </div>
@@ -588,15 +601,16 @@ function BookingRow({ booking }: { booking: PlayerBookingGroup }) {
           {booking.courtName}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="font-mono text-[12px] tabular-nums text-[var(--text-2)]">
-          {booking.sessionsCount} {booking.sessionsCount === 1 ? "session" : "sessions"}
+          {booking.sessionsCount}{" "}
+          {booking.sessionsCount === 1 ? "session" : "sessions"}
         </div>
         <div className="mt-0.5 font-mono text-[10.5px] text-[var(--text-4)]">
           {booking.durationMinutes} min
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <StatusPill status={booking.overallStatus} />
         <div className="mt-1.5 flex max-w-52 flex-wrap gap-1">
           {booking.statuses.map((status) => (
@@ -606,7 +620,7 @@ function BookingRow({ booking }: { booking: PlayerBookingGroup }) {
           ))}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <StatusPill status={booking.paid ? "PAID" : "UNPAID"} />
         <div className="mt-1.5 text-[9.5px] text-[var(--text-4)]">
           {[...booking.paymentStatuses, ...booking.paymentMethods]
@@ -614,10 +628,10 @@ function BookingRow({ booking }: { booking: PlayerBookingGroup }) {
             .join(" · ") || "No payment activity"}
         </div>
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <MoneyList amounts={booking.totalAmounts} />
       </td>
-      <td className="border-t border-white/[0.035] px-4 py-3 align-top">
+      <td className="border-t border-[var(--tint-3)] px-4 py-3 align-top">
         <div className="text-[9.5px] font-semibold uppercase tracking-[0.07em] text-[var(--text-4)]">
           Net
         </div>

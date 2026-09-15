@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Calendar, ChevronDown, Download, Plus } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
-import { getInvoices, getVenues } from "@/lib/api";
+import {
+  getCustomers,
+  getInvoices,
+  getVenueManagers,
+  getVenues,
+} from "@/lib/api";
 import type { InvoiceResponse, VenueSummaryResponse } from "@/types/api";
 import {
   BookingStatsStrip,
@@ -23,7 +28,9 @@ import {
   HeroSpark,
   KpiCard,
 } from "./_components/kpi-card";
+import { BookingsSummary } from "./_components/bookings-summary";
 import { SecondaryStatsStrip } from "./_components/secondary-stats-strip";
+import { VenuesByRegion } from "./_components/venues-by-region";
 import { SpectrumBar } from "./_components/spectrum-bar";
 import { TopVenues } from "./_components/top-venues";
 import { TrendChart } from "./_components/trend-chart";
@@ -39,18 +46,34 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [venues, setVenues] = useState<VenueSummaryResponse[]>([]);
   const [invoices, setInvoices] = useState<InvoiceResponse[]>([]);
+  // Active platform accounts = players + venue managers. Counted from the
+  // paginated directories' totals rather than by pulling every row: we only
+  // need the number, so each request asks for a single row.
+  const [activeUsers, setActiveUsers] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [venueData, invoiceData] = await Promise.allSettled([
-          getVenues(),
-          getInvoices({ size: 100 }),
-        ]);
+        const [venueData, invoiceData, playerData, managerData] =
+          await Promise.allSettled([
+            getVenues(),
+            getInvoices({ size: 100 }),
+            getCustomers({ size: 1 }),
+            getVenueManagers({ size: 1 }),
+          ]);
         if (venueData.status === "fulfilled") setVenues(venueData.value);
         if (invoiceData.status === "fulfilled")
           setInvoices(invoiceData.value.content ?? []);
+
+        // Partial data is better than none here: if one directory fails the
+        // other still contributes, and the card shows what it could count.
+        const counted = [playerData, managerData]
+          .filter((r) => r.status === "fulfilled")
+          .map((r) => r.value.totalElements ?? 0);
+        setActiveUsers(
+          counted.length > 0 ? counted.reduce((a, b) => a + b, 0) : null,
+        );
       } finally {
         setIsLoading(false);
       }
@@ -84,23 +107,14 @@ export default function DashboardPage() {
       <div className="dash-fade-up stg-1 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="mb-3 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--text-3)]">
-            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_6px_rgba(0,212,170,0.35)]" />
+            <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_6px_rgb(var(--teal-rgb)/0.35)]" />
             <span>
               Operating {citiesCount || 0}{" "}
               {citiesCount === 1 ? "city" : "cities"} · {metrics.totalVenues}{" "}
               venues · all operational
             </span>
           </div>
-          <h1
-            className="text-[clamp(30px,3vw,40px)] font-semibold leading-[1.02] tracking-[-0.03em]"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--text-1) 0%, var(--teal-text) 160%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
-          >
+          <h1 className="text-[clamp(30px,3vw,40px)] font-semibold leading-[1.02] tracking-[-0.03em] text-[var(--text-1)]">
             {getGreeting()}, {displayName}
           </h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-[var(--text-3)]">
@@ -113,7 +127,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-[10px] border border-[var(--border-strong)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-1)] active:scale-[0.97]"
+            className="inline-flex items-center gap-1.5 rounded-[10px] border border-[var(--border-strong)] bg-[var(--tint-2)] px-3.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-all hover:border-[var(--tint-7)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)] active:scale-[0.97]"
           >
             <Calendar className="h-3.5 w-3.5" />
             Today
@@ -121,14 +135,14 @@ export default function DashboardPage() {
           </button>
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 rounded-[10px] border border-[var(--border-strong)] bg-[rgba(255,255,255,0.03)] px-3.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-all hover:border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[var(--text-1)] active:scale-[0.97]"
+            className="inline-flex items-center gap-1.5 rounded-[10px] border border-[var(--border-strong)] bg-[var(--tint-2)] px-3.5 py-2 text-[13px] font-medium text-[var(--text-2)] transition-all hover:border-[var(--tint-7)] hover:bg-[var(--tint-4)] hover:text-[var(--text-1)] active:scale-[0.97]"
           >
             <Download className="h-3.5 w-3.5" />
             Export
           </button>
           <Link
             href="/dashboard/venues/new"
-            className="group inline-flex items-center gap-1.5 rounded-[10px] bg-[linear-gradient(135deg,var(--teal),#00b894)] px-3.5 py-2 text-[13px] font-semibold text-[#001814] shadow-[0_4px_14px_rgba(0,212,170,0.25),inset_0_0_0_1px_rgba(0,212,170,0.3)] transition-all hover:-translate-y-px hover:bg-[linear-gradient(135deg,#00e6b9,var(--teal))] hover:shadow-[0_6px_22px_rgba(0,212,170,0.4),inset_0_0_0_1px_rgba(0,212,170,0.4)] active:translate-y-0 active:scale-[0.98]"
+            className="group inline-flex items-center gap-1.5 rounded-[10px] bg-[linear-gradient(135deg,var(--teal),var(--teal-deep))] px-3.5 py-2 text-[13px] font-semibold text-[var(--on-teal)] shadow-[0_4px_14px_rgb(var(--teal-rgb)/0.25),inset_0_0_0_1px_rgb(var(--teal-rgb)/0.3)] transition-all hover:-translate-y-px hover:bg-[linear-gradient(135deg,var(--teal-hi),var(--teal))] hover:shadow-[0_6px_22px_rgb(var(--teal-rgb)/0.4),inset_0_0_0_1px_rgb(var(--teal-rgb)/0.4)] active:translate-y-0 active:scale-[0.98]"
           >
             <Plus className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-90" />
             New venue
@@ -167,22 +181,14 @@ export default function DashboardPage() {
         />
         <KpiCard
           staggerClass="stg-3"
-          label="Collection rate"
-          value={`${metrics.collectionRate}%`}
-          delta={
-            metrics.totalInvoiced > 0
-              ? `${metrics.paidCount}/${metrics.totalInvoiced}`
-              : "—"
-          }
-          deltaType={
-            metrics.collectionRate >= 80
-              ? "up"
-              : metrics.collectionRate >= 50
-                ? "flat"
-                : "down"
-          }
+          label="Active users"
+          value={activeUsers === null ? "—" : formatNumber(activeUsers)}
+          delta={activeUsers === null ? "unavailable" : "players + managers"}
+          deltaType="flat"
           context={
-            metrics.totalInvoiced > 0 ? "paid of invoiced" : "nothing invoiced"
+            activeUsers === null
+              ? "directory unreachable"
+              : "accounts on the platform"
           }
           spark={<BarSpark />}
         />
@@ -212,6 +218,22 @@ export default function DashboardPage() {
 
       <SecondaryStatsStrip
         stats={[
+          {
+            label: "Collection rate",
+            value: `${metrics.collectionRate}%`,
+            hint:
+              metrics.totalInvoiced > 0
+                ? `${metrics.paidCount}/${metrics.totalInvoiced} paid`
+                : "nothing invoiced",
+            tone:
+              metrics.totalInvoiced === 0
+                ? "neutral"
+                : metrics.collectionRate >= 80
+                  ? "teal"
+                  : metrics.collectionRate >= 50
+                    ? "amber"
+                    : "rose",
+          },
           {
             label: "Avg invoice",
             value:
@@ -267,7 +289,12 @@ export default function DashboardPage() {
         ]}
       />
 
-      <BookingStatsStrip />
+      <BookingsSummary venues={venues} />
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <VenuesByRegion venues={venues} />
+        <BookingStatsStrip />
+      </div>
 
       {spectrumSegments.length > 0 && (
         <SpectrumBar segments={spectrumSegments} />

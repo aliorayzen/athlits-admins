@@ -79,9 +79,7 @@ export function TempPasswordField({
       >
         <span>
           Temporary password
-          <span className="ml-1.5 text-[var(--semantic-red)] opacity-85">
-            *
-          </span>
+          <span className="ml-1.5 text-[var(--red-text)] opacity-85">*</span>
         </span>
       </label>
       <div className="relative">
@@ -97,15 +95,15 @@ export function TempPasswordField({
           aria-describedby={error ? errorId : hintId}
           className={`h-[38px] w-full rounded-md border bg-[var(--bg-0)] pl-[34px] pr-[108px] font-mono text-[13px] tracking-[0.02em] text-[var(--text-1)] outline-none transition-all placeholder:text-[var(--text-4)] ${
             error
-              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgba(244,63,94,0.12)] focus:border-[var(--semantic-red)]"
-              : "border-[var(--border)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]"
+              ? "border-[var(--semantic-red)] shadow-[0_0_0_3px_rgb(var(--red-rgb)/0.12)] focus:border-[var(--semantic-red)]"
+              : "border-[var(--border)] focus:border-[var(--semantic-amber)] focus:shadow-[0_0_0_3px_rgb(var(--amber-rgb)/0.12)]"
           }`}
         />
         <button
           type="button"
           onClick={() => onChange(generatePassword())}
           title="Generate new password"
-          className="absolute right-1 top-1/2 inline-flex h-7 -translate-y-1/2 items-center gap-1.5 rounded border border-[var(--border)] bg-[var(--bg-2)] px-2.5 font-mono text-[11px] font-medium text-[var(--text-3)] transition-all hover:border-[rgba(245,158,11,0.3)] hover:bg-[rgba(245,158,11,0.1)] hover:text-[var(--semantic-amber)]"
+          className="absolute right-1 top-1/2 inline-flex h-7 -translate-y-1/2 items-center gap-1.5 rounded border border-[var(--border)] bg-[var(--bg-2)] px-2.5 font-mono text-[11px] font-medium text-[var(--text-3)] transition-all hover:border-[rgb(var(--amber-rgb)/0.3)] hover:bg-[rgb(var(--amber-rgb)/0.1)] hover:text-[var(--amber-text)]"
         >
           <RefreshCw className="h-[11px] w-[11px]" />
           Generate
@@ -116,14 +114,14 @@ export function TempPasswordField({
         <p
           id={errorId}
           role="alert"
-          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--semantic-red)]"
+          className="mt-0.5 text-[11px] leading-[1.4] text-[var(--red-text)]"
         >
           {error}
         </p>
       ) : (
         <div
           id={hintId}
-          className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-[1.4] text-[var(--semantic-amber)]"
+          className="mt-1.5 flex items-start gap-1.5 text-[11px] leading-[1.4] text-[var(--amber-text)]"
         >
           <AlertTriangle className="mt-0.5 h-[11px] w-[11px] flex-shrink-0" />
           <span>

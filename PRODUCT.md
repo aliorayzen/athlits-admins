@@ -30,10 +30,11 @@ Both are repeat, expert users performing high-stakes operational tasks
 
 ## Brand & tone
 
-**Dark luxury, operational.** Premium but restrained — confident, precise,
-quiet. The feel is a well-machined instrument: deep blue-zinc surfaces, a
-disciplined gold/amber + teal accent system, generous type contrast, and
-motion that clarifies rather than performs. Trustworthy and legible above all.
+**Daylight precision, operational.** Premium but restrained — confident,
+precise, quiet. The feel is a well-machined instrument in a bright room:
+brand-tinted porcelain surfaces, a disciplined teal + amber accent system,
+generous type contrast, and motion that clarifies rather than performs.
+Trustworthy and legible above all.
 
 Voice in UI copy: direct, calm, specific. Say what happened and what to do
 next. No cute filler, no exclamation marks, no jargon the operator must decode.
@@ -42,11 +43,15 @@ next. No cute filler, no exclamation marks, no jargon the operator must decode.
 
 - Generic SaaS dashboard template — sidebar + uniform card grid + stock charts.
 - Unmodified shadcn/ui defaults passed off as finished design.
-- Flat gray-on-white admin panels with one lonely accent color.
+- Flat gray-on-white admin panels with one lonely accent color. Our light
+  surface is tinted toward the brand teal (hue 195), never neutral gray-50,
+  and never pure — the canvas/card/well stack is a real three-step
+  elevation, not white boxes on a gray page.
 - Rainbow / default chart palettes that ignore the semantic color system.
 - Playful consumer styling, oversized hero art, decorative gradients with no job.
-- Dark mode "because tools look cool dark" — our dark is a deliberate, tuned
-  surface system, not a reflexive default.
+- Light mode "because admin panels are light" — our light is a deliberate,
+  contrast-solved surface system, not a reflexive default. The retained dark
+  theme is equally tuned.
 
 ## Strategic principles
 
@@ -57,8 +62,11 @@ next. No cute filler, no exclamation marks, no jargon the operator must decode.
    conventional meanings. Color means something; it is not decoration.
 3. **Keyboard-first.** Operators submit with ⌘/Ctrl+Enter, expect focus rings,
    labelled inputs, and predictable tab order. Accessibility is non-negotiable.
-4. **Dark-first, light-capable.** The dark theme is the primary canvas; the
-   light theme must feel equally intentional, not an afterthought.
+4. **Light-first, dark-capable.** The light theme is the primary canvas —
+   operators work full shifts in daylight, cross-referencing screen against
+   paper. The dark theme is retained and must stay equally intentional. Light
+   has far less color headroom, so its text ramp is shallower and hierarchy
+   leans on weight and scale; never port a dark accent value into light.
 5. **Reuse the system.** New surfaces compose existing tokens, primitives, and
    scoped patterns — they do not invent one-off colors, radii, or shadows.
 6. **Restraint is the brand.** When in doubt, quieter. Luxury here reads as

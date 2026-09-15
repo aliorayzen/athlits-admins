@@ -44,14 +44,14 @@ export default function DashboardLayout({
         <main className="relative flex-1 overflow-y-auto">
           {/* Ambient background effects */}
           <div className="pointer-events-none fixed inset-0 overflow-hidden">
-            <div className="animate-drift absolute -top-32 right-1/4 h-64 w-80 rounded-full bg-[rgba(0,212,170,0.02)] blur-[120px]" />
-            <div className="animate-drift-reverse absolute bottom-0 left-1/3 h-48 w-64 rounded-full bg-[rgba(0,212,170,0.015)] blur-[100px]" />
+            <div className="animate-drift absolute -top-32 right-1/4 h-64 w-80 rounded-full bg-[rgb(var(--teal-rgb)/0.02)] blur-[120px]" />
+            <div className="animate-drift-reverse absolute bottom-0 left-1/3 h-48 w-64 rounded-full bg-[rgb(var(--teal-rgb)/0.015)] blur-[100px]" />
             {/* Subtle grid */}
             <div
               className="absolute inset-0"
               style={{
                 backgroundImage:
-                  "linear-gradient(rgba(0,212,170,0.012) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,170,0.012) 1px, transparent 1px)",
+                  "linear-gradient(rgb(var(--teal-rgb)/0.012) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--teal-rgb)/0.012) 1px, transparent 1px)",
                 backgroundSize: "60px 60px",
               }}
             />

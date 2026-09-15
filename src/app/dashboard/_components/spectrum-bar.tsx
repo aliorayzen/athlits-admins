@@ -4,11 +4,11 @@ export interface SpectrumSegment {
 }
 
 const TINTS = [
-  "bg-[linear-gradient(135deg,rgba(0,212,170,0.55),rgba(0,212,170,0.3))] text-[#d6fff4]",
-  "bg-[linear-gradient(135deg,rgba(0,212,170,0.38),rgba(0,212,170,0.2))] text-[#c6f6e8]",
-  "bg-[linear-gradient(135deg,rgba(0,212,170,0.22),rgba(0,212,170,0.1))] text-[#b4e5d6]",
-  "bg-[linear-gradient(135deg,rgba(120,135,150,0.3),rgba(120,135,150,0.12))] text-[#d5dde8]",
-  "bg-[linear-gradient(135deg,rgba(80,90,105,0.3),rgba(80,90,105,0.12))] text-[#b0b8c2]",
+  "bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.55),rgb(var(--teal-rgb)/0.3))] text-[var(--teal-text)]",
+  "bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.38),rgb(var(--teal-rgb)/0.2))] text-[var(--teal-text)]",
+  "bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.22),rgb(var(--teal-rgb)/0.1))] text-[var(--teal-text)]",
+  "bg-[linear-gradient(135deg,rgba(120,135,150,0.3),rgba(120,135,150,0.12))] text-[var(--text-2)]",
+  "bg-[linear-gradient(135deg,rgba(80,90,105,0.3),rgba(80,90,105,0.12))] text-[var(--text-2)]",
 ];
 
 export function SpectrumBar({ segments }: { segments: SpectrumSegment[] }) {
@@ -19,7 +19,7 @@ export function SpectrumBar({ segments }: { segments: SpectrumSegment[] }) {
     .join(" ");
 
   return (
-    <div className="dash-fade-up stg-5 mb-6 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.008))] px-6 pb-5 pt-[22px]">
+    <div className="dash-fade-up stg-5 mb-6 rounded-[14px] border border-[var(--border)] bg-[linear-gradient(180deg,var(--tint-2),var(--tint-1))] px-6 pb-5 pt-[22px]">
       <div className="mb-3.5 flex items-end justify-between">
         <div className="text-[13.5px] font-medium text-[var(--text-1)]">
           Venues by city

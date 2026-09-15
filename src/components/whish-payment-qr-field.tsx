@@ -22,13 +22,7 @@ import { getOptionalHttpUrlError } from "@/lib/http-url";
 
 const MAX_QR_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_SCAN_DIMENSION = 2400;
-const ACCEPTED_EXTENSIONS = new Set([
-  "jpg",
-  "jpeg",
-  "jfif",
-  "png",
-  "webp",
-]);
+const ACCEPTED_EXTENSIONS = new Set(["jpg", "jpeg", "jfif", "png", "webp"]);
 const ACCEPTED_MIME_TYPES = new Set([
   "image/jpeg",
   "image/jfif",
@@ -83,7 +77,8 @@ async function extractQrData(file: File): Promise<string | null> {
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) throw new Error("QR scanning is unavailable in this browser.");
+    if (!context)
+      throw new Error("QR scanning is unavailable in this browser.");
 
     context.drawImage(image, 0, 0, width, height);
     const imageData = context.getImageData(0, 0, width, height);
@@ -196,8 +191,8 @@ export function WhishPaymentQrField({
           <span
             className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${
               error
-                ? "bg-[rgba(244,63,94,0.08)] text-[var(--semantic-red)]"
-                : "bg-[var(--semantic-green-subtle)] text-[var(--semantic-green)]"
+                ? "bg-[rgb(var(--red-rgb)/0.08)] text-[var(--red-text)]"
+                : "bg-[var(--semantic-green-subtle)] text-[var(--green-text)]"
             }`}
           >
             {error ? (
@@ -230,11 +225,7 @@ export function WhishPaymentQrField({
               onClick={() => inputRef.current?.click()}
               disabled={disabled || isScanning}
             >
-              {isScanning ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Upload />
-              )}
+              {isScanning ? <Loader2 className="animate-spin" /> : <Upload />}
               {isScanning ? "Scanning..." : "Replace"}
             </Button>
             <Button
@@ -244,7 +235,7 @@ export function WhishPaymentQrField({
               onClick={clearLink}
               disabled={disabled || isScanning}
               aria-label="Clear Whish payment link"
-              className="text-[var(--text-4)] hover:text-[var(--semantic-red)]"
+              className="text-[var(--text-4)] hover:text-[var(--red-text)]"
             >
               <Trash2 />
             </Button>
@@ -260,8 +251,8 @@ export function WhishPaymentQrField({
           aria-describedby={describedBy}
           className={`group flex w-full items-center gap-3 rounded-lg border border-dashed px-4 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--teal-subtle)] disabled:pointer-events-none disabled:opacity-50 ${
             error
-              ? "border-[var(--semantic-red)] bg-[rgba(244,63,94,0.06)]"
-              : "border-[var(--border-strong)] bg-[var(--bg-hover)] hover:border-[rgba(0,212,170,0.3)] hover:bg-[var(--teal-subtle)]"
+              ? "border-[var(--semantic-red)] bg-[rgb(var(--red-rgb)/0.06)]"
+              : "border-[var(--border-strong)] bg-[var(--bg-hover)] hover:border-[rgb(var(--teal-rgb)/0.3)] hover:bg-[var(--teal-subtle)]"
           }`}
         >
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-md bg-[var(--bg-2)] text-[var(--text-4)] transition-colors group-hover:text-[var(--teal-text)]">
@@ -292,7 +283,7 @@ export function WhishPaymentQrField({
         <p
           id={errorId}
           role="alert"
-          className="flex items-start gap-1.5 text-xs text-[var(--semantic-red)]"
+          className="flex items-start gap-1.5 text-xs text-[var(--red-text)]"
         >
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {error}

@@ -44,7 +44,7 @@ export function TopBar() {
                 <>
                   <span
                     aria-hidden="true"
-                    className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[var(--semantic-red)] px-1 text-[9px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.55)]"
+                    className="absolute -right-1 -top-1 grid min-h-4 min-w-4 place-items-center rounded-full bg-[var(--semantic-red)] px-1 text-[9px] font-bold leading-none text-[var(--on-danger)] shadow-[0_0_10px_rgb(var(--red-rgb)/0.55)]"
                   >
                     {highPriorityCount > 9 ? "9+" : highPriorityCount}
                   </span>
@@ -67,8 +67,8 @@ export function TopBar() {
               </span>
             )}
           </div>
-          <Avatar className="h-8 w-8 ring-1 ring-[rgba(0,212,170,0.2)]">
-            <AvatarFallback className="bg-[linear-gradient(135deg,rgba(0,212,170,0.15),rgba(0,212,170,0.05))] text-xs font-medium text-[var(--teal-text)]">
+          <Avatar className="h-8 w-8 ring-1 ring-[rgb(var(--teal-rgb)/0.2)]">
+            <AvatarFallback className="bg-[linear-gradient(135deg,rgb(var(--teal-rgb)/0.15),rgb(var(--teal-rgb)/0.05))] text-xs font-medium text-[var(--teal-text)]">
               {initials}
             </AvatarFallback>
           </Avatar>

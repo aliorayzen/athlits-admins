@@ -98,8 +98,9 @@ export function InvoiceBreakdownSheet({
   onOpenChange,
 }: InvoiceBreakdownSheetProps) {
   const [page, setPage] = useState(0);
-  const [breakdown, setBreakdown] =
-    useState<InvoiceBreakdownResponse | null>(null);
+  const [breakdown, setBreakdown] = useState<InvoiceBreakdownResponse | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const requestIdRef = useRef(0);
@@ -136,7 +137,8 @@ export function InvoiceBreakdownSheet({
   }, [invoice, load]);
 
   const periodTotal = useMemo(
-    () => breakdown?.periods.reduce((sum, period) => sum + period.subtotal, 0) ?? 0,
+    () =>
+      breakdown?.periods.reduce((sum, period) => sum + period.subtotal, 0) ?? 0,
     [breakdown],
   );
   const reconciles = breakdown
@@ -157,7 +159,7 @@ export function InvoiceBreakdownSheet({
             <SheetHeader className="border-b border-[var(--border)] px-5 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-start gap-3">
-                  <div className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-md border border-[rgba(0,212,170,0.2)] bg-[var(--teal-subtle)] text-[var(--teal-text)]">
+                  <div className="mt-0.5 grid size-9 shrink-0 place-items-center rounded-md border border-[rgb(var(--teal-rgb)/0.2)] bg-[var(--teal-subtle)] text-[var(--teal-text)]">
                     <ReceiptText className="size-4" />
                   </div>
                   <div className="min-w-0">
@@ -196,7 +198,9 @@ export function InvoiceBreakdownSheet({
               ) : breakdown ? (
                 <div className="space-y-7 px-5 py-5 sm:px-6">
                   {!breakdown.detailAvailable ? (
-                    <UnavailableState reason={breakdown.detailUnavailableReason} />
+                    <UnavailableState
+                      reason={breakdown.detailUnavailableReason}
+                    />
                   ) : (
                     <>
                       <ReconciliationSummary
@@ -213,7 +217,7 @@ export function InvoiceBreakdownSheet({
                     </>
                   )}
                   {error && breakdown && (
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-[rgba(245,158,11,0.25)] bg-[var(--semantic-amber-subtle)] px-3 py-2.5 text-[12px] text-[var(--semantic-amber)]">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-[rgb(var(--amber-rgb)/0.25)] bg-[var(--semantic-amber-subtle)] px-3 py-2.5 text-[12px] text-[var(--amber-text)]">
                       <span>{error}</span>
                       <Button
                         type="button"
@@ -273,8 +277,8 @@ function ReconciliationSummary({
         className={cn(
           "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
           reconciles
-            ? "border-[rgba(16,185,129,0.2)] bg-[rgba(16,185,129,0.08)] text-[var(--semantic-green)]"
-            : "border-[rgba(245,158,11,0.22)] bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]",
+            ? "border-[rgb(var(--green-rgb)/0.2)] bg-[rgb(var(--green-rgb)/0.08)] text-[var(--green-text)]"
+            : "border-[rgb(var(--amber-rgb)/0.22)] bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]",
         )}
       >
         {reconciles ? (
@@ -283,7 +287,8 @@ function ReconciliationSummary({
           </>
         ) : (
           <>
-            <AlertCircle className="size-3" /> Difference {formatMoney(difference, breakdown.currencyCode)}
+            <AlertCircle className="size-3" /> Difference{" "}
+            {formatMoney(difference, breakdown.currencyCode)}
           </>
         )}
       </div>
@@ -340,7 +345,8 @@ function PeriodsSection({ periods }: { periods: InvoiceBreakdownPeriod[] }) {
                     </td>
                     <td className="px-3 py-3 align-top">
                       <p className="whitespace-nowrap text-[11.5px] text-[var(--text-2)]">
-                        {formatDate(period.servicePeriodStart)} to {formatDate(period.servicePeriodEnd)}
+                        {formatDate(period.servicePeriodStart)} to{" "}
+                        {formatDate(period.servicePeriodEnd)}
                       </p>
                       <p className="mt-0.5 font-mono text-[10px] text-[var(--text-4)]">
                         {period.coveredDays}/{period.daysInMonth} days
@@ -475,7 +481,7 @@ function ChargeRows({
 
   return (
     <Fragment>
-      <tr className="border-t border-[var(--border)] bg-[var(--bg-1)] hover:bg-white/[0.015]">
+      <tr className="border-t border-[var(--border)] bg-[var(--bg-1)] hover:bg-[var(--tint-1)]">
         <td className="px-2 py-3 align-middle">
           {hasSessions ? (
             <button
@@ -500,7 +506,7 @@ function ChargeRows({
               className={cn(
                 "inline-flex rounded-full px-2 py-0.5 text-[9.5px] font-semibold tracking-[0.04em]",
                 isReservation
-                  ? "bg-[rgba(99,102,241,0.1)] text-[var(--semantic-blue)]"
+                  ? "bg-[rgb(var(--indigo-rgb)/0.1)] text-[var(--blue-text)]"
                   : "bg-[var(--teal-subtle)] text-[var(--teal-text)]",
               )}
             >
@@ -526,18 +532,23 @@ function ChargeRows({
           {isReservation ? (
             <>
               <p className="font-mono text-[11px] text-[var(--text-2)] tabular-nums">
-                {durationLabel(charge.combinedDurationMinutes ?? 0)} → {charge.billingUnits ?? 0} units
+                {durationLabel(charge.combinedDurationMinutes ?? 0)} →{" "}
+                {charge.billingUnits ?? 0} units
               </p>
               <p className="mt-0.5 text-[10px] text-[var(--text-4)]">
-                {charge.sessions.length} {charge.sessions.length === 1 ? "session" : "sessions"} grouped
+                {charge.sessions.length}{" "}
+                {charge.sessions.length === 1 ? "session" : "sessions"} grouped
               </p>
             </>
           ) : (
             <>
-              <p className="text-[11px] text-[var(--text-2)]">1 monthly court</p>
+              <p className="text-[11px] text-[var(--text-2)]">
+                1 monthly court
+              </p>
               {servicePeriodStart && servicePeriodEnd && (
                 <p className="mt-0.5 whitespace-nowrap text-[10px] text-[var(--text-4)]">
-                  {formatDate(servicePeriodStart)} to {formatDate(servicePeriodEnd)}
+                  {formatDate(servicePeriodStart)} to{" "}
+                  {formatDate(servicePeriodEnd)}
                 </p>
               )}
               {coveredDays !== undefined && daysInMonth !== undefined && (
@@ -588,16 +599,17 @@ function ChargeRows({
                   </div>
                   <div className="flex items-center gap-1.5 font-mono text-[10.5px] text-[var(--text-2)] tabular-nums">
                     <Clock3 className="size-3 text-[var(--text-4)]" />
-                    {formatTime(session.startTime)} to {formatTime(session.endTime)}
+                    {formatTime(session.startTime)} to{" "}
+                    {formatTime(session.endTime)}
                     {session.endsNextDay && (
-                      <span className="text-[var(--semantic-amber)]">+1 day</span>
+                      <span className="text-[var(--amber-text)]">+1 day</span>
                     )}
                   </div>
                   <div className="flex items-center justify-between gap-2 sm:justify-end">
                     <span className="font-mono text-[10.5px] text-[var(--text-3)]">
                       {durationLabel(session.durationMinutes)}
                     </span>
-                    <span className="rounded-full bg-[rgba(16,185,129,0.08)] px-2 py-0.5 text-[9.5px] font-medium text-[var(--semantic-green)]">
+                    <span className="rounded-full bg-[rgb(var(--green-rgb)/0.08)] px-2 py-0.5 text-[9.5px] font-medium text-[var(--green-text)]">
                       {session.status}
                     </span>
                   </div>
@@ -621,7 +633,8 @@ function BreakdownPagination({
   onPageChange: (page: number) => void;
 }) {
   const { charges } = breakdown;
-  const firstItem = charges.totalElements === 0 ? 0 : charges.number * charges.size + 1;
+  const firstItem =
+    charges.totalElements === 0 ? 0 : charges.number * charges.size + 1;
   const lastItem = Math.min(
     (charges.number + 1) * charges.size,
     charges.totalElements,
@@ -633,7 +646,8 @@ function BreakdownPagination({
       </p>
       <div className="flex items-center gap-2">
         <span className="mr-1 text-[10.5px] text-[var(--text-3)]">
-          Page {charges.totalPages === 0 ? 0 : charges.number + 1} of {charges.totalPages}
+          Page {charges.totalPages === 0 ? 0 : charges.number + 1} of{" "}
+          {charges.totalPages}
         </span>
         <Button
           type="button"
@@ -662,7 +676,10 @@ function BreakdownPagination({
 
 function BreakdownSkeleton() {
   return (
-    <div className="space-y-7 px-5 py-5 sm:px-6" aria-label="Loading invoice breakdown">
+    <div
+      className="space-y-7 px-5 py-5 sm:px-6"
+      aria-label="Loading invoice breakdown"
+    >
       <div className="h-[112px] animate-pulse rounded-xl border border-[var(--border)] bg-[var(--bg-0)]" />
       <div className="space-y-2.5">
         <div className="h-4 w-32 animate-pulse rounded bg-[var(--bg-2)]" />
@@ -676,18 +693,31 @@ function BreakdownSkeleton() {
   );
 }
 
-function LoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
+function LoadError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
   return (
     <div className="grid min-h-[420px] place-items-center px-6 text-center">
       <div className="max-w-sm">
-        <div className="mx-auto grid size-10 place-items-center rounded-full bg-[rgba(244,63,94,0.1)] text-[var(--semantic-red)]">
+        <div className="mx-auto grid size-10 place-items-center rounded-full bg-[rgb(var(--red-rgb)/0.1)] text-[var(--red-text)]">
           <AlertCircle className="size-4" />
         </div>
         <h3 className="mt-3 text-[14px] font-semibold text-[var(--text-1)]">
           Could not load breakdown
         </h3>
-        <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-3)]">{message}</p>
-        <Button type="button" variant="outline" className="mt-4" onClick={onRetry}>
+        <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-3)]">
+          {message}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4"
+          onClick={onRetry}
+        >
           <RefreshCw /> Try again
         </Button>
       </div>
@@ -699,14 +729,15 @@ function UnavailableState({ reason }: { reason: string | null }) {
   return (
     <div className="grid min-h-[420px] place-items-center text-center">
       <div className="max-w-sm">
-        <div className="mx-auto grid size-10 place-items-center rounded-full bg-[var(--semantic-amber-subtle)] text-[var(--semantic-amber)]">
+        <div className="mx-auto grid size-10 place-items-center rounded-full bg-[var(--semantic-amber-subtle)] text-[var(--amber-text)]">
           <AlertCircle className="size-4" />
         </div>
         <h3 className="mt-3 text-[14px] font-semibold text-[var(--text-1)]">
           Detailed evidence is unavailable
         </h3>
         <p className="mt-1.5 text-[12px] leading-5 text-[var(--text-3)]">
-          {reason || "This invoice was generated before charge snapshots were recorded."}
+          {reason ||
+            "This invoice was generated before charge snapshots were recorded."}
         </p>
       </div>
     </div>

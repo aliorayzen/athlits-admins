@@ -150,9 +150,10 @@ function feeModelSummary(invoice: InvoiceResponse): string {
 
   if (models.length > 1) return `Mixed (${invoice.lines?.length ?? 0} periods)`;
   if (models.length === 1) {
-    const suffix = (invoice.lines?.length ?? 0) > 1
-      ? ` (${invoice.lines?.length} periods)`
-      : "";
+    const suffix =
+      (invoice.lines?.length ?? 0) > 1
+        ? ` (${invoice.lines?.length} periods)`
+        : "";
     return `${FEE_MODEL_LABEL[models[0]]}${suffix}`;
   }
   return invoice.feeModel ? FEE_MODEL_LABEL[invoice.feeModel] : INVOICE_DASH;
@@ -169,9 +170,7 @@ export function deriveInvoiceView(invoice: InvoiceResponse): InvoiceView {
     invoice.totalRevenue ??
     lines.reduce((sum, line) => sum + (line.totalRevenue ?? 0), 0);
   const charges =
-    lines.length > 0
-      ? lines.map(chargeFromLine)
-      : [legacyCharge(invoice)];
+    lines.length > 0 ? lines.map(chargeFromLine) : [legacyCharge(invoice)];
   const chargesSubtotal =
     lines.length > 0
       ? lines.reduce((sum, line) => sum + line.amountDue, 0)

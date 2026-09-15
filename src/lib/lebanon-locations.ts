@@ -1,4 +1,4 @@
-import rawLocations from "./lebanon-locations-data.json";
+import rawLocations from "./lebanon-locations-data.json" with { type: "json" };
 
 export interface LebanonLocation {
   name: string;
@@ -89,7 +89,8 @@ export function findNearestLebanonLocation(
   longitude: number,
   maxDistanceKm = 25,
 ): LebanonLocation | undefined {
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return undefined;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude))
+    return undefined;
 
   let nearest: LebanonLocation | undefined;
   let nearestDistance = Number.POSITIVE_INFINITY;
